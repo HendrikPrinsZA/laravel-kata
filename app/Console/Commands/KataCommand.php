@@ -2,8 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Kata\Challenges\EloquentKata;
-use App\Kata\Challenges\MyEloquentKata;
+use App\Kata\Challenges\ChallengeKataEloquent;
+use App\Kata\Challenges\MyChallengeKataEloquent;
+use App\Kata\KataRunner;
 use App\Objects\ClockworkEventResponse;
 use App\Utilities\FiberThread;
 use Clockwork\Clockwork;
@@ -18,7 +19,7 @@ class KataCommand extends Command
     protected const MAX_ITERATIONS = 100;
 
     protected const KATAS = [
-        EloquentKata::class
+        ChallengeKataEloquent::class
     ];
 
     protected $signature = 'command:kata';
@@ -27,10 +28,25 @@ class KataCommand extends Command
 
     protected Clockwork $clock;
 
+    protected KataRunner $kataRunner;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->kataRunner = app(KataRunner::class, [
+            'command' => &$this
+        ]);
+    }
+
     public function handle()
     {
-        $this->clock = clock();
+        $this->kataRunner->run();
+    }
 
+    public function handleOG()
+    {
+        $this->clock = clock();
 
         $this->info('Creating cart');
         $this->createCart();
@@ -127,15 +143,15 @@ class KataCommand extends Command
     {
         $this->info('Running before');
 
-        /** @var EloquentKata $eloquentKata */
-        $eloquentKata = app(EloquentKata::class);
+        /** @var ChallengeKataEloquent $challengeKataEloquent */
+        $challengeKataEloquent = app(ChallengeKataEloquent::class);
 
         $result = 0;
         $event = $this->clock->event('before')->color('green')->begin();
         $limit = self::MAX_ITERATIONS;
         $bar = $this->output->createProgressBar($limit);
         foreach (range(1, $limit) as $i) {
-            $result += $eloquentKata->aggregates($i);
+            $result += $challengeKataEloquent->aggregates($i);
             $bar->advance();
         }
         $event->end();
@@ -149,7 +165,7 @@ class KataCommand extends Command
     {
         $this->info('Running after');
 
-        $namespace = EloquentKata::class;
+        $namespace = ChallengeKataEloquent::class;
         $namespaceParts = explode('\\', $namespace);
         $className = array_pop($namespaceParts);
         $targetClassName = sprintf('My%s', $className);
@@ -198,8 +214,8 @@ class KataCommand extends Command
             return $this->after();
         }
 
-        /** @var EloquentKata $eloquentKata */
-        $myEloquentKata = app($targetNamespace);
+        /** @var ChallengeKataEloquent $challengeKataEloquent */
+        $myChallengeKataEloquent = app($targetNamespace);
 
         // Check if fn exists...
         // - if not show warning
@@ -208,7 +224,7 @@ class KataCommand extends Command
         $limit = self::MAX_ITERATIONS;
         $bar = $this->output->createProgressBar($limit);
         foreach (range(1, $limit) as $i) {
-            $result += $myEloquentKata->aggregates($i);
+            $result += $myChallengeKataEloquent->aggregates($i);
             $bar->advance();
         }
         $event->end();
