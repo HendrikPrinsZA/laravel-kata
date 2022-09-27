@@ -4,7 +4,6 @@ namespace App\Kata\Challenges;
 
 use App\Kata\KataChallenge;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 
 class ChallengeKataEloquent extends KataChallenge
 {
