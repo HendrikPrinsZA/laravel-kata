@@ -2,7 +2,10 @@
     "private": true,
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build",
+        "benchmark:script": "./bin/benchmark.js",
+        "benchmark:before": "autocannon --debug --connections 10 --duration 5 --pipelining 1 http://localhost:80/api/kata/before",
+        "benchmark:after":  "autocannon --debug --connections 10 --duration 5 --pipelining 1 http://localhost:80/api/kata/after"
     },
     "devDependencies": {
         "axios": "^0.27",
@@ -10,5 +13,8 @@
         "lodash": "^4.17.19",
         "postcss": "^8.1.14",
         "vite": "^3.0.0"
+    },
+    "dependencies": {
+        "autocannon": "^7.10.0"
     }
 }

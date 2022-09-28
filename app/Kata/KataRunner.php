@@ -7,6 +7,7 @@ use App\Kata\Challenges\ChallengeKataPhp;
 use Clockwork\Request\Timeline\Event;
 use Exception;
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
 use ReflectionClass;
 use ReflectionMethod;
 
@@ -14,24 +15,38 @@ class KataRunner
 {
     protected const CHALLENGE_SUFFIX = 'Attempt1';
 
-    protected const MAX_ITERATIONS = 1000;
-
     protected array $kataChallenges = [
         ChallengeKataEloquent::class,
         ChallengeKataPhp::class,
     ];
 
-    public function __construct(protected Command $command) { }
-
-    public function run(): void
-    {
-        foreach ($this->kataChallenges as $kataChallenge) {
-            $this->handleChallenge($kataChallenge);
+    public function __construct(
+        protected ?Command $command,
+        protected ?int $maxIterations,
+        protected ?string $mode = null
+    ) {
+        if (!isset($this->mode)) {
+            $this->mode = $this->command?->option('mode') ?? 'all';
         }
     }
 
-    protected function handleChallenge(string $kataChallenge): void
+    public function run(): Collection
     {
+        $results = collect();
+
+        foreach ($this->kataChallenges as $kataChallenge) {
+            $results->push([
+                'kataChallenge' => $kataChallenge,
+                'results' => $this->handleChallenge($kataChallenge)
+            ]);
+        }
+
+        return $results;
+    }
+
+    protected function handleChallenge(string $kataChallenge): Collection
+    {
+        $results = collect();
         $kataChallengeReflection = new ReflectionClass($kataChallenge);
 
         /** @var ReflectionMethod $reflectionMethod */
@@ -40,8 +55,10 @@ class KataRunner
                 continue;
             }
 
-            $this->handleChallengeMethod($reflectionMethod);
+            $results->push($this->handleChallengeMethod($reflectionMethod));
         }
+
+        return $results;
     }
 
     /**
@@ -56,7 +73,7 @@ class KataRunner
      *  1. Results match
      *  2. Is faster
      */
-    protected function handleChallengeMethod(ReflectionMethod $reflectionMethod): bool
+    protected function handleChallengeMethod(ReflectionMethod $reflectionMethod): array|bool
     {
         $docComment = $reflectionMethod->getDocComment();
         $docComment = collect(explode("\n", $docComment))
@@ -69,22 +86,35 @@ class KataRunner
         $className = array_pop($classParts);
         $method = sprintf('%s->%s()', $className, $reflectionMethod->name);
 
-        /** @var Event $eventBefore */
-        $eventBefore = clock()->event(sprintf('%s:before', $method))->color('green')->begin();
-        $outputBefore = $this->runChallengeMethod($reflectionMethod);
-        $eventBefore->end();
+        // initialize
+        $outputBefore = null;
+        $outputBeforeMd5 = '';
+        $eventBeforeDuration = 0;
+        $outputAfter = null;
+        $outputAfterMd5 = '';
+        $eventAfterDuration = 0;
 
-        /** @var Event $eventAfter */
-        $eventAfter = clock()->event(sprintf('%s:after', $method))->color('green')->begin();
-        $outputAfter = $this->runChallengeMethod($reflectionMethod, 'after');
-        $eventAfter->end();
+        if ($this->mode !== 'after') {
+            /** @var Event $eventBefore */
+            $eventBefore = clock()->event(sprintf('%s:before', $method))->color('green')->begin();
+            $outputBefore = $this->runChallengeMethod($reflectionMethod);
+            $eventBefore->end();
 
-        $eventBeforeDuration = round($eventBefore->duration(), 2);
-        $outputBeforeMd5 = md5(json_encode($outputBefore));
-        $eventAfterDuration = round($eventAfter->duration(), 2);
-        $outputAfterMd5 = md5(json_encode($outputAfter));
+            $outputBeforeMd5 = md5(json_encode($outputBefore));
+            $eventBeforeDuration = round($eventBefore?->duration() ?? 0, 2);
+        }
 
-        $this->command->table([
+        if ($this->mode !== 'before') {
+            /** @var Event $eventAfter */
+            $eventAfter = clock()->event(sprintf('%s:after', $method))->color('green')->begin();
+            $outputAfter = $this->runChallengeMethod($reflectionMethod, 'after');
+            $eventAfter->end();
+
+            $outputAfterMd5 = md5(json_encode($outputAfter));
+            $eventAfterDuration = round($eventAfter?->duration() ?? 0, 2);
+        }
+
+        $this->command?->table([
             'Key', 'Value'
         ], [
             [ 'Method', $method ],
@@ -97,24 +127,31 @@ class KataRunner
         ]);
 
         if ($outputBeforeMd5 !== $outputAfterMd5) {
-            $this->command->warn(sprintf(
+            $this->command?->warn(sprintf(
                 'Expected output md5 of "%s", but found: "%s"',
                 $outputBeforeMd5,
                 $outputAfterMd5
             ));
-            return false;
         }
 
         if ($eventAfterDuration >= $eventBeforeDuration) {
-            $this->command->warn(sprintf(
+            $this->command?->warn(sprintf(
                 'Slower by %s ms',
                 $eventAfterDuration - $eventBeforeDuration,
             ));
-
-            return false;
         }
 
-        return true;
+        return [
+            'method' => $method,
+            'before' => [
+                'outputMd5' => $outputBeforeMd5,
+                'duration' => $eventBeforeDuration
+            ],
+            'after' => [
+                'outputMd5' => $outputAfterMd5,
+                'duration' => $eventAfterDuration
+            ],
+        ];
     }
 
     protected function wrap_in_format(string $string, bool $success): string {
@@ -148,19 +185,19 @@ class KataRunner
         }
 
         $outputs = [];
-        $limit = self::MAX_ITERATIONS;
-        $bar = $this->command->getOutput()->createProgressBar($limit);
+        $limit = $this->maxIterations;
+        $bar = $this->command?->getOutput()->createProgressBar($limit);
 
         foreach (range(1, $limit) as $i) {
             $instance = app($targetClass);
             $outputs[] = $instance->{$reflectionMethod->name}($i);
-            $bar->advance();
+            $bar?->advance();
 
             $instance = null;
         }
 
-        $bar->finish();
-        $this->command->newLine();
+        $bar?->finish();
+        $this->command?->newLine();
         return $outputs;
     }
 }
