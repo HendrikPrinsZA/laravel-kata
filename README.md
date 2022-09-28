@@ -4,7 +4,7 @@
     (Generate badges here)
 </p>
 
-## About Laravel Karate
+## About Laravel Kata
 The greatest collection of bad code to be used as training. 
 
 ### Concepts
@@ -12,8 +12,10 @@ The greatest collection of bad code to be used as training.
 - Expose common mistakes
 - Playground for theorycrafting
 
-## Katas
-Story about what is a kata or just link to [The Karate Kid (Official Trailer)](https://www.youtube.com/watch?v=r_8Rw16uscg)
+## Katas - [Introduction video](https://www.youtube.com/watch?v=r_8Rw16uscg)
+Katas are code challenges focused on improving skill and technique. Some train programming fundamentals, while others focus on complex problem solving. Some are puzzles meant to test your creative problem solving, while others are based on real world coding scenarios.
+
+The term was first coined by Dave Thomas, co-author of the book The Pragmatic Programmer as an acknowledgment to the Japanese concept of kata in the martial arts. Dave's version of the concept defines a code kata as an exercise in programming which helps a programmer sharpen their skills through practice and repetition.
 
 ### Current 
 - Native PHP (draft)
