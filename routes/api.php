@@ -24,8 +24,23 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get('/kata', function (Request $request) {
+    $maxIterations = $request->get('max-iterations', 100);
+
+    /** @var KataRunner $kataRunner */
+    $kataRunner = app(KataRunner::class, [
+        'command' => null,
+        'maxIterations' => $maxIterations,
+        'mode' => 'all'
+    ]);
+
+    $results = $kataRunner->run();
+
+    return JsonResource::make($results);
+});
+
 Route::get('/kata/before', function (Request $request) {
-    $maxIterations = $request->get('max-iterations', 1000);
+    $maxIterations = $request->get('max-iterations', 100);
 
     /** @var KataRunner $kataRunner */
     $kataRunner = app(KataRunner::class, [
@@ -40,7 +55,7 @@ Route::get('/kata/before', function (Request $request) {
 });
 
 Route::get('/kata/after', function (Request $request) {
-    $maxIterations = $request->get('max-iterations', 1000);
+    $maxIterations = $request->get('max-iterations', 100);
 
     // sleep(1);
 

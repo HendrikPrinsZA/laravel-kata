@@ -4,6 +4,7 @@ namespace App\Kata;
 
 use App\Kata\Challenges\ChallengeKataEloquent;
 use App\Kata\Challenges\ChallengeKataPhp;
+use App\Kata\Challenges\ChallengeKataSample;
 use Clockwork\Request\Timeline\Event;
 use Exception;
 use Illuminate\Console\Command;
@@ -16,6 +17,7 @@ class KataRunner
     protected const CHALLENGE_SUFFIX = 'Attempt1';
 
     protected array $kataChallenges = [
+        ChallengeKataSample::class,
         ChallengeKataEloquent::class,
         ChallengeKataPhp::class,
     ];
@@ -145,10 +147,12 @@ class KataRunner
             'method' => $method,
             'before' => [
                 'outputMd5' => $outputBeforeMd5,
+                // 'output' => json_encode($outputBefore),
                 'duration' => $eventBeforeDuration
             ],
             'after' => [
                 'outputMd5' => $outputAfterMd5,
+                // 'output' => json_encode($outputAfter),
                 'duration' => $eventAfterDuration
             ],
         ];
