@@ -5,7 +5,7 @@ namespace App\Kata\Challenges;
 use App\Kata\KataChallenge;
 use App\Models\User;
 
-class ChallengeKataEloquent extends KataChallenge
+class KataChallengeEloquent extends KataChallenge
 {
     /**
      * Eloquent aggregates / Average

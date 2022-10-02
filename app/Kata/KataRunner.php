@@ -2,34 +2,55 @@
 
 namespace App\Kata;
 
-use App\Kata\Challenges\ChallengeKataEloquent;
-use App\Kata\Challenges\ChallengeKataPhp;
-use App\Kata\Challenges\ChallengeKataSample;
-use Clockwork\Request\Timeline\Event;
+use App\Kata\Challenges\KataChallengeEloquent;
+use App\Kata\Challenges\KataChallengePhp;
+use App\Kata\Challenges\KataChallengeSample;
+use App\Kata\Enums\KataRunnerIterationMode;
+use App\Kata\Enums\KataRunnerMode;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 use ReflectionClass;
 use ReflectionMethod;
+use Symfony\Component\Console\Helper\ProgressBar;
 
 class KataRunner
 {
-    protected const CHALLENGE_SUFFIX = 'Attempt1';
+    protected const CHALLENGE_SUFFIX = 'Attempt';
 
-    protected array $kataChallenges = [
-        ChallengeKataSample::class,
-        ChallengeKataEloquent::class,
-        ChallengeKataPhp::class,
+    protected const DEFAULT_MODES = [
+        KataRunnerMode::BEFORE,
+        KataRunnerMode::ATTEMPT,
     ];
 
-    public function __construct(
-        protected ?Command $command,
-        protected ?int $maxIterations,
-        protected ?string $mode = null
-    ) {
-        if (!isset($this->mode)) {
-            $this->mode = $this->command?->option('mode') ?? 'all';
+    protected const DEFAULT_ITERATION_MODES = [
+        KataRunnerIterationMode::MAX_ITERATIONS,
+        KataRunnerIterationMode::MAX_SECONDS,
+    ];
+
+    protected array $modes;
+
+    protected array $iterationModes;
+
+    protected array $kataChallenges = [
+        KataChallengeSample::class,
+        KataChallengeEloquent::class,
+        KataChallengePhp::class,
+    ];
+
+    public function __construct(protected ?Command $command)
+    {
+        $mode = $this->command?->option('mode') ?? null;
+
+        if ($mode === 'all') {
+            $mode = null;
         }
+
+        $this->modes = $mode === null
+            ? self::DEFAULT_MODES
+            : [KataRunnerMode::from($mode)];
+
+        $this->iterationModes = self::DEFAULT_ITERATION_MODES;
     }
 
     public function run(): Collection
@@ -38,17 +59,72 @@ class KataRunner
 
         foreach ($this->kataChallenges as $kataChallenge) {
             $results->push([
-                'kataChallenge' => $kataChallenge,
+                'class' => $kataChallenge,
                 'results' => $this->handleChallenge($kataChallenge)
             ]);
         }
 
+        $this->report($results);
+
         return $results;
     }
 
-    protected function handleChallenge(string $kataChallenge): Collection
+    protected function report(Collection $results): void
     {
-        $results = collect();
+        $rows = [];
+        foreach ($results as $result) {
+            $classResults = $result['results'];
+
+            foreach ($classResults as $method => $classResult) {
+                // TODO: Move to filter before
+                // - Something bad with dynamic class methods
+                if (!$classResult) { continue; }
+
+                $beforeDuration = round($classResult['before']['max-iterations']['duration']);
+                $attemptDuration = round($classResult['attempt']['max-iterations']['duration']);
+
+                $beforeIterations = $classResult['before']['max-seconds']['outputs_count'];
+                $attemptIterations = $classResult['attempt']['max-seconds']['outputs_count'];
+
+                $beforeMd5 = $classResult['before']['max-iterations']['outputs_md5'];
+                $attemptMd5 = $classResult['attempt']['max-iterations']['outputs_md5'];
+
+                $classParts = explode('\\', $result['class']);
+                $className = array_pop($classParts);
+
+                $rows[] = [
+                    $className,
+                    $method,
+                    sprintf("%s\n%s", "before", "attempt"),
+                    sprintf("%s\n%s", $beforeDuration,
+                        $this->wrapInFormat($attemptDuration, $attemptDuration < $beforeDuration)
+                    ),
+                    sprintf("%s\n%s", $beforeIterations,
+                        $this->wrapInFormat($attemptIterations, $attemptIterations > $beforeIterations)
+                    ),
+                    sprintf("%s\n%s", $beforeMd5,
+                        $this->wrapInFormat($attemptMd5, $attemptMd5 === $beforeMd5)
+                    ),
+                ];
+
+                // Blank row to split
+                $rows[] = [''];
+            }
+        }
+
+        $this->command->table([
+            'Challenge',
+            'Method',
+            'Run',
+            'Duration',
+            'Iterations',
+            'Output md5'
+        ], $rows);
+    }
+
+    protected function handleChallenge(string $kataChallenge): array
+    {
+        $return = [];
         $kataChallengeReflection = new ReflectionClass($kataChallenge);
 
         /** @var ReflectionMethod $reflectionMethod */
@@ -57,10 +133,10 @@ class KataRunner
                 continue;
             }
 
-            $results->push($this->handleChallengeMethod($reflectionMethod));
+            $return[$reflectionMethod->name] = $this->handleChallengeMethod($reflectionMethod);
         }
 
-        return $results;
+        return $return;
     }
 
     /**
@@ -77,123 +153,138 @@ class KataRunner
      */
     protected function handleChallengeMethod(ReflectionMethod $reflectionMethod): array|bool
     {
-        $docComment = $reflectionMethod->getDocComment();
-        $docComment = collect(explode("\n", $docComment))
-            ->map(fn($line) => trim($line))
-            ->splice(1, -1)
-            ->map(fn($line) => str_replace('* ', '', $line))
-            ->join("\n");
-
-        $classParts = explode('\\', $reflectionMethod->class);
-        $className = array_pop($classParts);
-        $method = sprintf('%s->%s()', $className, $reflectionMethod->name);
-
-        // initialize
-        $outputBefore = null;
-        $outputBeforeMd5 = '';
-        $eventBeforeDuration = 0;
-        $outputAfter = null;
-        $outputAfterMd5 = '';
-        $eventAfterDuration = 0;
-
-        if ($this->mode !== 'after') {
-            /** @var Event $eventBefore */
-            $eventBefore = clock()->event(sprintf('%s:before', $method))->color('green')->begin();
-            $outputBefore = $this->runChallengeMethod($reflectionMethod);
-            $eventBefore->end();
-
-            $outputBeforeMd5 = md5(json_encode($outputBefore));
-            $eventBeforeDuration = round($eventBefore?->duration() ?? 0, 2);
+        // What, why?
+        if ($reflectionMethod->class === KataChallenge::class) {
+            return false;
         }
 
-        if ($this->mode !== 'before') {
-            /** @var Event $eventAfter */
-            $eventAfter = clock()->event(sprintf('%s:after', $method))->color('green')->begin();
-            $outputAfter = $this->runChallengeMethod($reflectionMethod, 'after');
-            $eventAfter->end();
-
-            $outputAfterMd5 = md5(json_encode($outputAfter));
-            $eventAfterDuration = round($eventAfter?->duration() ?? 0, 2);
+        $outputs = [];
+        foreach ($this->modes as $mode) {
+            $outputs[$mode->value] = $this->runChallengeMethod($reflectionMethod, $mode);
         }
 
-        $this->command?->table([
-            'Key', 'Value'
-        ], [
-            [ 'Method', $method ],
-            [ 'Path', help_me_code($reflectionMethod) ],
-            [ 'Doc Comment', $docComment ],
-            [ 'Before / Output (md5)',  $outputBeforeMd5],
-            [ 'Before / Duration (ms)', $eventBeforeDuration ],
-            [ 'After / Output (md5)', $this->wrap_in_format($outputAfterMd5, $outputAfterMd5 === $outputBeforeMd5) ],
-            [ 'After / Duration (ms)', $this->wrap_in_format($eventAfterDuration, $eventAfterDuration < $eventBeforeDuration) ],
-        ]);
-
-        if ($outputBeforeMd5 !== $outputAfterMd5) {
-            $this->command?->warn(sprintf(
-                'Expected output md5 of "%s", but found: "%s"',
-                $outputBeforeMd5,
-                $outputAfterMd5
-            ));
-        }
-
-        if ($eventAfterDuration >= $eventBeforeDuration) {
-            $this->command?->warn(sprintf(
-                'Slower by %s ms',
-                $eventAfterDuration - $eventBeforeDuration,
-            ));
-        }
-
-        return [
-            'method' => $method,
-            'before' => [
-                'outputMd5' => $outputBeforeMd5,
-                // 'output' => json_encode($outputBefore),
-                'duration' => $eventBeforeDuration
-            ],
-            'after' => [
-                'outputMd5' => $outputAfterMd5,
-                // 'output' => json_encode($outputAfter),
-                'duration' => $eventAfterDuration
-            ],
-        ];
+        return $outputs;
     }
 
-    protected function wrap_in_format(string $string, bool $success): string {
-        return $success
-            ? sprintf('<fg=green>%s</>', $string)
-            : sprintf('<fg=red>%s</>', $string);
-
-        $el = $success
-            ? 'info'
-            : 'warn';
-
-        return sprintf('<%s>%s</%s>', $el, $string, $el);
-    }
-
-    protected function runChallengeMethod(ReflectionMethod $reflectionMethod, string $mode = 'before'): array
+    protected function runChallengeMethod(ReflectionMethod $reflectionMethod, KataRunnerMode $mode): array
     {
-        if (!in_array($mode, ['before', 'after'])) {
-            throw new Exception(sprintf('Unexpected mode "%s"', $mode));
-        }
-
         $targetClass = $reflectionMethod->class;
-        if ($mode === 'after') {
+        if ($mode === KataRunnerMode::ATTEMPT) {
             $classParts = explode('\\', $reflectionMethod->class);
             $className = sprintf('%s%s', array_pop($classParts), self::CHALLENGE_SUFFIX);
             array_push($classParts, $className);
             $targetClass = implode('\\', $classParts);
+
+            // Change reflection method based on the mode
+            $reflectionClass = new ReflectionClass($targetClass);
+            $reflectionMethod = $reflectionClass->getMethod($reflectionMethod->name);
         }
 
         if (!class_exists($targetClass)) {
             throw new Exception(sprintf('Class not found %s', $targetClass));
         }
 
-        $outputs = [];
-        $limit = $this->maxIterations;
-        $bar = $this->command?->getOutput()->createProgressBar($limit);
+        // Instantiate for the following reasons
+        // - Warm up the reference/op caching
+        // - Get the max iterations & seconds
+        $instance = app($targetClass);
+        $maxIterations = $instance->getMaxIterations();
+        $maxSeconds = $instance->getMaxSeconds();
+        $instance = null;
 
-        foreach (range(1, $limit) as $i) {
-            $instance = app($targetClass);
+        $minOutputs = null;
+        $return = [];
+        foreach ($this->iterationModes as $iterationMode) {
+            $challengeOutputs = $this->runChallengeMethodMaxMode(
+                $reflectionMethod,
+                $iterationMode,
+                $maxIterations,
+                $maxSeconds,
+            );
+
+            // Exception: If zero, should fail!
+            if ($minOutputs === 0) {
+                throw new Exception(sprintf(
+                    'Unexpected empty outputs from %s->%s()',
+                    $reflectionMethod->class,
+                    $reflectionMethod->name,
+                ));
+            }
+
+            $return[$iterationMode->value] = [
+                'outputs' => $challengeOutputs['outputs'],
+                'event' => $challengeOutputs['event'],
+                'minOutputs' => $minOutputs
+            ];
+        }
+
+        // Loop again to separate the concerns
+        foreach ($this->iterationModes as $iterationMode) {
+            // $iterationModeReturn = $return[$iterationMode->value];
+            $return[$iterationMode->value]['outputs_count'] = count($return[$iterationMode->value]['outputs']);
+            $return[$iterationMode->value]['outputs_md5'] = md5(json_encode($return[$iterationMode->value]['outputs']));
+            $return[$iterationMode->value]['duration'] = $return[$iterationMode->value]['event']->duration();
+
+            // Unset expensive keys
+            unset($return[$iterationMode->value]['outputs']);
+
+            // Debugging
+            // if (count($return[$iterationMode->value]['outputs']) > 15) {
+            //     $return[$iterationMode->value]['outputs'] = array_splice($return[$iterationMode->value]['outputs'], 0, 15);
+            //     $return[$iterationMode->value]['outputs'][] = 'Has more...';
+            // }
+        }
+
+        return $return;
+    }
+
+    protected function runChallengeMethodMaxMode(
+        ReflectionMethod $reflectionMethod,
+        KataRunnerIterationMode $kataRunnerIterationMode,
+        int $maxIterations,
+        int $maxSeconds,
+    ): array {
+        $event = clock()->event(
+            sprintf('%s->%s() (%s)', $reflectionMethod->class, $reflectionMethod->name, $kataRunnerIterationMode->value)
+        )->color('green')->begin();
+
+        $outputs = null;
+        switch ($kataRunnerIterationMode) {
+            case KataRunnerIterationMode::MAX_ITERATIONS:
+                $outputs = $this->runChallengeMethodMaxIterations(
+                    $reflectionMethod,
+                    $maxIterations
+                );
+                break;
+            case KataRunnerIterationMode::MAX_SECONDS:
+                $outputs = $this->runChallengeMethodMaxSeconds(
+                    $reflectionMethod,
+                    $maxSeconds
+                );
+                break;
+            default:
+                throw new Exception(sprintf(
+                    'Unexpected kata run iteration mode of "%s"',
+                    $kataRunnerIterationMode->value
+                ));
+        }
+
+        $event->end();
+
+        return [
+            'event' => &$event,
+            'outputs' => $outputs
+        ];
+    }
+
+    protected function runChallengeMethodMaxIterations(
+        ReflectionMethod $reflectionMethod,
+        int $maxIterations
+    ): array {
+        $outputs = [];
+        $bar = $this->command?->getOutput()->createProgressBar($maxIterations);
+        foreach (range(1, $maxIterations) as $i) {
+            $instance = app($reflectionMethod->class);
             $outputs[] = $instance->{$reflectionMethod->name}($i);
             $bar?->advance();
 
@@ -203,5 +294,45 @@ class KataRunner
         $bar?->finish();
         $this->command?->newLine();
         return $outputs;
+    }
+
+    protected function runChallengeMethodMaxSeconds(
+        ReflectionMethod $reflectionMethod,
+        int $maxSeconds
+    ): array {
+        $msMax = $maxSeconds * 1000;
+        $dateTimeEnd = now()->addMilliseconds($msMax);
+        $outputs = [];
+
+        /** @var ProgressBar $bar */
+        $bar = $this->command?->getOutput()->createProgressBar($msMax);
+
+        $counter = 0;
+        do {
+            $msLeft = now()->diffInMilliseconds($dateTimeEnd, false);
+
+            $counter++;
+            $instance = app($reflectionMethod->class);
+            $outputs[] = $instance->{$reflectionMethod->name}($counter);
+            $instance = null;
+
+            $bar?->setProgress($msMax - $msLeft);
+        } while ($msLeft > 0);
+
+        $bar?->finish();
+        $this->command?->newLine();
+        return $outputs;
+    }
+
+    protected function wrapInFormat(string $string, bool $success): string {
+        return $success
+            ? sprintf('<fg=green>%s</>', $string)
+            : sprintf('<fg=red>%s</>', $string);
+
+        $el = $success
+            ? 'info'
+            : 'warn';
+
+        return sprintf('<%s>%s</%s>', $el, $string, $el);
     }
 }
