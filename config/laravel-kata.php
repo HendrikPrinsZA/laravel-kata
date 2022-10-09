@@ -6,4 +6,5 @@ return [
     'save-outputs' => false,
     'show-hints' => false,
     'show-extended-scores' => true,
+    'show-code-snippets' => true,
 ];

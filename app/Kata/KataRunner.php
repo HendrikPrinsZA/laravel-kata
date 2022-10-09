@@ -180,11 +180,17 @@ class KataRunner
                     $reportText,
                 ];
 
-                $this->command->info(sprintf(
-                    '### %s->%s()',
-                    $reportData['class'],
-                    $reportData['method'],
-                ));
+                if (config('laravel-kata.show-code-snippets')) {
+                    $this->command->table([
+                        'Before',
+                        'Attempt',
+                    ], [
+                        [
+                            $resultBefore->getCodeSnippet(),
+                            $resultAttempt->getCodeSnippet(),
+                        ],
+                    ]);
+                }
 
                 $this->command->table($headers, [
                     $row,

@@ -18,6 +18,37 @@ class KataChallengeResultObject extends JsonResource
         parent::__construct($result);
     }
 
+    public function getCodeSnippet(): string
+    {
+        $fileName = $this->reflectionMethod->getFileName();
+        $startLine = $this->reflectionMethod->getStartLine() - 1;
+        $endLine = $this->reflectionMethod->getEndLine();
+        $length = $endLine - $startLine;
+        $lines = file($fileName);
+
+        return collect(array_slice($lines, $startLine, $length))
+            ->map(fn ($line) => substr($line, 4))
+            ->join('');
+    }
+
+    public function getCodeSnippetLong(): string
+    {
+        $startLine = $this->reflectionMethod->getStartLine() - 1;
+        $endLine = $this->reflectionMethod->getEndLine();
+        $length = $endLine - $startLine;
+        $lines = file($this->reflectionMethod->getFileName());
+
+        $methodBody = collect(array_slice($lines, $startLine, $length))
+            ->join('');
+
+        return collect(array_merge([
+            '<?php',
+            sprintf('class %s {', $this->getClassName()),
+            $methodBody,
+            '}',
+        ]))->join("\n");
+    }
+
     public function getReflectionMethod(): ReflectionMethod
     {
         return $this->reflectionMethod;
