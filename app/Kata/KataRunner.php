@@ -22,11 +22,11 @@ class KataRunner
 {
     use HasExitHintsTrait;
 
-    protected const CHALLENGE_SUFFIX = 'Attempt';
+    protected const CHALLENGE_SUFFIX = 'Record';
 
     protected const DEFAULT_MODES = [
         KataRunnerMode::BEFORE,
-        KataRunnerMode::ATTEMPT,
+        KataRunnerMode::RECORD,
     ];
 
     protected const DEFAULT_ITERATION_MODES = [
@@ -92,9 +92,9 @@ class KataRunner
             'Field',
             'Report',
             'Stats (Before)',
-            'Stats (Attempt)',
+            'Stats (Record)',
             'Score (Before)',
-            'Score (Attempt)',
+            'Score (Record)',
             'Field',
         ] : [
             'Field',
@@ -110,36 +110,36 @@ class KataRunner
                 /** @var KataChallengeResultObject $resultBefore */
                 $resultBefore = $methodResult[KataRunnerMode::BEFORE->value];
 
-                /** @var KataChallengeResultObject $resultAttempt */
-                $resultAttempt = $methodResult[KataRunnerMode::ATTEMPT->value];
+                /** @var KataChallengeResultObject $resultRecord */
+                $resultRecord = $methodResult[KataRunnerMode::RECORD->value];
 
-                $reportData = $this->getReportData($resultBefore, $resultAttempt);
+                $reportData = $this->getReportData($resultBefore, $resultRecord);
 
                 $reportText = implode("\n", [
                     sprintf(
                         '%s (%s)',
-                        $reportData['stats']['attempt']['line_count'],
+                        $reportData['stats']['record']['line_count'],
                         $reportData['stats']['before']['line_count']
                     ),
                     sprintf(
                         '%s (%s)',
-                        count($reportData['stats']['attempt']['violations']),
+                        count($reportData['stats']['record']['violations']),
                         count($reportData['stats']['before']['violations'])
                     ),
                     sprintf(
                         '%s (%s)',
-                        round($reportData['stats']['attempt']['duration'], 2),
+                        round($reportData['stats']['record']['duration'], 2),
                         round($reportData['stats']['before']['duration'], 2)
                     ),
                     sprintf(
                         '%s (%s)',
-                        $reportData['stats']['attempt']['iterations'],
+                        $reportData['stats']['record']['iterations'],
                         $reportData['stats']['before']['iterations']
                     ),
                     sprintf(
                         '%s (%s)',
-                        $this->wrapInFormat(round($reportData['stats']['attempt']['scores']['total'], 2),
-                            $reportData['stats']['attempt']['scores']['total'] < $reportData['stats']['before']['scores']['total']
+                        $this->wrapInFormat(round($reportData['stats']['record']['scores']['total'], 2),
+                            $reportData['stats']['record']['scores']['total'] < $reportData['stats']['before']['scores']['total']
                         ),
                         round($reportData['stats']['before']['scores']['total'], 2)
                     ),
@@ -153,15 +153,15 @@ class KataRunner
                 ];
 
                 $linesBefore = [];
-                $linesAttempt = [];
+                $linesRecord = [];
                 foreach ($keys as $key) {
                     $linesBefore[] = $reportData['stats']['before']['scores'][$key];
-                    $linesAttempt[] = $reportData['stats']['attempt']['scores'][$key];
+                    $linesRecord[] = $reportData['stats']['record']['scores'][$key];
                 }
                 $linesBefore[] = $reportData['stats']['before']['scores']['total'];
-                $linesAttempt[] = $reportData['stats']['attempt']['scores']['total'];
+                $linesRecord[] = $reportData['stats']['record']['scores']['total'];
                 $scoresBeforeText = implode("\n", $linesBefore);
-                $scoresAttemptText = implode("\n", $linesAttempt);
+                $scoresRecordText = implode("\n", $linesRecord);
 
                 $keys[] = 'score';
 
@@ -171,9 +171,9 @@ class KataRunner
                     $keysLookup,
                     $reportText,
                     $resultBefore->getStatsAsText(),
-                    $resultAttempt->getStatsAsText(),
+                    $resultRecord->getStatsAsText(),
                     $scoresBeforeText,
-                    $scoresAttemptText,
+                    $scoresRecordText,
                     $keysLookup,
                 ] : [
                     $keysLookup,
@@ -181,14 +181,14 @@ class KataRunner
                 ];
 
                 if (config('laravel-kata.show-code-snippets')) {
-                    $this->command->info(sprintf('### %s', help_me_code($resultAttempt->getReflectionMethod())));
+                    $this->command->info(sprintf('### %s', help_me_code($resultRecord->getReflectionMethod())));
                     $this->command->table([
                         'Before',
-                        'Attempt',
+                        'Record',
                     ], [
                         [
                             $resultBefore->getCodeSnippet(),
-                            $resultAttempt->getCodeSnippet(),
+                            $resultRecord->getCodeSnippet(),
                         ],
                     ]);
                 }
@@ -220,7 +220,7 @@ class KataRunner
     protected function calculateScores(
         array $statsBaseline,
         array &$statsBefore,
-        array &$statsAttempt
+        array &$statsRecord
     ): float {
         $statsBefore['scores'] = [
             'line_count' => percentage_change(
@@ -243,23 +243,23 @@ class KataRunner
             ),
         ];
 
-        $statsAttempt['scores'] = [
+        $statsRecord['scores'] = [
             'line_count' => percentage_change(
                 $statsBaseline['line_count'],
-                $statsAttempt['line_count']
+                $statsRecord['line_count']
             ),
             'violations' => percentage_change(
                 5,
-                count($statsAttempt['violations']),
+                count($statsRecord['violations']),
                 true
             ),
             'duration' => percentage_change(
                 $statsBaseline['duration'],
-                $statsAttempt['duration']
+                $statsRecord['duration']
             ),
             'iterations' => percentage_change(
                 $statsBaseline['iterations'],
-                $statsAttempt['iterations'],
+                $statsRecord['iterations'],
                 true
             ),
         ];
@@ -271,19 +271,19 @@ class KataRunner
             $statsBefore['scores']['iterations'] * 0.45,
         ]);
 
-        $statsAttempt['scores']['total'] = array_sum([
-            $statsAttempt['scores']['line_count'] * 0.05,
-            $statsAttempt['scores']['violations'] * 0.05,
-            $statsAttempt['scores']['duration'] * 0.45,
-            $statsAttempt['scores']['iterations'] * 0.45,
+        $statsRecord['scores']['total'] = array_sum([
+            $statsRecord['scores']['line_count'] * 0.05,
+            $statsRecord['scores']['violations'] * 0.05,
+            $statsRecord['scores']['duration'] * 0.45,
+            $statsRecord['scores']['iterations'] * 0.45,
         ]);
 
-        return $statsAttempt['scores']['total'];
+        return $statsRecord['scores']['total'];
     }
 
     protected function getReportData(
         KataChallengeResultObject $resultBefore,
-        KataChallengeResultObject $resultAttempt,
+        KataChallengeResultObject $resultRecord,
     ): array {
         // Get the baseline stats once only
         $baselineMethod = $resultBefore->getBaselineReflectionMethod();
@@ -296,12 +296,12 @@ class KataRunner
 
         // Get stats
         $statsBefore = $resultBefore->getStats();
-        $statsAttempt = $resultAttempt->getStats();
+        $statsRecord = $resultRecord->getStats();
 
         $score = $this->calculateScores(
             $statsBaseline,
             $statsBefore,
-            $statsAttempt
+            $statsRecord
         );
 
         $className = $resultBefore->getClassName();
@@ -315,7 +315,7 @@ class KataRunner
             'stats' => [
                 'baseline' => $statsBaseline,
                 'before' => $statsBefore,
-                'attempt' => $statsAttempt,
+                'record' => $statsRecord,
             ],
         ];
 
@@ -334,7 +334,7 @@ class KataRunner
         $combined = array_merge(
             $statsBaseline['violations'],
             $statsBefore['violations'],
-            $statsAttempt['violations']
+            $statsRecord['violations']
         );
 
         if (!empty($combined)) {
@@ -413,7 +413,7 @@ class KataRunner
         KataRunnerMode $mode = KataRunnerMode::BEFORE
     ): KataChallengeResultObject {
         $targetClass = $reflectionMethod->class;
-        if ($mode === KataRunnerMode::ATTEMPT) {
+        if ($mode === KataRunnerMode::RECORD) {
             $classParts = explode('\\', $reflectionMethod->class);
             $className = sprintf('%s%s', array_pop($classParts), self::CHALLENGE_SUFFIX);
             array_push($classParts, $className);
