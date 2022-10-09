@@ -120,3 +120,21 @@ The Laravel framework is open-sourced software licensed under the [MIT license](
   - Counter on lines of changes on file vs improvement from before (how?)
     - Maybe percentage of changes V/S % increase
 - Automatically generate the README by sections
+- Scoring mechanism
+  - Generate environmental baseline
+  - Rules:
+    - Outputs md5 need to match
+  - Score breakdown:
+    - 10%: Complexity (check reflection or linting)
+    - 30%: Duration (based on max iterations) 
+    - 30%: Iterations (based on max seconds)
+    - 30%: Memory usage (80% duration + 20% iterations)
+  - Create baseline score metrics
+    - Simple void function
+    - Duration (diff) = duration - baseline duration 
+    - Iterations (diff) = baseline iterations - iterations
+  - Anonymous cloud service 
+    - `[GET] https://laravel-kata.com/join`
+        - `{'url': 'https://laravel-kata.com/instance/123', 'uid': 'XYZ001'}`
+    - `[GET] https://laravel-kata.com/join?uid=XYZ001`
+    - `[GET] https://laravel-kata.com/claim?uid=XYZ001` -> `https://github.com/login?client_id=X..`

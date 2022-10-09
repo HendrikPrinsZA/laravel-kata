@@ -2,16 +2,10 @@
 
 namespace App\Kata;
 
-abstract class KataChallenge
+class KataChallenge implements KataChallengeInterface
 {
-    /**
-     * Override the default maximum seconds
-     */
     protected int $maxSeconds;
 
-    /**
-     * Override the default maximum iterations
-     */
     protected int $maxIterations;
 
     public function __construct()
@@ -33,5 +27,9 @@ abstract class KataChallenge
     public function getMaxIterations(): int
     {
         return $this->maxIterations;
+    }
+
+    public function baseline(): void {
+        // Want at least 1 line, even if it is just a comment
     }
 }
