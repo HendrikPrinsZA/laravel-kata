@@ -6,9 +6,6 @@ use App\Kata\KataChallenge;
 
 class KataChallengeSample extends KataChallenge
 {
-    protected int $maxSeconds = 3;
-    protected int $maxIterations = 100;
-
     // Fast debugging
     // protected int $maxSeconds = 1;
     // protected int $maxIterations = 10;

@@ -29,5 +29,7 @@ class KataChallenge implements KataChallengeInterface
         return $this->maxIterations;
     }
 
-    public function baseline(): void { }
+    public function baseline(): void {
+        // Want at least 1 line, even if it is just a comment
+    }
 }

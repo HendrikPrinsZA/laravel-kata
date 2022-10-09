@@ -1,7 +1,6 @@
 <?php
 
 return [
-    'precision' => 2,
-    'max_iterations' => 250,
-    'max_seconds' => 3,
+    'max_seconds' => 1,
+    'max_iterations' => 100,
 ];

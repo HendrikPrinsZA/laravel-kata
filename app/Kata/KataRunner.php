@@ -33,12 +33,10 @@ class KataRunner
 
     protected array $iterationModes;
 
-    protected int $defaultPericision;
-
     protected array $kataChallenges = [
         KataChallengeSample::class,
-        // KataChallengeEloquent::class,
-        // KataChallengePhp::class,
+        KataChallengeEloquent::class,
+        KataChallengePhp::class,
     ];
 
     public function __construct(protected ?Command $command)
@@ -54,8 +52,6 @@ class KataRunner
             : [KataRunnerMode::from($mode)];
 
         $this->iterationModes = self::DEFAULT_ITERATION_MODES;
-
-        $this->defaultPericision = config('laravel-kata.precision');
 
         defined('KATA_BASE_MEM_USED') or define('KATA_BASE_MEM_USED', memory_get_usage(true));
     }
@@ -87,10 +83,36 @@ class KataRunner
                 /** @var KataChallengeResultObject $resultAttempt */
                 $resultAttempt = $methodResult[KataRunnerMode::ATTEMPT->value];
 
-                $rows[] = $this->toReportRow($resultBefore, $resultAttempt);
-                continue;
-
-                // Blank row to split
+                $reportData = $this->getReportData($resultBefore, $resultAttempt);
+                $rows[] = [
+                    $reportData['class'],
+                    $reportData['method'],
+                    implode("\n", [
+                        sprintf(
+                            '- line_count: %s (%s)',
+                            $reportData['stats']['attempt']['line_count'],
+                            $reportData['stats']['before']['line_count']
+                        ),
+                        sprintf(
+                            '- duration: %s (%s)',
+                            round($reportData['stats']['attempt']['duration'], 2),
+                            round($reportData['stats']['before']['duration'], 2)
+                        ),
+                        sprintf(
+                            '- iterations: %s (%s)',
+                            $reportData['stats']['attempt']['iterations'],
+                            $reportData['stats']['before']['iterations']
+                        ),
+                        '- - - - - - - - - - - - - - - - - - - - - - -',
+                        sprintf(
+                            '= %s (%s)',
+                            $this->wrapInFormat(round($reportData['stats']['attempt']['scores']['total'], 2),
+                                $reportData['stats']['attempt']['scores']['total'] < $reportData['stats']['before']['scores']['total']
+                            ),
+                            round($reportData['stats']['before']['scores']['total'], 2)
+                        )
+                    ])
+                ];
                 $rows[] = [''];
             }
         }
@@ -98,81 +120,79 @@ class KataRunner
         $this->command->table([
             'Class',
             'Method',
-            'Run',
-            'Duration',
-            'Iterations',
-            'Duration (rel)',
-            'Iterations (rel)',
-            'Output md5'
+            'Report',
         ], $rows);
     }
 
-    // score = (10% lines) + (10% memory) + (40% duration %) + (40% iterations)
-
     /**
-     * Calculate the score, the lower the better
+     * Calculate the score
      *
      * Breakdown
      * - 10%: lines of code
-     * - 10%: memory
-     * - 20%: benchmark
-     * - 30%: total seconds based on max iterations
-     * - 30%: total iterations based on max seconds
+     * - 45%: total seconds based on max iterations
+     * - 45%: total iterations based on max seconds
      *
      * Future:
-     * -
-     * - Include benchmark scores
+     * - Score based on resources (10%)
+     *   - 70%: Memory
+     *   - 30%: CPU
+     * - Include benchmark scores (10%)
      *   - 50%: Max concurrency before max response time threshold
      *   - 50%: Average response time based on X threads (config.max_threads)
-     *   - Maybe 20%
      */
-    protected function getScore(
-        array &$statsBaseline,
+    protected function calculateScores(
+        array $statsBaseline,
         array &$statsBefore,
-        array &$statsAttempt,
-        ?int $precision = null
+        array &$statsAttempt
     ): float {
-        if (is_null($precision)) {
-            $precision = $this->defaultPericision;
-        }
+        $statsBefore['scores'] = [
+            'line_count' => percentage_change(
+                $statsBaseline['line_count'],
+                $statsBefore['line_count']
+            ),
+            'duration' => percentage_change(
+                $statsBaseline['duration'],
+                $statsBefore['duration']
+            ),
+            'iterations' => percentage_change(
+                $statsBaseline['iterations'],
+                $statsBefore['iterations'],
+                true
+            ),
+        ];
 
-        // Score math
-        $scores = [];
+        $statsAttempt['scores'] = [
+            'line_count' => percentage_change(
+                $statsBaseline['line_count'],
+                $statsAttempt['line_count']
+            ),
+            'duration' => percentage_change(
+                $statsBaseline['duration'],
+                $statsAttempt['duration']
+            ),
+            'iterations' => percentage_change(
+                $statsBaseline['iterations'],
+                $statsAttempt['iterations'],
+                true
+            ),
+        ];
 
-        $scores['line_count'] = percentage_difference_fixed(
-            $statsBaseline['line_count'],
-            $statsBefore['line_count'],
-            $statsAttempt['line_count'] == 0
-                ? $statsAttempt['line_count']
-                : 0.00000001
-        );
-
-        // TODO: To be figured out
-        $scores['memory'] = percentage_difference_fixed(0, 100, 100);
-
-        $scores['duration'] = percentage_difference_fixed(
-            $statsBaseline['duration'],
-            $statsBefore['duration'],
-            $statsAttempt['duration']
-        );
-
-        $scores['iterations'] = percentage_difference_fixed(
-            $statsBaseline['iterations'],
-            $statsBefore['iterations'],
-            $statsAttempt['iterations']
-        );
-
-        $score = array_sum([
-            ($scores['line_count'] * 0.1) +
-            ($scores['memory'] * 0.1) +
-            ($scores['duration'] * 0.4) +
-            ($scores['iterations'] * 0.4)
+        $statsBefore['scores']['total'] = array_sum([
+            $statsBefore['scores']['line_count'] * 0.1,
+            $statsBefore['scores']['duration'] * 0.45,
+            $statsBefore['scores']['iterations'] * 0.45
         ]);
 
-        return round($score, $precision);
+        $statsAttempt['scores']['total'] = array_sum([
+            $statsAttempt['scores']['line_count'] * 0.1,
+            $statsAttempt['scores']['duration'] * 0.45,
+            $statsAttempt['scores']['iterations'] * 0.45
+        ]);
+
+        return $statsAttempt['scores']['total'];
     }
 
-    protected function toReportRow(
+    protected function getReportData(
         KataChallengeResultObject $resultBefore,
         KataChallengeResultObject $resultAttempt,
     ): array {
@@ -183,100 +203,21 @@ class KataRunner
         $statsBefore = $resultBefore->getStats();
         $statsAttempt = $resultAttempt->getStats();
 
-        $scoreBaseline = $this->getScore(
-            $statsBaseline,
-            $statsBaseline,
-            $statsBaseline
-        );
-
-        $scoreBefore = $this->getScore(
-            $statsBaseline,
-            $statsBefore,
-            $statsBefore
-        );
-
-        $scoreAttempt = $this->getScore(
+        $score = $this->calculateScores(
             $statsBaseline,
             $statsBefore,
             $statsAttempt
         );
 
-        if ($scoreAttempt > $scoreBaseline) {
-            throw new Exception(sprintf(
-                'Slower than the baseline: %s->%s is slower than %s->%s with %d ms',
-                $resultBefore->getClassName(),
-                $resultBefore->getMethodName(),
-                $resultAttempt->getClassName(),
-                $resultAttempt->getMethodName(),
-                $resultAttempt->getReflectionMethod()->class
-            ));
-        }
-
-        print_r([
-            'scoreBaseline' => $scoreBaseline,
-            'scoreBefore' => $scoreBefore,
-            'scoreAttempt' => $scoreAttempt,
-        ]);
-
         return [
-            'scoreBaseline' => $scoreBaseline,
-            'scoreBefore' => $scoreBefore,
-            'scoreAttempt' => $scoreAttempt,
-        ];
-
-        dd([
-            'score' => $score
-        ]);
-
-        $stats = [
-            'baseline' => $resultBaseline->getStats(),
-            'before' => $resultBefore->getStats(),
-            'attempt' => $resultAttempt->getStats(),
-        ];
-
-
-        dd([
-            'stats' => $stats,
-            'scores' => $scores
-        ]);
-
-        $baselineDuration = $resultBaseline->getDuration();
-        $baselineIterations = $resultBaseline->getIterations();
-
-        $beforeDuration = $resultBefore->getDuration();
-        $attemptDuration = $resultAttempt->getDuration();
-
-        $beforeIterations = $resultBefore->getIterations();
-        $attemptIterations = $resultAttempt->getIterations();
-
-        $beforeMd5 = $resultBefore->getOutputsMd5();
-        $attemptMd5 = $resultBefore->getOutputsMd5();
-
-        // Scale by baseline
-        $beforeDurationRel = $beforeDuration - $baselineDuration;
-        $attemptDurationRel = $attemptDuration - $baselineDuration;
-        $beforeIterationsRel = $baselineIterations - $beforeIterations;
-        $attemptIterationsRel = $baselineIterations - $attemptIterations;
-
-        return [
-            $resultBefore->getClassName(),
-            $resultBefore->getMethodName(),
-            sprintf("%s\n%s", "baseline", "before", "attempt"),
-            sprintf("%s\n%s", $beforeDuration,
-                $this->wrapInFormat($attemptDuration, $attemptDuration < $beforeDuration)
-            ),
-            sprintf("%s\n%s", $beforeDurationRel,
-                $this->wrapInFormat($attemptDurationRel, $attemptDurationRel < $beforeDurationRel)
-            ),
-            sprintf("%s\n%s", $beforeIterations,
-                $this->wrapInFormat($attemptIterations, $attemptIterations > $beforeIterations)
-            ),
-            sprintf("%s\n%s", $beforeIterationsRel,
-                $this->wrapInFormat($attemptIterationsRel, $attemptIterationsRel > $beforeIterationsRel)
-            ),
-            sprintf("%s\n%s", $beforeMd5,
-                $this->wrapInFormat($attemptMd5, $attemptMd5 === $beforeMd5)
-            ),
+            'class' => $resultBefore->getClassName(),
+            'method' => $resultBefore->getMethodName(),
+            'score' => $score,
+            'stats' => [
+                'baseline' => $statsBaseline,
+                'before' => $statsBefore,
+                'attempt' => $statsAttempt
+            ],
         ];
     }
 
