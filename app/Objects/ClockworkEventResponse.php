@@ -2,15 +2,9 @@
 
 namespace App\Objects;
 
-use App\Models\User;
 use Clockwork\Clockwork;
 use Clockwork\Request\Timeline\Event;
-use Clockwork\Storage\Storage;
 use Clockwork\Support\Laravel\ClockworkSupport;
-use Exception;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Storage as FacadesStorage;
 
 class ClockworkEventResponse
 {

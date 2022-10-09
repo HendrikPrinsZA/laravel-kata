@@ -30,7 +30,7 @@ class FiberThread
         return self::registerOG($function, $callable, [
             $instance,
             $function,
-            $params
+            $params,
         ]);
     }
 

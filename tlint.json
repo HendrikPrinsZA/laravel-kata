@@ -1,0 +1,13 @@
+{
+    "exec": "vendor/bin/tlint",
+    "preset": "App\\Support\\Linting\\SupportLintingPreset",
+    "disabled": [
+        "NoInlineVarDocs"
+    ],
+    "excluded": [
+        "tests/"
+    ],
+    "paths": [
+        "app/"
+    ]
+}
