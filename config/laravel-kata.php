@@ -1,6 +1,8 @@
 <?php
 
 return [
-    'max_seconds' => 1,
-    'max_iterations' => 100,
+    'max_seconds' => 3,
+    'max_iterations' => 180,
+    'save_outputs' => false,
+    'show_hints' => false
 ];

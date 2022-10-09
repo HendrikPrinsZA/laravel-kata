@@ -2,21 +2,27 @@
 
 namespace App\Kata;
 
-use App\Kata\Challenges\KataChallengeEloquent;
-use App\Kata\Challenges\KataChallengePhp;
-use App\Kata\Challenges\KataChallengeSample;
-use App\Kata\Enums\KataRunnerIterationMode;
-use App\Kata\Enums\KataRunnerMode;
-use App\Kata\Objects\KataChallengeResultObject;
 use Exception;
-use Illuminate\Console\Command;
-use Illuminate\Support\Collection;
 use ReflectionClass;
 use ReflectionMethod;
+use Illuminate\Support\Str;
+use Illuminate\Console\Command;
+use App\Kata\Enums\KataRunnerMode;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
+use App\Kata\Challenges\KataChallengePhp;
+use App\Kata\Enums\KataRunnerIterationMode;
+use App\Kata\Challenges\KataChallengeSample;
+use App\Kata\Challenges\KataChallengeEloquent;
+use App\Kata\Objects\KataChallengeResultObject;
+use App\Kata\Traits\HasExitHintsTrait;
+use Carbon\Carbon;
 use Symfony\Component\Console\Helper\ProgressBar;
 
 class KataRunner
 {
+    use HasExitHintsTrait;
+
     protected const CHALLENGE_SUFFIX = 'Attempt';
 
     protected const DEFAULT_MODES = [
@@ -33,14 +39,24 @@ class KataRunner
 
     protected array $iterationModes;
 
+    protected array $resultBaselineCache = [];
+
+    protected Carbon $createdAt;
+
+    protected ?Command $command;
+
     protected array $kataChallenges = [
         KataChallengeSample::class,
         KataChallengeEloquent::class,
         KataChallengePhp::class,
     ];
 
-    public function __construct(protected ?Command $command)
+    public function __construct(?Command $command = null)
     {
+        $this->createdAt = now();
+
+        $this->command = $command;
+
         $mode = $this->command?->option('mode') ?? null;
 
         if ($mode === 'all') {
@@ -94,6 +110,11 @@ class KataRunner
                             $reportData['stats']['before']['line_count']
                         ),
                         sprintf(
+                            '- violations: %s (%s)',
+                            count($reportData['stats']['attempt']['violations']),
+                            count($reportData['stats']['before']['violations'])
+                        ),
+                        sprintf(
                             '- duration: %s (%s)',
                             round($reportData['stats']['attempt']['duration'], 2),
                             round($reportData['stats']['before']['duration'], 2)
@@ -128,7 +149,8 @@ class KataRunner
      * Calculate the score
      *
      * Breakdown
-     * - 10%: lines of code
+     * - 5%: code lines
+     * - 5%: code violations
      * - 45%: total seconds based on max iterations
      * - 45%: total iterations based on max seconds
      *
@@ -150,6 +172,11 @@ class KataRunner
                 $statsBaseline['line_count'],
                 $statsBefore['line_count']
             ),
+            'violation_count' => percentage_change(
+                5,
+                count($statsBefore['violations']),
+                true
+            ),
             'duration' => percentage_change(
                 $statsBaseline['duration'],
                 $statsBefore['duration']
@@ -166,6 +193,11 @@ class KataRunner
                 $statsBaseline['line_count'],
                 $statsAttempt['line_count']
             ),
+            'violation_count' => percentage_change(
+                5,
+                count($statsAttempt['violations']),
+                true
+            ),
             'duration' => percentage_change(
                 $statsBaseline['duration'],
                 $statsAttempt['duration']
@@ -178,13 +210,15 @@ class KataRunner
         ];
 
         $statsBefore['scores']['total'] = array_sum([
-            $statsBefore['scores']['line_count'] * 0.1,
+            $statsBefore['scores']['line_count'] * 0.05,
+            $statsBefore['scores']['violation_count'] * 0.05,
             $statsBefore['scores']['duration'] * 0.45,
             $statsBefore['scores']['iterations'] * 0.45
         ]);
 
         $statsAttempt['scores']['total'] = array_sum([
-            $statsAttempt['scores']['line_count'] * 0.1,
+            $statsAttempt['scores']['line_count'] * 0.05,
+            $statsAttempt['scores']['violation_count'] * 0.05,
             $statsAttempt['scores']['duration'] * 0.45,
             $statsAttempt['scores']['iterations'] * 0.45
         ]);
@@ -196,10 +230,16 @@ class KataRunner
         KataChallengeResultObject $resultBefore,
         KataChallengeResultObject $resultAttempt,
     ): array {
-        $resultBaseline = $this->runChallengeMethod($resultBefore->getBaselineReflectionMethod());
+        // Get the baseline stats once only
+        $baselineMethod = $resultBefore->getBaselineReflectionMethod();
+        $cacheKey = sprintf('%s.%s', Str::slug($baselineMethod->class), $baselineMethod->name);
+        if (!isset($this->resultBaselineCache[$cacheKey])) {
+            $resultBaseline = $this->runChallengeMethod($resultBefore->getBaselineReflectionMethod());
+            $this->resultBaselineCache[$cacheKey] = $resultBaseline->getStats();
+        }
+        $statsBaseline = $this->resultBaselineCache[$cacheKey];
 
         // Get stats
-        $statsBaseline = $resultBaseline->getStats();
         $statsBefore = $resultBefore->getStats();
         $statsAttempt = $resultAttempt->getStats();
 
@@ -209,9 +249,13 @@ class KataRunner
             $statsAttempt
         );
 
-        return [
-            'class' => $resultBefore->getClassName(),
-            'method' => $resultBefore->getMethodName(),
+        $className = $resultBefore->getClassName();
+        $methodName = $resultBefore->getMethodName();
+
+        // Save as json output
+        $result = [
+            'class' => $className,
+            'method' => $methodName,
             'score' => $score,
             'stats' => [
                 'baseline' => $statsBaseline,
@@ -219,6 +263,38 @@ class KataRunner
                 'attempt' => $statsAttempt
             ],
         ];
+
+        if (config('laravel-kata.save_outputs')) {
+            $filePath = sprintf(
+                'laravel-kata/%s/result-%s.json',
+                $this->createdAt->format('Ymd-His'),
+                Str::slug(implode(' ', [$className, $methodName])),
+            );
+
+            Storage::disk('local')->put($filePath, json_encode($result));
+            $this->command?->info(sprintf('Saved output to %s', $filePath));
+        }
+
+        // If violations found, pick random and show user -> prompt to confirm
+        $combined = array_merge(
+            $statsBaseline['violations'],
+            $statsBefore['violations'],
+            $statsAttempt['violations']
+        );
+
+        if (!empty($combined)) {
+            $this->addExitHints(collect($combined)->map(function ($violation) {
+                return sprintf(
+                    "### %s (%s)\n%s\n\n%s",
+                    $violation['ruleSet'],
+                    $violation['rule'],
+                    $violation['description'],
+                    $violation['externalInfoUrl'] === '#' ? '' : $violation['externalInfoUrl'],
+                );
+            })->toArray());
+        }
+
+        return $result;
     }
 
     protected function handleChallenge(string $kataChallenge): array
@@ -400,7 +476,7 @@ class KataRunner
             $instance = app($className);
             $methodName = $reflectionMethod->name;
             $bar->setMessage(sprintf(
-                'Running: %s->%s(%d)',
+                '%s->%s(%d) [interations]',
                 $className,
                 $methodName,
                 $i
@@ -427,17 +503,26 @@ class KataRunner
 
         /** @var ProgressBar $bar */
         $bar = $this->command?->getOutput()->createProgressBar($msMax);
+        $bar->setFormat("%message%\n %current%/%max% [%bar%] %percent:3s%%");
 
-        $counter = 0;
+        $i = 0;
         do {
             $msLeft = now()->diffInMilliseconds($dateTimeEnd, false);
 
-            $counter++;
-            $instance = app($reflectionMethod->class);
-            $outputs[] = $instance->{$reflectionMethod->name}($counter);
+            $i++;
+            $className = $reflectionMethod->class;
+            $instance = app($className);
+            $methodName = $reflectionMethod->name;
+            $outputs[] = $instance->{$methodName}($i);
             $instance = null;
 
             $bar?->setProgress($msMax - $msLeft);
+            $bar?->setMessage(sprintf(
+                '%s->%s(%d) [duration]',
+                $className,
+                $methodName,
+                $i
+            ));
         } while ($msLeft > 0);
 
         $bar?->finish();
