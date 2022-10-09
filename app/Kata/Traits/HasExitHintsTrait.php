@@ -19,7 +19,7 @@ trait HasExitHintsTrait
             return;
         }
 
-        if (!config('laravel-kata.show_hints')) {
+        if (!config('laravel-kata.show-hints')) {
             return;
         }
 

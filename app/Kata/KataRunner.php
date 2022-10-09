@@ -86,6 +86,21 @@ class KataRunner
 
     protected function report(Collection $results): void
     {
+        $showExtendedScores = config('laravel-kata.show-extended-scores');
+
+        $headers = $showExtendedScores ? [
+            'Field',
+            'Report',
+            'Stats (Before)',
+            'Stats (Attempt)',
+            'Score (Before)',
+            'Score (Attempt)',
+            'Field',
+        ] : [
+            'Field',
+            'Report',
+        ];
+
         foreach ($results as $methodResults) {
             foreach ($methodResults as $method => $methodResult) {
                 // TODO: Move to filter before
@@ -99,48 +114,89 @@ class KataRunner
                 $resultAttempt = $methodResult[KataRunnerMode::ATTEMPT->value];
 
                 $reportData = $this->getReportData($resultBefore, $resultAttempt);
-                $rows[] = [
-                    $reportData['class'],
-                    $reportData['method'],
-                    implode("\n", [
-                        sprintf(
-                            '- line_count: %s (%s)',
-                            $reportData['stats']['attempt']['line_count'],
-                            $reportData['stats']['before']['line_count']
+
+                $reportText = implode("\n", [
+                    sprintf(
+                        '%s (%s)',
+                        $reportData['stats']['attempt']['line_count'],
+                        $reportData['stats']['before']['line_count']
+                    ),
+                    sprintf(
+                        '%s (%s)',
+                        count($reportData['stats']['attempt']['violations']),
+                        count($reportData['stats']['before']['violations'])
+                    ),
+                    sprintf(
+                        '%s (%s)',
+                        round($reportData['stats']['attempt']['duration'], 2),
+                        round($reportData['stats']['before']['duration'], 2)
+                    ),
+                    sprintf(
+                        '%s (%s)',
+                        $reportData['stats']['attempt']['iterations'],
+                        $reportData['stats']['before']['iterations']
+                    ),
+                    sprintf(
+                        '%s (%s)',
+                        $this->wrapInFormat(round($reportData['stats']['attempt']['scores']['total'], 2),
+                            $reportData['stats']['attempt']['scores']['total'] < $reportData['stats']['before']['scores']['total']
                         ),
-                        sprintf(
-                            '- violations: %s (%s)',
-                            count($reportData['stats']['attempt']['violations']),
-                            count($reportData['stats']['before']['violations'])
-                        ),
-                        sprintf(
-                            '- duration: %s (%s)',
-                            round($reportData['stats']['attempt']['duration'], 2),
-                            round($reportData['stats']['before']['duration'], 2)
-                        ),
-                        sprintf(
-                            '- iterations: %s (%s)',
-                            $reportData['stats']['attempt']['iterations'],
-                            $reportData['stats']['before']['iterations']
-                        ),
-                        sprintf(
-                            '= score: %s (%s)',
-                            $this->wrapInFormat(round($reportData['stats']['attempt']['scores']['total'], 2),
-                                $reportData['stats']['attempt']['scores']['total'] < $reportData['stats']['before']['scores']['total']
-                            ),
-                            round($reportData['stats']['before']['scores']['total'], 2)
-                        ),
-                    ]),
+                        round($reportData['stats']['before']['scores']['total'], 2)
+                    ),
+                ]);
+
+                $keys = [
+                    'line_count',
+                    'violations',
+                    'duration',
+                    'iterations',
                 ];
-                $rows[] = [''];
+
+                $linesBefore = [];
+                $linesAttempt = [];
+                foreach ($keys as $key) {
+                    $linesBefore[] = $reportData['stats']['before']['scores'][$key];
+                    $linesAttempt[] = $reportData['stats']['attempt']['scores'][$key];
+                }
+                $linesBefore[] = $reportData['stats']['before']['scores']['total'];
+                $linesAttempt[] = $reportData['stats']['attempt']['scores']['total'];
+                $scoresBeforeText = implode("\n", $linesBefore);
+                $scoresAttemptText = implode("\n", $linesAttempt);
+
+                $keys[] = 'score';
+
+                $keysLookup = implode("\n", array_values($keys));
+
+                $row = $showExtendedScores ? [
+                    $keysLookup,
+                    $reportText,
+                    $resultBefore->getStatsAsText(),
+                    $resultAttempt->getStatsAsText(),
+                    $scoresBeforeText,
+                    $scoresAttemptText,
+                    $keysLookup,
+                ] : [
+                    $keysLookup,
+                    $reportText,
+                ];
+
+                if (config('laravel-kata.show-code-snippets')) {
+                    $this->command->table([
+                        'Before',
+                        'Attempt',
+                    ], [
+                        [
+                            $resultBefore->getCodeSnippet(),
+                            $resultAttempt->getCodeSnippet(),
+                        ],
+                    ]);
+                }
+
+                $this->command->table($headers, [
+                    $row,
+                ]);
             }
         }
-
-        $this->command->table([
-            'Class',
-            'Method',
-            'Report',
-        ], $rows);
     }
 
     /**
@@ -170,7 +226,7 @@ class KataRunner
                 $statsBaseline['line_count'],
                 $statsBefore['line_count']
             ),
-            'violation_count' => percentage_change(
+            'violations' => percentage_change(
                 5,
                 count($statsBefore['violations']),
                 true
@@ -191,7 +247,7 @@ class KataRunner
                 $statsBaseline['line_count'],
                 $statsAttempt['line_count']
             ),
-            'violation_count' => percentage_change(
+            'violations' => percentage_change(
                 5,
                 count($statsAttempt['violations']),
                 true
@@ -209,14 +265,14 @@ class KataRunner
 
         $statsBefore['scores']['total'] = array_sum([
             $statsBefore['scores']['line_count'] * 0.05,
-            $statsBefore['scores']['violation_count'] * 0.05,
+            $statsBefore['scores']['violations'] * 0.05,
             $statsBefore['scores']['duration'] * 0.45,
             $statsBefore['scores']['iterations'] * 0.45,
         ]);
 
         $statsAttempt['scores']['total'] = array_sum([
             $statsAttempt['scores']['line_count'] * 0.05,
-            $statsAttempt['scores']['violation_count'] * 0.05,
+            $statsAttempt['scores']['violations'] * 0.05,
             $statsAttempt['scores']['duration'] * 0.45,
             $statsAttempt['scores']['iterations'] * 0.45,
         ]);
@@ -262,7 +318,7 @@ class KataRunner
             ],
         ];
 
-        if (config('laravel-kata.save_outputs')) {
+        if (config('laravel-kata.save-outputs')) {
             $filePath = sprintf(
                 'laravel-kata/%s/result-%s.json',
                 $this->createdAt->format('Ymd-His'),
