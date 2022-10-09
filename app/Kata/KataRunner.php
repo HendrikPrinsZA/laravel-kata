@@ -181,6 +181,7 @@ class KataRunner
                 ];
 
                 if (config('laravel-kata.show-code-snippets')) {
+                    $this->command->info(sprintf('### %s', help_me_code($resultAttempt->getReflectionMethod())));
                     $this->command->table([
                         'Before',
                         'Attempt',
