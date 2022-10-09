@@ -6,6 +6,8 @@ use App\Kata\Enums\KataRunnerIterationMode;
 use Illuminate\Http\Resources\Json\JsonResource;
 use ReflectionClass;
 use ReflectionMethod;
+use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Process;
 
 class KataChallengeResultObject extends JsonResource
 {
@@ -27,12 +29,41 @@ class KataChallengeResultObject extends JsonResource
         return $reflectionClass->getMethod('baseline');
     }
 
+    protected function getViolations(): array
+    {
+        $process = new Process([
+            'bin/complexity.sh',
+            $this->reflectionMethod->getFileName()
+        ]);
+
+        $process->run();
+
+        if (
+            !$process->isSuccessful() &&
+            $process->getExitCode() !== 2 // [ignore] Exit Code: 2 (Misuse of shell builtins)
+        ) {
+            throw new ProcessFailedException($process);
+        }
+
+        $output = json_decode($process->getOutput(), true);
+
+        $violations = collect();
+        foreach ($output['files'] as $file) {
+            foreach ($file['violations'] as $violation) {
+                $violations->push($violation);
+            }
+        }
+
+        return $violations->toArray();
+    }
+
     public function getStats(): array
     {
         return [
             'duration' => $this->getDuration(),
             'iterations' => $this->getIterations(),
             'outputs_md5' => $this->getOutputsMd5(),
+            'violations' => $this->getViolations(),
             'line_count' => $this->reflectionMethod->getEndLine() - $this->reflectionMethod->getStartLine()
         ];
     }

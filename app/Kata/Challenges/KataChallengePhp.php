@@ -6,14 +6,16 @@ use App\Kata\KataChallenge;
 
 class KataChallengePhp extends KataChallenge
 {
-    protected int $maxIterations = 1000;
+    protected int $maxIterations = 500;
+
+    public function baseline(): void { }
 
     /**
      * Never Use Count or Any Other Methods in The Condition Section of a Loop
      *
      * See https://www.codeclouds.com/blog/php-profiling-performance-optimization/
      */
-    public function loop_with_condition(int $limit): float
+    public function loopWithCondition(int $limit): float
     {
         $output = $limit;
         $items = range(1, $limit);
@@ -23,7 +25,7 @@ class KataChallengePhp extends KataChallenge
         return $output;
     }
 
-    public function loop_while(int $limit): float
+    public function loopWhile(int $limit): float
     {
         $output = $limit;
         $counter = $limit * 10;
@@ -35,7 +37,7 @@ class KataChallengePhp extends KataChallenge
     }
 
     // https://www.site24x7.com/blog/a-developers-guide-to-optimizing-php-performance
-    public function replace_string(int $limit): float
+    public function replaceString(int $limit): float
     {
         $text = str_repeat('abc', $limit);
 
