@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d47dfd1aa7f72b2e2bef4ae351f8c5b4",
+    "content-hash": "99184aa0683b8d535c2c5325e21a7e53",
     "packages": [
         {
             "name": "brick/math",
@@ -5599,6 +5599,60 @@
                 }
             ],
             "time": "2022-09-08T09:34:40+00:00"
+        },
+        {
+            "name": "tightenco/tlint",
+            "version": "v6.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/tighten/tlint.git",
+                "reference": "001743e6560757a1a225196e613f11cd8fdb8421"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/tighten/tlint/zipball/001743e6560757a1a225196e613f11cd8fdb8421",
+                "reference": "001743e6560757a1a225196e613f11cd8fdb8421",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/view": "*",
+                "nikic/php-parser": "^4.12",
+                "php": ">=7.3",
+                "symfony/console": "^4.4.30 || ^5.3.7 || ^6.0",
+                "symfony/process": "^4.4.20 || ^5.0.9 || ^6.0"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "^3.1",
+                "phpunit/phpunit": "^8.5.16 || ^9.0",
+                "symfony/var-dumper": "^5.0"
+            },
+            "bin": [
+                "bin/tlint"
+            ],
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Tighten\\TLint\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Logan Henson",
+                    "email": "logan@loganhenson.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Tighten linter for Laravel conventions",
+            "homepage": "https://github.com/tighten/tlint",
+            "support": {
+                "issues": "https://github.com/tighten/tlint/issues",
+                "source": "https://github.com/tighten/tlint/tree/v6.3.0"
+            },
+            "time": "2022-04-25T18:24:39+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",

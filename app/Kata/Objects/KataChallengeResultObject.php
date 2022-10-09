@@ -33,7 +33,7 @@ class KataChallengeResultObject extends JsonResource
     {
         $process = new Process([
             'bin/complexity.sh',
-            $this->reflectionMethod->getFileName()
+            $this->reflectionMethod->getFileName(),
         ]);
 
         $process->run();
@@ -64,7 +64,7 @@ class KataChallengeResultObject extends JsonResource
             'iterations' => $this->getIterations(),
             'outputs_md5' => $this->getOutputsMd5(),
             'violations' => $this->getViolations(),
-            'line_count' => $this->reflectionMethod->getEndLine() - $this->reflectionMethod->getStartLine()
+            'line_count' => $this->reflectionMethod->getEndLine() - $this->reflectionMethod->getStartLine(),
         ];
     }
 

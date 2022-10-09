@@ -41,7 +41,7 @@ class KataChallengePhp extends KataChallenge
         ], [
             'd',
             'e',
-            'f'
+            'f',
         ], $text);
 
         return floatval(md5($text));

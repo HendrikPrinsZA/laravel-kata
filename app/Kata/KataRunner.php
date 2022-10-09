@@ -2,22 +2,21 @@
 
 namespace App\Kata;
 
-use Exception;
-use ReflectionClass;
-use ReflectionMethod;
-use Illuminate\Support\Str;
-use Illuminate\Console\Command;
-use App\Kata\Enums\KataRunnerMode;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Storage;
-use App\Kata\Challenges\KataChallengePhp;
-use App\Kata\Enums\KataRunnerIterationMode;
-use App\Kata\Challenges\KataChallengeSample;
 use App\Kata\Challenges\KataChallengeEloquent;
+use App\Kata\Challenges\KataChallengePhp;
+use App\Kata\Challenges\KataChallengeSample;
+use App\Kata\Enums\KataRunnerIterationMode;
+use App\Kata\Enums\KataRunnerMode;
 use App\Kata\Objects\KataChallengeResultObject;
 use App\Kata\Traits\HasExitHintsTrait;
 use Carbon\Carbon;
-use Symfony\Component\Console\Helper\ProgressBar;
+use Exception;
+use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use ReflectionClass;
+use ReflectionMethod;
 
 class KataRunner
 {
@@ -130,8 +129,8 @@ class KataRunner
                                 $reportData['stats']['attempt']['scores']['total'] < $reportData['stats']['before']['scores']['total']
                             ),
                             round($reportData['stats']['before']['scores']['total'], 2)
-                        )
-                    ])
+                        ),
+                    ]),
                 ];
                 $rows[] = [''];
             }
@@ -212,14 +211,14 @@ class KataRunner
             $statsBefore['scores']['line_count'] * 0.05,
             $statsBefore['scores']['violation_count'] * 0.05,
             $statsBefore['scores']['duration'] * 0.45,
-            $statsBefore['scores']['iterations'] * 0.45
+            $statsBefore['scores']['iterations'] * 0.45,
         ]);
 
         $statsAttempt['scores']['total'] = array_sum([
             $statsAttempt['scores']['line_count'] * 0.05,
             $statsAttempt['scores']['violation_count'] * 0.05,
             $statsAttempt['scores']['duration'] * 0.45,
-            $statsAttempt['scores']['iterations'] * 0.45
+            $statsAttempt['scores']['iterations'] * 0.45,
         ]);
 
         return $statsAttempt['scores']['total'];
@@ -259,7 +258,7 @@ class KataRunner
             'stats' => [
                 'baseline' => $statsBaseline,
                 'before' => $statsBefore,
-                'attempt' => $statsAttempt
+                'attempt' => $statsAttempt,
             ],
         ];
 
@@ -458,7 +457,7 @@ class KataRunner
 
         return [
             'event' => &$event,
-            'outputs' => $outputs
+            'outputs' => $outputs,
         ];
     }
 

@@ -10,7 +10,8 @@
         "laravel/framework": "^9.19",
         "laravel/sanctum": "^3.0",
         "laravel/tinker": "^2.7",
-        "phpmd/phpmd": "^2.13"
+        "phpmd/phpmd": "^2.13",
+        "tightenco/tlint": "^6.3"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",
@@ -38,6 +39,12 @@
         }
     },
     "scripts": {
+        "tlint": [
+            "tlint lint app/"
+        ],
+        "tlint:fix": [
+            "tlint format app/"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"

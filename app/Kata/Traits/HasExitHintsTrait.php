@@ -3,7 +3,6 @@
 namespace App\Kata\Traits;
 
 use Exception;
-use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
 
 trait HasExitHintsTrait
