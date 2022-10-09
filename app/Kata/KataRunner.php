@@ -181,21 +181,37 @@ class KataRunner
                 ];
 
                 if (config('laravel-kata.show-code-snippets')) {
-                    $this->command->info(sprintf('### %s', help_me_code($resultRecord->getReflectionMethod())));
+                    $this->command->info(sprintf('# %s', help_me_code($resultRecord->getReflectionMethod())));
                     $this->command->table([
+                        '',
                         'Before',
                         'Record',
                     ], [
                         [
+                            'Code',
                             $resultBefore->getCodeSnippet(),
                             $resultRecord->getCodeSnippet(),
+                        ],
+                        [
+                            'Outputs md5',
+                            $resultBefore->getOutputsMd5(),
+                            $resultRecord->getOutputsMd5(),
+                        ],
+                        [
+                            implode("\n", [
+                                'line_count',
+                                'violations',
+                                'duration',
+                                'iterations',
+                            ]),
+                            $resultBefore->getStatsAsText(),
+                            $resultRecord->getStatsAsText(),
                         ],
                     ]);
                 }
 
-                $this->command->table($headers, [
-                    $row,
-                ]);
+                $this->command->info('## Report');
+                $this->command->table($headers, [$row]);
             }
         }
     }
