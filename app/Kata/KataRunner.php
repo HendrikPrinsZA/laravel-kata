@@ -7,6 +7,7 @@ use App\Kata\Challenges\KataChallengePhp;
 use App\Kata\Challenges\KataChallengeSample;
 use App\Kata\Enums\KataRunnerIterationMode;
 use App\Kata\Enums\KataRunnerMode;
+use App\Kata\Objects\KataChallengeResultObject;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
@@ -32,10 +33,12 @@ class KataRunner
 
     protected array $iterationModes;
 
+    protected int $defaultPericision;
+
     protected array $kataChallenges = [
         KataChallengeSample::class,
-        KataChallengeEloquent::class,
-        KataChallengePhp::class,
+        // KataChallengeEloquent::class,
+        // KataChallengePhp::class,
     ];
 
     public function __construct(protected ?Command $command)
@@ -51,6 +54,10 @@ class KataRunner
             : [KataRunnerMode::from($mode)];
 
         $this->iterationModes = self::DEFAULT_ITERATION_MODES;
+
+        $this->defaultPericision = config('laravel-kata.precision');
+
+        defined('KATA_BASE_MEM_USED') or define('KATA_BASE_MEM_USED', memory_get_usage(true));
     }
 
     public function run(): Collection
@@ -58,10 +65,7 @@ class KataRunner
         $results = collect();
 
         foreach ($this->kataChallenges as $kataChallenge) {
-            $results->push([
-                'class' => $kataChallenge,
-                'results' => $this->handleChallenge($kataChallenge)
-            ]);
+            $results->push($this->handleChallenge($kataChallenge));
         }
 
         $this->report($results);
@@ -71,41 +75,20 @@ class KataRunner
 
     protected function report(Collection $results): void
     {
-        $rows = [];
-        foreach ($results as $result) {
-            $classResults = $result['results'];
-
-            foreach ($classResults as $method => $classResult) {
+        foreach ($results as $methodResults) {
+            foreach ($methodResults as $method => $methodResult) {
                 // TODO: Move to filter before
                 // - Something bad with dynamic class methods
-                if (!$classResult) { continue; }
+                if (!$methodResult) { continue; }
 
-                $beforeDuration = round($classResult['before']['max-iterations']['duration']);
-                $attemptDuration = round($classResult['attempt']['max-iterations']['duration']);
+                /** @var KataChallengeResultObject $resultBefore */
+                $resultBefore = $methodResult[KataRunnerMode::BEFORE->value];
 
-                $beforeIterations = $classResult['before']['max-seconds']['outputs_count'];
-                $attemptIterations = $classResult['attempt']['max-seconds']['outputs_count'];
+                /** @var KataChallengeResultObject $resultAttempt */
+                $resultAttempt = $methodResult[KataRunnerMode::ATTEMPT->value];
 
-                $beforeMd5 = $classResult['before']['max-iterations']['outputs_md5'];
-                $attemptMd5 = $classResult['attempt']['max-iterations']['outputs_md5'];
-
-                $classParts = explode('\\', $result['class']);
-                $className = array_pop($classParts);
-
-                $rows[] = [
-                    $className,
-                    $method,
-                    sprintf("%s\n%s", "before", "attempt"),
-                    sprintf("%s\n%s", $beforeDuration,
-                        $this->wrapInFormat($attemptDuration, $attemptDuration < $beforeDuration)
-                    ),
-                    sprintf("%s\n%s", $beforeIterations,
-                        $this->wrapInFormat($attemptIterations, $attemptIterations > $beforeIterations)
-                    ),
-                    sprintf("%s\n%s", $beforeMd5,
-                        $this->wrapInFormat($attemptMd5, $attemptMd5 === $beforeMd5)
-                    ),
-                ];
+                $rows[] = $this->toReportRow($resultBefore, $resultAttempt);
+                continue;
 
                 // Blank row to split
                 $rows[] = [''];
@@ -113,30 +96,217 @@ class KataRunner
         }
 
         $this->command->table([
-            'Challenge',
+            'Class',
             'Method',
             'Run',
             'Duration',
             'Iterations',
+            'Duration (rel)',
+            'Iterations (rel)',
             'Output md5'
         ], $rows);
     }
 
+    // score = (10% lines) + (10% memory) + (40% duration %) + (40% iterations)
+
+    /**
+     * Calculate the score, the lower the better
+     *
+     * Breakdown
+     * - 10%: lines of code
+     * - 10%: memory
+     * - 20%: benchmark
+     * - 30%: total seconds based on max iterations
+     * - 30%: total iterations based on max seconds
+     *
+     * Future:
+     * -
+     * - Include benchmark scores
+     *   - 50%: Max concurrency before max response time threshold
+     *   - 50%: Average response time based on X threads (config.max_threads)
+     *   - Maybe 20%
+     */
+    protected function getScore(
+        array &$statsBaseline,
+        array &$statsBefore,
+        array &$statsAttempt,
+        ?int $precision = null
+    ): float {
+        if (is_null($precision)) {
+            $precision = $this->defaultPericision;
+        }
+
+        // Score math
+        $scores = [];
+
+        $scores['line_count'] = percentage_difference_fixed(
+            $statsBaseline['line_count'],
+            $statsBefore['line_count'],
+            $statsAttempt['line_count'] == 0
+                ? $statsAttempt['line_count']
+                : 0.00000001
+        );
+
+        // TODO: To be figured out
+        $scores['memory'] = percentage_difference_fixed(0, 100, 100);
+
+        $scores['duration'] = percentage_difference_fixed(
+            $statsBaseline['duration'],
+            $statsBefore['duration'],
+            $statsAttempt['duration']
+        );
+
+        $scores['iterations'] = percentage_difference_fixed(
+            $statsBaseline['iterations'],
+            $statsBefore['iterations'],
+            $statsAttempt['iterations']
+        );
+
+        $score = array_sum([
+            ($scores['line_count'] * 0.1) +
+            ($scores['memory'] * 0.1) +
+            ($scores['duration'] * 0.4) +
+            ($scores['iterations'] * 0.4)
+        ]);
+
+        return round($score, $precision);
+    }
+
+    protected function toReportRow(
+        KataChallengeResultObject $resultBefore,
+        KataChallengeResultObject $resultAttempt,
+    ): array {
+        $resultBaseline = $this->runChallengeMethod($resultBefore->getBaselineReflectionMethod());
+
+        // Get stats
+        $statsBaseline = $resultBaseline->getStats();
+        $statsBefore = $resultBefore->getStats();
+        $statsAttempt = $resultAttempt->getStats();
+
+        $scoreBaseline = $this->getScore(
+            $statsBaseline,
+            $statsBaseline,
+            $statsBaseline
+        );
+
+        $scoreBefore = $this->getScore(
+            $statsBaseline,
+            $statsBefore,
+            $statsBefore
+        );
+
+        $scoreAttempt = $this->getScore(
+            $statsBaseline,
+            $statsBefore,
+            $statsAttempt
+        );
+
+        if ($scoreAttempt > $scoreBaseline) {
+            throw new Exception(sprintf(
+                'Slower than the baseline: %s->%s is slower than %s->%s with %d ms',
+                $resultBefore->getClassName(),
+                $resultBefore->getMethodName(),
+                $resultAttempt->getClassName(),
+                $resultAttempt->getMethodName(),
+                $resultAttempt->getReflectionMethod()->class
+            ));
+        }
+
+        print_r([
+            'scoreBaseline' => $scoreBaseline,
+            'scoreBefore' => $scoreBefore,
+            'scoreAttempt' => $scoreAttempt,
+        ]);
+
+        return [
+            'scoreBaseline' => $scoreBaseline,
+            'scoreBefore' => $scoreBefore,
+            'scoreAttempt' => $scoreAttempt,
+        ];
+
+        dd([
+            'score' => $score
+        ]);
+
+        $stats = [
+            'baseline' => $resultBaseline->getStats(),
+            'before' => $resultBefore->getStats(),
+            'attempt' => $resultAttempt->getStats(),
+        ];
+
+
+        dd([
+            'stats' => $stats,
+            'scores' => $scores
+        ]);
+
+        $baselineDuration = $resultBaseline->getDuration();
+        $baselineIterations = $resultBaseline->getIterations();
+
+        $beforeDuration = $resultBefore->getDuration();
+        $attemptDuration = $resultAttempt->getDuration();
+
+        $beforeIterations = $resultBefore->getIterations();
+        $attemptIterations = $resultAttempt->getIterations();
+
+        $beforeMd5 = $resultBefore->getOutputsMd5();
+        $attemptMd5 = $resultBefore->getOutputsMd5();
+
+        // Scale by baseline
+        $beforeDurationRel = $beforeDuration - $baselineDuration;
+        $attemptDurationRel = $attemptDuration - $baselineDuration;
+        $beforeIterationsRel = $baselineIterations - $beforeIterations;
+        $attemptIterationsRel = $baselineIterations - $attemptIterations;
+
+        return [
+            $resultBefore->getClassName(),
+            $resultBefore->getMethodName(),
+            sprintf("%s\n%s", "baseline", "before", "attempt"),
+            sprintf("%s\n%s", $beforeDuration,
+                $this->wrapInFormat($attemptDuration, $attemptDuration < $beforeDuration)
+            ),
+            sprintf("%s\n%s", $beforeDurationRel,
+                $this->wrapInFormat($attemptDurationRel, $attemptDurationRel < $beforeDurationRel)
+            ),
+            sprintf("%s\n%s", $beforeIterations,
+                $this->wrapInFormat($attemptIterations, $attemptIterations > $beforeIterations)
+            ),
+            sprintf("%s\n%s", $beforeIterationsRel,
+                $this->wrapInFormat($attemptIterationsRel, $attemptIterationsRel > $beforeIterationsRel)
+            ),
+            sprintf("%s\n%s", $beforeMd5,
+                $this->wrapInFormat($attemptMd5, $attemptMd5 === $beforeMd5)
+            ),
+        ];
+    }
+
     protected function handleChallenge(string $kataChallenge): array
     {
-        $return = [];
+        $result = [];
         $kataChallengeReflection = new ReflectionClass($kataChallenge);
+
+        $skipFunctions = [
+            '__construct',
+            'baseline',
+        ];
 
         /** @var ReflectionMethod $reflectionMethod */
         foreach ($kataChallengeReflection->getMethods() as $reflectionMethod) {
+
+            // We only run public methods
             if ($reflectionMethod->getModifiers() !== ReflectionMethod::IS_PUBLIC) {
                 continue;
             }
 
-            $return[$reflectionMethod->name] = $this->handleChallengeMethod($reflectionMethod);
+            // Skip the baseline function
+            if (in_array($reflectionMethod->name, $skipFunctions)) {
+                continue;
+            }
+
+            $result[$reflectionMethod->name] = $this->handleChallengeMethod($reflectionMethod);
         }
 
-        return $return;
+        return $result;
     }
 
     /**
@@ -166,8 +336,10 @@ class KataRunner
         return $outputs;
     }
 
-    protected function runChallengeMethod(ReflectionMethod $reflectionMethod, KataRunnerMode $mode): array
-    {
+    protected function runChallengeMethod(
+        ReflectionMethod $reflectionMethod,
+        KataRunnerMode $mode = KataRunnerMode::BEFORE
+    ): KataChallengeResultObject {
         $targetClass = $reflectionMethod->class;
         if ($mode === KataRunnerMode::ATTEMPT) {
             $classParts = explode('\\', $reflectionMethod->class);
@@ -187,14 +359,14 @@ class KataRunner
         // Instantiate for the following reasons
         // - Warm up the reference/op caching
         // - Get the max iterations & seconds
-        $instance = app($targetClass);
+        $instance = new $targetClass();
         $maxIterations = $instance->getMaxIterations();
         $maxSeconds = $instance->getMaxSeconds();
         $instance = null;
 
-        $minOutputs = null;
-        $return = [];
+        $result = [];
         foreach ($this->iterationModes as $iterationMode) {
+            $memoryUsedBase = memory_get_usage(true);
             $challengeOutputs = $this->runChallengeMethodMaxMode(
                 $reflectionMethod,
                 $iterationMode,
@@ -202,8 +374,11 @@ class KataRunner
                 $maxSeconds,
             );
 
+            $memoryUsed = $memoryUsedBase - memory_get_usage(true);
+            $memoryUsedPeak = memory_get_peak_usage(true);
+
             // Exception: If zero, should fail!
-            if ($minOutputs === 0) {
+            if (empty($challengeOutputs['outputs'])) {
                 throw new Exception(sprintf(
                     'Unexpected empty outputs from %s->%s()',
                     $reflectionMethod->class,
@@ -211,31 +386,25 @@ class KataRunner
                 ));
             }
 
-            $return[$iterationMode->value] = [
+            $result[$iterationMode->value] = [
                 'outputs' => $challengeOutputs['outputs'],
                 'event' => $challengeOutputs['event'],
-                'minOutputs' => $minOutputs
+                'memoryUsed' => $memoryUsed,
+                'memoryUsedPeak' => $memoryUsedPeak,
             ];
         }
 
         // Loop again to separate the concerns
         foreach ($this->iterationModes as $iterationMode) {
-            // $iterationModeReturn = $return[$iterationMode->value];
-            $return[$iterationMode->value]['outputs_count'] = count($return[$iterationMode->value]['outputs']);
-            $return[$iterationMode->value]['outputs_md5'] = md5(json_encode($return[$iterationMode->value]['outputs']));
-            $return[$iterationMode->value]['duration'] = $return[$iterationMode->value]['event']->duration();
+            $result[$iterationMode->value]['outputs_count'] = count($result[$iterationMode->value]['outputs']);
+            $result[$iterationMode->value]['outputs_md5'] = md5(json_encode($result[$iterationMode->value]['outputs']));
+            $result[$iterationMode->value]['duration'] = $result[$iterationMode->value]['event']->duration();
 
             // Unset expensive keys
-            unset($return[$iterationMode->value]['outputs']);
-
-            // Debugging
-            // if (count($return[$iterationMode->value]['outputs']) > 15) {
-            //     $return[$iterationMode->value]['outputs'] = array_splice($return[$iterationMode->value]['outputs'], 0, 15);
-            //     $return[$iterationMode->value]['outputs'][] = 'Has more...';
-            // }
+            unset($result[$iterationMode->value]['outputs']);
         }
 
-        return $return;
+        return new KataChallengeResultObject($reflectionMethod, $result);
     }
 
     protected function runChallengeMethodMaxMode(
@@ -282,12 +451,23 @@ class KataRunner
         int $maxIterations
     ): array {
         $outputs = [];
-        $bar = $this->command?->getOutput()->createProgressBar($maxIterations);
-        foreach (range(1, $maxIterations) as $i) {
-            $instance = app($reflectionMethod->class);
-            $outputs[] = $instance->{$reflectionMethod->name}($i);
-            $bar?->advance();
 
+        $bar = $this->command?->getOutput()->createProgressBar($maxIterations);
+        $bar->setFormat("%message%\n %current%/%max% [%bar%] %percent:3s%%");
+        foreach (range(1, $maxIterations) as $i) {
+            $className = $reflectionMethod->class;
+            $instance = app($className);
+            $methodName = $reflectionMethod->name;
+            $bar->setMessage(sprintf(
+                'Running: %s->%s(%d)',
+                $className,
+                $methodName,
+                $i
+            ));
+
+            $outputs[] = $instance->{$methodName}($i);
+
+            $bar?->advance();
             $instance = null;
         }
 
@@ -324,7 +504,8 @@ class KataRunner
         return $outputs;
     }
 
-    protected function wrapInFormat(string $string, bool $success): string {
+    protected function wrapInFormat(string $string, bool $success): string
+    {
         return $success
             ? sprintf('<fg=green>%s</>', $string)
             : sprintf('<fg=red>%s</>', $string);

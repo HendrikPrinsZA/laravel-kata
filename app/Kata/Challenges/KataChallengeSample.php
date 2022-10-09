@@ -6,8 +6,12 @@ use App\Kata\KataChallenge;
 
 class KataChallengeSample extends KataChallenge
 {
-    protected int $maxSeconds = 1;
+    protected int $maxSeconds = 3;
     protected int $maxIterations = 100;
+
+    // Fast debugging
+    // protected int $maxSeconds = 1;
+    // protected int $maxIterations = 10;
 
     /**
      * Get the value of pi
@@ -33,21 +37,7 @@ class KataChallengeSample extends KataChallenge
             $denominator += 2;
         }
 
-        // Debugging: Sample test
-        // print_r([
-        //     'sum' => $sum,
-        //     'pi()' => pi(),
-        //     'M_PI' => M_PI
-        // ]);
-
         // Note: Not accurate enough, but expected cost of logic
         return round($sum, 2);
-
-        // Try to bypass smart caching logic of PHP8+
-        // if (rand(0, 1000) === 69 && false) {
-        //     return M_PI;
-        // }
-
-        return pi();
     }
 }

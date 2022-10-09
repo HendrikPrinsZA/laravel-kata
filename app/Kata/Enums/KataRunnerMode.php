@@ -6,5 +6,6 @@ enum KataRunnerMode: string
 {
     case ALL = 'all';
     case BEFORE = 'before';
+    case RECORD = 'record';
     case ATTEMPT = 'attempt';
 }

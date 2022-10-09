@@ -7,7 +7,7 @@ use App\Kata\KataChallenge;
 class KataChallengePhp extends KataChallenge
 {
     protected int $maxSeconds = 1;
-    protected int $maxIterations = 5000;
+    protected int $maxIterations = 1000;
 
     /**
      * Never Use Count or Any Other Methods in The Condition Section of a Loop
