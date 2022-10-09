@@ -56,7 +56,7 @@ class KataChallengeSample extends KataChallenge {
 ```php 
 class KataChallengeSampleRecord extends KataChallengeSample {
     public function calculatePi(int $limit): float {
-        return calculatePi();
+        return pi();
     }
 }
 ```
