@@ -6,7 +6,7 @@ use App\Kata\KataChallenge;
 
 class KataChallengePhp extends KataChallenge
 {
-    protected int $maxIterations = 500;
+    protected int $maxIterations = 1000;
 
     public function baseline(): void { }
 
@@ -25,18 +25,11 @@ class KataChallengePhp extends KataChallenge
         return $output;
     }
 
-    public function loopWhile(int $limit): float
-    {
-        $output = $limit;
-        $counter = $limit * 10;
-        while ($counter > 0) {
-            $output += $output / $counter;
-            $counter--;
-        }
-        return $output;
-    }
-
-    // https://www.site24x7.com/blog/a-developers-guide-to-optimizing-php-performance
+    /**
+     * Don't use preg_replace unless you really need to
+     *
+     * See https://www.site24x7.com/blog/a-developers-guide-to-optimizing-php-performance
+     */
     public function replaceString(int $limit): float
     {
         $text = str_repeat('abc', $limit);

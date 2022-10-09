@@ -124,9 +124,8 @@ class KataRunner
                             $reportData['stats']['attempt']['iterations'],
                             $reportData['stats']['before']['iterations']
                         ),
-                        '- - - - - - - - - - - - - - - - - - - - - - -',
                         sprintf(
-                            '= %s (%s)',
+                            '= score: %s (%s)',
                             $this->wrapInFormat(round($reportData['stats']['attempt']['scores']['total'], 2),
                                 $reportData['stats']['attempt']['scores']['total'] < $reportData['stats']['before']['scores']['total']
                             ),
