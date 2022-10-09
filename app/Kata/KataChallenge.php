@@ -11,11 +11,11 @@ class KataChallenge implements KataChallengeInterface
     public function __construct()
     {
         if (!isset($this->maxSeconds)) {
-            $this->maxSeconds = config('laravel-kata.max_seconds');
+            $this->maxSeconds = config('laravel-kata.max-seconds');
         }
 
         if (!isset($this->maxIterations)) {
-            $this->maxIterations = config('laravel-kata.max_iterations');
+            $this->maxIterations = config('laravel-kata.max-iterations');
         }
     }
 

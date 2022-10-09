@@ -21,8 +21,8 @@ class KataChallengeSample extends KataChallenge
 
         for ($i = 0; $i < $precision; $i++) {
             $sum = ($i % 2 === 0)
-                ? $sum - (4 / $denominator)
-                : $sum + (4 / $denominator);
+                ? $sum + (4 / $denominator)
+                : $sum - (4 / $denominator);
 
             $denominator += 2;
         }

@@ -57,6 +57,27 @@ class KataChallengeResultObject extends JsonResource
         return $violations->toArray();
     }
 
+    public function getStatsAsText(): string
+    {
+        $stats = $this->getStats();
+
+        $stats['violations'] = count($stats['violations']);
+
+        $keys = [
+            'line_count',
+            'violations',
+            'duration',
+            'iterations',
+        ];
+
+        $lines = [];
+        foreach ($keys as $key) {
+            $lines[] = $stats[$key] ?? 'N/A';
+        }
+
+        return implode("\n", $lines);
+    }
+
     public function getStats(): array
     {
         return [
