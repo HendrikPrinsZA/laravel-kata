@@ -44,17 +44,15 @@ class KataRunner
 
     protected ?Command $command;
 
-    protected array $kataChallenges = [
-        KataChallengeSample::class,
-        KataChallengeEloquent::class,
-        KataChallengePhp::class,
-    ];
+    protected array $kataChallenges;
 
     public function __construct(?Command $command = null)
     {
         $this->createdAt = now();
-
         $this->command = $command;
+        $this->kataChallenges = config('laravel-kata.challenges', [
+            KataChallengeSample::class,
+        ]);
 
         $mode = $this->command?->option('mode') ?? null;
 
@@ -541,12 +539,12 @@ class KataRunner
         $outputs = [];
 
         $bar = $this->command?->getOutput()->createProgressBar($maxIterations);
-        $bar->setFormat("%message%\n %current%/%max% [%bar%] %percent:3s%%");
+        $bar?->setFormat("%message%\n %current%/%max% [%bar%] %percent:3s%%");
         foreach (range(1, $maxIterations) as $i) {
             $className = $reflectionMethod->class;
             $instance = app($className);
             $methodName = $reflectionMethod->name;
-            $bar->setMessage(sprintf(
+            $bar?->setMessage(sprintf(
                 '%s->%s(%d) [interations]',
                 $className,
                 $methodName,
@@ -574,7 +572,7 @@ class KataRunner
 
         /** @var ProgressBar $bar */
         $bar = $this->command?->getOutput()->createProgressBar($msMax);
-        $bar->setFormat("%message%\n %current%/%max% [%bar%] %percent:3s%%");
+        $bar?->setFormat("%message%\n %current%/%max% [%bar%] %percent:3s%%");
 
         $i = 0;
         do {

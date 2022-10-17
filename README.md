@@ -69,7 +69,47 @@ class KataChallengeSampleRecord extends KataChallengeSample {
     }
 }
 ```
+---
+## Benchmarking (Native WRK)
+Test the logic against concurrency.
+### Install on OSX
+```sh
+cd ~/www/github/public/ 
+git clone git@github.com:wg/wrk.git
+cd wrk
+make
+(Update: Abandoned after 30+ second setup)
+```
+### Refs
+- https://www.bswen.com/2022/01/how-to-install-wrk.html
+---
 
+## Benchmarking (Go WRK)
+Found the GO equivalent
+
+### Install with brew
+```
+go install github.com/tsliwowicz/go-wrk@latest
+```
+
+### Refs
+- https://github.com/tsliwowicz/go-wrk
+---
+## Benchmarking (NPM autocannon)
+Could not get to connect to other port...
+---
+## Benchmarking (Grafana Labs K6)
+Wanted to stay away from this as it seems like a hook into a difficult commercial agreement. But checking...
+
+### Install with brew
+```
+brew install k6
+```
+
+### Refs
+- https://github.com/grafana/k6#install
+- https://betterprogramming.pub/an-introduction-to-k6-an-api-load-testing-tool-132a0d87827d
+---
 
 ## Wishlist
 - Drive contribution by PR gamification
