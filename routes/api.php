@@ -27,9 +27,16 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 /**
+ * A teapot for Jason
+ */
+Route::get('/', function (Request $request) {
+    return response("I'm a teapot", 418);
+});
+
+/**
  * Get the list of challenges
  */
-Route::get('/kata/challenges', function (Request $request) {
+Route::get('/kata', function (Request $request) {
     return JsonResource::make([
         'success' => true,
         'data' => collect(config('laravel-kata.challenges', []))
@@ -44,7 +51,7 @@ Route::get('/kata/challenges', function (Request $request) {
 /**
  * Get the list of challenge's methods
  */
-Route::get('/kata/challenge/{challenge}', function (Request $request, string $challenge) {
+Route::get('/kata/{challenge}', function (Request $request, string $challenge) {
     $class = sprintf(
         'App\\Kata\\Challenges\\%s',
         $challenge
@@ -67,7 +74,7 @@ Route::get('/kata/challenge/{challenge}', function (Request $request, string $ch
 /**
  * Hit the challenge's method
  */
-Route::get('/kata/challenge/{challenge}/{method}', function (Request $request, string $challenge, string $method) {
+Route::get('/kata/{challenge}/{method}', function (Request $request, string $challenge, string $method) {
     $data = [
         'challenge' => $challenge,
         'method' => $method,
@@ -78,8 +85,12 @@ Route::get('/kata/challenge/{challenge}/{method}', function (Request $request, s
         $challenge
     );
 
-    $instance = app($className);
-    $data = $instance->{$method}(1);
+    $instance = app($className, [
+        'request' => $request
+    ]);
+
+    // TODO: Determine the counter dynamically
+    $data = $instance->{$method}($request);
 
     return JsonResource::make([
         'success' => true,
@@ -87,49 +98,49 @@ Route::get('/kata/challenge/{challenge}/{method}', function (Request $request, s
     ]);
 });
 
-Route::get('/kata', function (Request $request) {
-    $maxIterations = $request->get('max-iterations', 100);
+// Route::get('/kata', function (Request $request) {
+//     $maxIterations = $request->get('max-iterations', 100);
 
-    /** @var KataRunner $kataRunner */
-    $kataRunner = app(KataRunner::class, [
-        'command' => null,
-        'maxIterations' => $maxIterations,
-        'mode' => 'all'
-    ]);
+//     /** @var KataRunner $kataRunner */
+//     $kataRunner = app(KataRunner::class, [
+//         'command' => null,
+//         'maxIterations' => $maxIterations,
+//         'mode' => 'all'
+//     ]);
 
-    $results = $kataRunner->run();
+//     $results = $kataRunner->run();
 
-    return JsonResource::make($results);
-});
+//     return JsonResource::make($results);
+// });
 
-Route::get('/kata/before', function (Request $request) {
-    $maxIterations = $request->get('max-iterations', 100);
+// Route::get('/kata/before', function (Request $request) {
+//     $maxIterations = $request->get('max-iterations', 100);
 
-    /** @var KataRunner $kataRunner */
-    $kataRunner = app(KataRunner::class, [
-        'command' => null,
-        'maxIterations' => $maxIterations,
-        'mode' => 'before'
-    ]);
+//     /** @var KataRunner $kataRunner */
+//     $kataRunner = app(KataRunner::class, [
+//         'command' => null,
+//         'maxIterations' => $maxIterations,
+//         'mode' => 'before'
+//     ]);
 
-    $results = $kataRunner->run();
+//     $results = $kataRunner->run();
 
-    return JsonResource::make($results);
-});
+//     return JsonResource::make($results);
+// });
 
-Route::get('/kata/after', function (Request $request) {
-    $maxIterations = $request->get('max-iterations', 100);
+// Route::get('/kata/after', function (Request $request) {
+//     $maxIterations = $request->get('max-iterations', 100);
 
-    // sleep(1);
+//     // sleep(1);
 
-    /** @var KataRunner $kataRunner */
-    $kataRunner = app(KataRunner::class, [
-        'command' => null,
-        'maxIterations' => $maxIterations,
-        'mode' => 'after'
-    ]);
+//     /** @var KataRunner $kataRunner */
+//     $kataRunner = app(KataRunner::class, [
+//         'command' => null,
+//         'maxIterations' => $maxIterations,
+//         'mode' => 'after'
+//     ]);
 
-    $results = $kataRunner->run();
+//     $results = $kataRunner->run();
 
-    return JsonResource::make($results);
-});
+//     return JsonResource::make($results);
+// });

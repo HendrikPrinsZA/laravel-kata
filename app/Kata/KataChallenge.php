@@ -2,21 +2,37 @@
 
 namespace App\Kata;
 
-class KataChallenge implements KataChallengeInterface
+use Illuminate\Http\Request;
+
+class KataChallenge
 {
-    protected int $maxSeconds;
+    protected int $maxSeconds = 0;
 
-    protected int $maxIterations;
+    protected int $maxIterations = 1;
 
-    public function __construct()
+    public function __construct(protected Request $request)
     {
-        if (!isset($this->maxSeconds)) {
-            $this->maxSeconds = config('laravel-kata.max-seconds');
-        }
+        $this->maxSeconds = $request->get(
+            'max-seconds',
+            config(
+                'laravel-kata.max-seconds',
+                $this->maxSeconds
+            )
+        );
 
-        if (!isset($this->maxIterations)) {
-            $this->maxIterations = config('laravel-kata.max-iterations');
-        }
+        $this->maxIterations = $request->get(
+            'max-iterations',
+            config(
+                'laravel-kata.max-iterations',
+                $this->maxIterations
+            )
+        );
+
+        // dd([
+        //     'fn' => 'KataChallenge::__construct',
+        //     'this->maxSeconds' => $this->maxSeconds,
+        //     'this->maxIterations' => $this->maxIterations,
+        // ]);
     }
 
     public function getMaxSeconds(): int
