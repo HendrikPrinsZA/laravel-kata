@@ -60,6 +60,7 @@ Route::get('/kata/{challenge}', function (Request $request, string $challenge) {
             $exception->getMessage()
         ));
     }
+
     $data = collect($reflectionClass->getMethods())
         ->filter(fn (ReflectionMethod $method) => $method->class === $class)
         ->filter(fn (ReflectionMethod $method) => $method->isPublic())
@@ -88,7 +89,7 @@ Route::get('/kata/{challenge}/{method}', function (Request $request, string $cha
     );
 
     $instance = app($className, [
-        'request' => $request,
+        'request' => &$request,
     ]);
 
     // TODO: Determine the counter dynamically
@@ -100,50 +101,3 @@ Route::get('/kata/{challenge}/{method}', function (Request $request, string $cha
         'data' => $data,
     ]);
 });
-
-// Route::get('/kata', function (Request $request) {
-//     $maxIterations = $request->get('max-iterations', 100);
-
-//     /** @var KataRunner $kataRunner */
-//     $kataRunner = app(KataRunner::class, [
-//         'command' => null,
-//         'maxIterations' => $maxIterations,
-//         'mode' => 'all'
-//     ]);
-
-//     $results = $kataRunner->run();
-
-//     return JsonResource::make($results);
-// });
-
-// Route::get('/kata/before', function (Request $request) {
-//     $maxIterations = $request->get('max-iterations', 100);
-
-//     /** @var KataRunner $kataRunner */
-//     $kataRunner = app(KataRunner::class, [
-//         'command' => null,
-//         'maxIterations' => $maxIterations,
-//         'mode' => 'before'
-//     ]);
-
-//     $results = $kataRunner->run();
-
-//     return JsonResource::make($results);
-// });
-
-// Route::get('/kata/after', function (Request $request) {
-//     $maxIterations = $request->get('max-iterations', 100);
-
-//     // sleep(1);
-
-//     /** @var KataRunner $kataRunner */
-//     $kataRunner = app(KataRunner::class, [
-//         'command' => null,
-//         'maxIterations' => $maxIterations,
-//         'mode' => 'after'
-//     ]);
-
-//     $results = $kataRunner->run();
-
-//     return JsonResource::make($results);
-// });
