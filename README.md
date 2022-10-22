@@ -5,7 +5,7 @@
 </p>
 
 ## About Laravel Kata
-The greatest collection of bad code to be used as training. 
+The greatest collection of bad code to be used as challenges to training.
 
 ### Concepts
 - Learn the fundamentals
@@ -24,8 +24,6 @@ The term was first coined by Dave Thomas, co-author of the book The Pragmatic Pr
 ### Future
 - Native MySQL
 - Native Redis
-
-Challenge yourself to fix some bad code.
 
 ## Sample challenge
 Sample challenge to calculate the value of `pi`.
@@ -70,34 +68,6 @@ class KataChallengeSampleRecord extends KataChallengeSample {
 }
 ```
 ---
-## Benchmarking (Native WRK)
-Test the logic against concurrency.
-### Install on OSX
-```sh
-cd ~/www/github/public/ 
-git clone git@github.com:wg/wrk.git
-cd wrk
-make
-(Update: Abandoned after 30+ second setup)
-```
-### Refs
-- https://www.bswen.com/2022/01/how-to-install-wrk.html
----
-
-## Benchmarking (Go WRK)
-Found the GO equivalent
-
-### Install with brew
-```
-go install github.com/tsliwowicz/go-wrk@latest
-```
-
-### Refs
-- https://github.com/tsliwowicz/go-wrk
----
-## Benchmarking (NPM autocannon)
-Could not get to connect to other port...
----
 ## Benchmarking (Grafana Labs K6)
 Wanted to stay away from this as it seems like a hook into a difficult commercial agreement. But checking...
 
@@ -117,7 +87,7 @@ brew install k6
   - Counter on lines of changes on file vs improvement from before (how?)
     - Maybe percentage of changes V/S % increase
 - Automatically generate the README by sections
-  - Anonymous cloud service 
+  - Anonymous cloud service to claim records
     - `[GET] https://laravel-kata.com/join`
         - `{'url': 'https://laravel-kata.com/instance/123', 'uid': 'XYZ001'}`
     - `[GET] https://laravel-kata.com/join?uid=XYZ001`
