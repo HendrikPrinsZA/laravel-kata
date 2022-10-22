@@ -7,7 +7,9 @@ use App\Models\User;
 
 class KataChallengeEloquent extends KataChallenge
 {
-    public function baseline(): void { }
+    public function baseline(): void
+    {
+    }
 
     /**
      * Eloquent aggregates / Average

@@ -1,6 +1,6 @@
 <?php
 
-if (!function_exists('help_me_code')) {
+if (! function_exists('help_me_code')) {
     /**
      * Parse absolute file path to editor path/hyperlink
      */
@@ -14,7 +14,7 @@ if (!function_exists('help_me_code')) {
     }
 }
 
-if (!function_exists('percentage_difference')) {
+if (! function_exists('percentage_difference')) {
     /**
      * Calculates the percentage difference between two values.
      *
@@ -36,7 +36,7 @@ if (!function_exists('percentage_difference')) {
     }
 }
 
-if (!function_exists('percentage_difference_fixed')) {
+if (! function_exists('percentage_difference_fixed')) {
     /**
      * Calculates the percentage of value by min and max
      */
@@ -57,7 +57,7 @@ if (!function_exists('percentage_difference_fixed')) {
     }
 }
 
-if (!function_exists('percentage_difference_baseline')) {
+if (! function_exists('percentage_difference_baseline')) {
     /**
      * Calculates the percentage of value by percentage of baseline
      */
@@ -79,7 +79,7 @@ if (!function_exists('percentage_difference_baseline')) {
     }
 }
 
-if (!function_exists('percentage_change')) {
+if (! function_exists('percentage_change')) {
     /**
      * Calculates the percentage of old vs new
      */
@@ -99,6 +99,6 @@ if (!function_exists('percentage_change')) {
             $newValue = 0.00000001;
         }
 
-        return (1 - $oldValue / $newValue);
+        return 1 - $oldValue / $newValue;
     }
 }

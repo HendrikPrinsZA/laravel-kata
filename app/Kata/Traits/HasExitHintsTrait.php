@@ -19,14 +19,14 @@ trait HasExitHintsTrait
             return;
         }
 
-        if (!config('laravel-kata.show-hints')) {
+        if (! config('laravel-kata.show-hints')) {
             return;
         }
 
         $randomHint = $this->exitHints->random(1)->first();
 
         $this->command->warn($randomHint);
-        if (!$this->command->confirm('Continue?', true)) {
+        if (! $this->command->confirm('Continue?', true)) {
             throw new Exception('Cheers!');
         }
     }

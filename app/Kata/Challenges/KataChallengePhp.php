@@ -8,7 +8,9 @@ class KataChallengePhp extends KataChallenge
 {
     protected int $maxIterations = 1000;
 
-    public function baseline(): void { }
+    public function baseline(): void
+    {
+    }
 
     /**
      * Never Use Count or Any Other Methods in The Condition Section of a Loop
@@ -22,6 +24,7 @@ class KataChallengePhp extends KataChallenge
         for ($x = 0; $x < count($items); $x++) {
             $output += $output / $items[$x];
         }
+
         return $output;
     }
 
@@ -35,9 +38,9 @@ class KataChallengePhp extends KataChallenge
         $text = str_repeat('abc', $limit);
 
         $text = preg_replace([
-            "/a/",
-            "/b/",
-            "/c/",
+            '/a/',
+            '/b/',
+            '/c/',
         ], [
             'd',
             'e',

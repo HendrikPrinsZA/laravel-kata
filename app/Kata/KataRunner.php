@@ -2,8 +2,6 @@
 
 namespace App\Kata;
 
-use App\Kata\Challenges\KataChallengeEloquent;
-use App\Kata\Challenges\KataChallengePhp;
 use App\Kata\Challenges\KataChallengeSample;
 use App\Kata\Enums\KataRunnerIterationMode;
 use App\Kata\Enums\KataRunnerMode;
@@ -103,7 +101,9 @@ class KataRunner
             foreach ($methodResults as $method => $methodResult) {
                 // TODO: Move to filter before
                 // - Something bad with dynamic class methods
-                if (!$methodResult) { continue; }
+                if (! $methodResult) {
+                    continue;
+                }
 
                 /** @var KataChallengeResultObject $resultBefore */
                 $resultBefore = $methodResult[KataRunnerMode::BEFORE->value];
@@ -302,7 +302,7 @@ class KataRunner
         // Get the baseline stats once only
         $baselineMethod = $resultBefore->getBaselineReflectionMethod();
         $cacheKey = sprintf('%s.%s', Str::slug($baselineMethod->class), $baselineMethod->name);
-        if (!isset($this->resultBaselineCache[$cacheKey])) {
+        if (! isset($this->resultBaselineCache[$cacheKey])) {
             $resultBaseline = $this->runChallengeMethod($resultBefore->getBaselineReflectionMethod());
             $this->resultBaselineCache[$cacheKey] = $resultBaseline->getStats();
         }
@@ -351,7 +351,7 @@ class KataRunner
             $statsRecord['violations']
         );
 
-        if (!empty($combined)) {
+        if (! empty($combined)) {
             $this->addExitHints(collect($combined)->map(function ($violation) {
                 return sprintf(
                     "### %s (%s)\n%s\n\n%s",
@@ -378,7 +378,6 @@ class KataRunner
 
         /** @var ReflectionMethod $reflectionMethod */
         foreach ($kataChallengeReflection->getMethods() as $reflectionMethod) {
-
             // We only run public methods
             if ($reflectionMethod->getModifiers() !== ReflectionMethod::IS_PUBLIC) {
                 continue;
@@ -438,7 +437,7 @@ class KataRunner
             $reflectionMethod = $reflectionClass->getMethod($reflectionMethod->name);
         }
 
-        if (!class_exists($targetClass)) {
+        if (! class_exists($targetClass)) {
             throw new Exception(sprintf('Class not found %s', $targetClass));
         }
 
@@ -559,6 +558,7 @@ class KataRunner
 
         $bar?->finish();
         $this->command?->newLine();
+
         return $outputs;
     }
 
@@ -596,6 +596,7 @@ class KataRunner
 
         $bar?->finish();
         $this->command?->newLine();
+
         return $outputs;
     }
 

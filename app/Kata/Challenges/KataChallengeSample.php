@@ -6,7 +6,9 @@ use App\Kata\KataChallenge;
 
 class KataChallengeSample extends KataChallenge
 {
-    public function baseline(): void { }
+    public function baseline(): void
+    {
+    }
 
     /**
      * Get the value of pi

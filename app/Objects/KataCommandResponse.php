@@ -9,6 +9,4 @@ class KataCommandResponse
         public mixed $response,
     ) {
     }
-
-
 }

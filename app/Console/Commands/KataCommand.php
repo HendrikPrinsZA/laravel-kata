@@ -7,7 +7,7 @@ use Illuminate\Console\Command;
 
 class KataCommand extends Command
 {
-    protected $signature = 'command:kata {--mode=all}';
+    protected $signature = 'kata:run {--mode=all}';
 
     protected $description = 'Kata command POC';
 
@@ -15,8 +15,9 @@ class KataCommand extends Command
 
     public function handle(): int
     {
-        $this->kataRunner = app(KataRunner::class, [ 'command' => &$this ]);
+        $this->kataRunner = app(KataRunner::class, ['command' => &$this]);
         $this->kataRunner->run();
+
         return 0;
     }
 }

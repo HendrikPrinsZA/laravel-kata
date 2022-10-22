@@ -14,7 +14,6 @@ class KataController extends Controller
      */
     public function run()
     {
-
     }
 
     /**
@@ -71,5 +70,4 @@ class KataController extends Controller
     {
         //
     }
-
 }

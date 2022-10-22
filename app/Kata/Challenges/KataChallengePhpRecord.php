@@ -11,6 +11,7 @@ class KataChallengePhpRecord extends KataChallengePhp
         foreach ($items as $item) {
             $output += $output / $item;
         }
+
         return $output;
     }
 
@@ -22,7 +23,7 @@ class KataChallengePhpRecord extends KataChallengePhp
             str_repeat('def', $limit),
             $text
         );
+
         return floatval(md5($text));
     }
-
 }

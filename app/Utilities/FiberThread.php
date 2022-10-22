@@ -27,6 +27,7 @@ class FiberThread
         array $params = []
     ): array {
         $callable = sprintf('%s::%s', self::class, 'callable');
+
         return self::registerOG($function, $callable, [
             $instance,
             $function,
@@ -50,12 +51,12 @@ class FiberThread
                 throw new Exception(sprintf('No method found from "%s"', $name));
             }
 
-            if (!is_null($className)) {
-                if (!class_exists($className)) {
+            if (! is_null($className)) {
+                if (! class_exists($className)) {
                     throw new Exception(sprintf('Class doesn\'t exist: %s', $className));
                 }
 
-                if (!method_exists($className, $methodName)) {
+                if (! method_exists($className, $methodName)) {
                     throw new Exception(sprintf(
                         'Class method doesn\'t exist: %s::%s',
                         $className,
@@ -68,7 +69,7 @@ class FiberThread
         // $uniqId = md5(serialize($callback) . serialize($params));
         $uniqId = uniqid('thread-');
 
-        if (!isset(self::$items[$uniqId])) {
+        if (! isset(self::$items[$uniqId])) {
             self::$items[$uniqId] = [
                 'name' => $name,
                 'fiber' => new Fiber($callback),
@@ -90,7 +91,7 @@ class FiberThread
                 $params = $item['params'];
 
                 try {
-                    if (!$fiber->isStarted()) {
+                    if (! $fiber->isStarted()) {
                         // Register a new tick function for scheduling this fiber
                         register_tick_function(sprintf(
                             '%s::%s',
