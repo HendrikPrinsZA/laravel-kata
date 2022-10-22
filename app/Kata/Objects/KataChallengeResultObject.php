@@ -57,6 +57,7 @@ class KataChallengeResultObject extends JsonResource
     public function getBaselineReflectionMethod(): ReflectionMethod
     {
         $reflectionClass = new ReflectionClass($this->reflectionMethod->class);
+
         return $reflectionClass->getMethod('baseline');
     }
 
@@ -70,7 +71,7 @@ class KataChallengeResultObject extends JsonResource
         $process->run();
 
         if (
-            !$process->isSuccessful() &&
+            ! $process->isSuccessful() &&
             $process->getExitCode() !== 2 // [ignore] Exit Code: 2 (Misuse of shell builtins)
         ) {
             throw new ProcessFailedException($process);
@@ -141,6 +142,7 @@ class KataChallengeResultObject extends JsonResource
     public function getClassName(): string
     {
         $classParts = explode('\\', $this->reflectionMethod->class);
+
         return array_pop($classParts);
     }
 

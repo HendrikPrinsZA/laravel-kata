@@ -1,0 +1,48 @@
+########################################################################################
+#                       THIS IS SAMPLE OF THE CONFIGURATION                            #
+#           IT'S NOT A DEFAULT CONFIGURATION, IT'S JUST A SIMPLE SAMPLE                #
+#       MORE DOCS CAN BE FOUND HERE: <https://roadrunner.dev/docs/intro-config>        #
+########################################################################################
+
+# Hint: RR will replace any config options using reference to environment variables,
+# eg.: `option_key: ${ENVIRONMENT_VARIABLE_NAME}`.
+
+# Important: TCP port numbers for each plugin (rpc, http, etc) must be unique!
+
+version: '2.7'
+rpc:
+    listen: 'tcp://127.0.0.1:6001'
+server:
+    command: 'php app.php'
+    relay: pipes
+http:
+    address: '0.0.0.0:8080'
+    middleware:
+        - gzip
+        - static
+    static:
+        dir: public
+        forbid:
+            - .php
+            - .htaccess
+    pool:
+        num_workers: 1
+        supervisor:
+            max_worker_memory: 100
+jobs:
+    pool:
+        num_workers: 2
+        max_worker_memory: 100
+    consume: {  }
+kv:
+    local:
+        driver: memory
+        config:
+            interval: 60
+    redis:
+        driver: redis
+        config:
+            addrs:
+                - 'localhost:6379'
+metrics:
+    address: 'localhost:2112'

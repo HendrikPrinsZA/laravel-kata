@@ -6,18 +6,20 @@ use App\Kata\KataChallenge;
 
 class KataChallengeSample extends KataChallenge
 {
-    public function baseline(): void { }
+    public function baseline(): void
+    {
+    }
 
     /**
      * Get the value of pi
      *
      * Stolen from here https://www.geeksforgeeks.org/calculate-pi-with-python/
      */
-    public function calculatePi(): float
+    public function calculatePi(int $i): float
     {
         $denominator = 1;
         $sum = 0;
-        $precision = 1000000;
+        $precision = 100000;
 
         for ($i = 0; $i < $precision; $i++) {
             $sum = ($i % 2 === 0)

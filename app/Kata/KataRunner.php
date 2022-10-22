@@ -2,8 +2,6 @@
 
 namespace App\Kata;
 
-use App\Kata\Challenges\KataChallengeEloquent;
-use App\Kata\Challenges\KataChallengePhp;
 use App\Kata\Challenges\KataChallengeSample;
 use App\Kata\Enums\KataRunnerIterationMode;
 use App\Kata\Enums\KataRunnerMode;
@@ -44,17 +42,15 @@ class KataRunner
 
     protected ?Command $command;
 
-    protected array $kataChallenges = [
-        KataChallengeSample::class,
-        KataChallengeEloquent::class,
-        KataChallengePhp::class,
-    ];
+    protected array $kataChallenges;
 
     public function __construct(?Command $command = null)
     {
         $this->createdAt = now();
-
         $this->command = $command;
+        $this->kataChallenges = config('laravel-kata.challenges', [
+            KataChallengeSample::class,
+        ]);
 
         $mode = $this->command?->option('mode') ?? null;
 
@@ -105,7 +101,9 @@ class KataRunner
             foreach ($methodResults as $method => $methodResult) {
                 // TODO: Move to filter before
                 // - Something bad with dynamic class methods
-                if (!$methodResult) { continue; }
+                if (! $methodResult) {
+                    continue;
+                }
 
                 /** @var KataChallengeResultObject $resultBefore */
                 $resultBefore = $methodResult[KataRunnerMode::BEFORE->value];
@@ -304,7 +302,7 @@ class KataRunner
         // Get the baseline stats once only
         $baselineMethod = $resultBefore->getBaselineReflectionMethod();
         $cacheKey = sprintf('%s.%s', Str::slug($baselineMethod->class), $baselineMethod->name);
-        if (!isset($this->resultBaselineCache[$cacheKey])) {
+        if (! isset($this->resultBaselineCache[$cacheKey])) {
             $resultBaseline = $this->runChallengeMethod($resultBefore->getBaselineReflectionMethod());
             $this->resultBaselineCache[$cacheKey] = $resultBaseline->getStats();
         }
@@ -353,7 +351,7 @@ class KataRunner
             $statsRecord['violations']
         );
 
-        if (!empty($combined)) {
+        if (! empty($combined)) {
             $this->addExitHints(collect($combined)->map(function ($violation) {
                 return sprintf(
                     "### %s (%s)\n%s\n\n%s",
@@ -380,7 +378,6 @@ class KataRunner
 
         /** @var ReflectionMethod $reflectionMethod */
         foreach ($kataChallengeReflection->getMethods() as $reflectionMethod) {
-
             // We only run public methods
             if ($reflectionMethod->getModifiers() !== ReflectionMethod::IS_PUBLIC) {
                 continue;
@@ -440,7 +437,7 @@ class KataRunner
             $reflectionMethod = $reflectionClass->getMethod($reflectionMethod->name);
         }
 
-        if (!class_exists($targetClass)) {
+        if (! class_exists($targetClass)) {
             throw new Exception(sprintf('Class not found %s', $targetClass));
         }
 
@@ -541,12 +538,12 @@ class KataRunner
         $outputs = [];
 
         $bar = $this->command?->getOutput()->createProgressBar($maxIterations);
-        $bar->setFormat("%message%\n %current%/%max% [%bar%] %percent:3s%%");
+        $bar?->setFormat("%message%\n %current%/%max% [%bar%] %percent:3s%%");
         foreach (range(1, $maxIterations) as $i) {
             $className = $reflectionMethod->class;
             $instance = app($className);
             $methodName = $reflectionMethod->name;
-            $bar->setMessage(sprintf(
+            $bar?->setMessage(sprintf(
                 '%s->%s(%d) [interations]',
                 $className,
                 $methodName,
@@ -561,6 +558,7 @@ class KataRunner
 
         $bar?->finish();
         $this->command?->newLine();
+
         return $outputs;
     }
 
@@ -574,7 +572,7 @@ class KataRunner
 
         /** @var ProgressBar $bar */
         $bar = $this->command?->getOutput()->createProgressBar($msMax);
-        $bar->setFormat("%message%\n %current%/%max% [%bar%] %percent:3s%%");
+        $bar?->setFormat("%message%\n %current%/%max% [%bar%] %percent:3s%%");
 
         $i = 0;
         do {
@@ -598,6 +596,7 @@ class KataRunner
 
         $bar?->finish();
         $this->command?->newLine();
+
         return $outputs;
     }
 

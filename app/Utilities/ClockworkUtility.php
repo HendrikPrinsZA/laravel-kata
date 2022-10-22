@@ -19,7 +19,7 @@ class ClockworkUtility
 
     public static function event(string $title, callable $callable): void
     {
-        if (!is_callable($callable)) {
+        if (! is_callable($callable)) {
             throw new Exception('Expected a callable function as the 2nd param');
         }
 

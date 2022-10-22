@@ -1,13 +1,9 @@
 <?php
 
-use App\Http\Controllers\KataController;
-use App\Http\Resources\KataRunResponseResource;
 use App\Kata\KataRunner;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Route;
-use Symfony\Component\Console\Output\BufferedOutput;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,49 +20,84 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+/**
+ * A teapot for Jason
+ */
+Route::get('/', function (Request $request) {
+    return response("I'm a teapot", 418);
+});
+
+/**
+ * Get the list of challenges
+ */
 Route::get('/kata', function (Request $request) {
-    $maxIterations = $request->get('max-iterations', 100);
+    return JsonResource::make([
+        'success' => true,
+        'data' => collect(config('laravel-kata.challenges', []))
+            ->map(function ($className) {
+                $classNameParts = explode('\\', $className);
 
-    /** @var KataRunner $kataRunner */
-    $kataRunner = app(KataRunner::class, [
-        'command' => null,
-        'maxIterations' => $maxIterations,
-        'mode' => 'all'
+                return array_pop($classNameParts);
+            })
+            ->toArray(),
     ]);
-
-    $results = $kataRunner->run();
-
-    return JsonResource::make($results);
 });
 
-Route::get('/kata/before', function (Request $request) {
-    $maxIterations = $request->get('max-iterations', 100);
+/**
+ * Get the list of challenge's methods
+ */
+Route::get('/kata/{challenge}', function (Request $request, string $challenge) {
+    $class = sprintf(
+        'App\\Kata\\Challenges\\%s',
+        $challenge
+    );
 
-    /** @var KataRunner $kataRunner */
-    $kataRunner = app(KataRunner::class, [
-        'command' => null,
-        'maxIterations' => $maxIterations,
-        'mode' => 'before'
+    try {
+        $reflectionClass = new ReflectionClass($class);
+    } catch (ReflectionException $exception) {
+        throw new Exception(sprintf(
+            'Something bad happened: %s',
+            $exception->getMessage()
+        ));
+    }
+
+    $data = collect($reflectionClass->getMethods())
+        ->filter(fn (ReflectionMethod $method) => $method->class === $class)
+        ->filter(fn (ReflectionMethod $method) => $method->isPublic())
+        ->filter(fn (ReflectionMethod $method) => $method->name !== 'baseline')
+        ->map(fn ($method) => $method->name)
+        ->toArray();
+
+    return JsonResource::make([
+        'success' => true,
+        'data' => $data,
     ]);
-
-    $results = $kataRunner->run();
-
-    return JsonResource::make($results);
 });
 
-Route::get('/kata/after', function (Request $request) {
-    $maxIterations = $request->get('max-iterations', 100);
+/**
+ * Hit the challenge's method
+ */
+Route::get('/kata/{challenge}/{method}', function (Request $request, string $challenge, string $method) {
+    $data = [
+        'challenge' => $challenge,
+        'method' => $method,
+    ];
 
-    // sleep(1);
+    $className = sprintf(
+        'App\\Kata\\Challenges\\%s',
+        $challenge
+    );
 
-    /** @var KataRunner $kataRunner */
-    $kataRunner = app(KataRunner::class, [
-        'command' => null,
-        'maxIterations' => $maxIterations,
-        'mode' => 'after'
+    $instance = app($className, [
+        'request' => &$request,
     ]);
 
-    $results = $kataRunner->run();
+    // TODO: Determine the counter dynamically
+    $i = $request->get('iteration', 1);
+    $data = $instance->{$method}($i);
 
-    return JsonResource::make($results);
+    return JsonResource::make([
+        'success' => true,
+        'data' => $data,
+    ]);
 });

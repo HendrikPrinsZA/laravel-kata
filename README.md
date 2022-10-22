@@ -5,7 +5,7 @@
 </p>
 
 ## About Laravel Kata
-The greatest collection of bad code to be used as training. 
+The greatest collection of bad code to be used as challenges to training.
 
 ### Concepts
 - Learn the fundamentals
@@ -24,8 +24,6 @@ The term was first coined by Dave Thomas, co-author of the book The Pragmatic Pr
 ### Future
 - Native MySQL
 - Native Redis
-
-Challenge yourself to fix some bad code.
 
 ## Sample challenge
 Sample challenge to calculate the value of `pi`.
@@ -69,7 +67,19 @@ class KataChallengeSampleRecord extends KataChallengeSample {
     }
 }
 ```
+---
+## Benchmarking (Grafana Labs K6)
+Wanted to stay away from this as it seems like a hook into a difficult commercial agreement. But checking...
 
+### Install with brew
+```
+brew install k6
+```
+
+### Refs
+- https://github.com/grafana/k6#install
+- https://betterprogramming.pub/an-introduction-to-k6-an-api-load-testing-tool-132a0d87827d
+---
 
 ## Wishlist
 - Drive contribution by PR gamification
@@ -77,7 +87,7 @@ class KataChallengeSampleRecord extends KataChallengeSample {
   - Counter on lines of changes on file vs improvement from before (how?)
     - Maybe percentage of changes V/S % increase
 - Automatically generate the README by sections
-  - Anonymous cloud service 
+  - Anonymous cloud service to claim records
     - `[GET] https://laravel-kata.com/join`
         - `{'url': 'https://laravel-kata.com/instance/123', 'uid': 'XYZ001'}`
     - `[GET] https://laravel-kata.com/join?uid=XYZ001`

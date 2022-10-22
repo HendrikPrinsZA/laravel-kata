@@ -7,17 +7,27 @@ use App\Models\User;
 
 class KataChallengeEloquent extends KataChallenge
 {
-    public function baseline(): void { }
+    public function baseline(): void
+    {
+    }
 
     /**
      * Eloquent aggregates / Average
      */
     public function getModelAverage(int $limit): float
     {
-        return User::where('id', '<=', $limit)
-            ->get()
+        return User::all()
             ->where('id', '<=', $limit)
             ->sortBy('id')
             ->average('id');
+    }
+
+    public function getModelUnique(int $limit): float
+    {
+        $ids = User::where('id', '<=', $limit)
+            ->pluck('id')
+            ->unique();
+
+        return $ids->average();
     }
 }

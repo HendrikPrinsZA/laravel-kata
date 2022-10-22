@@ -4,17 +4,20 @@
         "dev": "vite",
         "build": "vite build",
         "benchmark:script": "./bin/benchmark.js",
-        "benchmark:before": "autocannon --debug --connections 10 --duration 5 --pipelining 1 http://localhost:80/api/kata/before",
-        "benchmark:after":  "autocannon --debug --connections 10 --duration 5 --pipelining 1 http://localhost:80/api/kata/after"
+        "prepare": "husky install",
+        "test": "./vendor/bin/sail test"
+    },
+    "lint-staged": {
+        "**/*.php": "./vendor/bin/pint --preset laravel"
     },
     "devDependencies": {
         "axios": "^0.27",
+        "chokidar": "^3.5.3",
+        "husky": "^8.0.1",
         "laravel-vite-plugin": "^0.6.0",
+        "lint-staged": "^13.0.3",
         "lodash": "^4.17.19",
         "postcss": "^8.1.14",
         "vite": "^3.0.0"
-    },
-    "dependencies": {
-        "autocannon": "^7.10.0"
     }
 }
