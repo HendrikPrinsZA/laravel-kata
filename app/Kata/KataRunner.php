@@ -40,11 +40,9 @@ class KataRunner
 
     protected Carbon $createdAt;
 
-    protected ?Command $command;
-
     protected array $kataChallenges;
 
-    public function __construct(?Command $command = null)
+    public function __construct(protected ?Command $command = null)
     {
         $this->createdAt = now();
         $this->command = $command;
@@ -344,24 +342,12 @@ class KataRunner
             $this->command?->info(sprintf('Saved output to %s', $filePath));
         }
 
-        // If violations found, pick random and show user -> prompt to confirm
-        $combined = array_merge(
-            $statsBaseline['violations'],
-            $statsBefore['violations'],
-            $statsRecord['violations']
-        );
-
-        if (! empty($combined)) {
-            $this->addExitHints(collect($combined)->map(function ($violation) {
-                return sprintf(
-                    "### %s (%s)\n%s\n\n%s",
-                    $violation['ruleSet'],
-                    $violation['rule'],
-                    $violation['description'],
-                    $violation['externalInfoUrl'] === '#' ? '' : $violation['externalInfoUrl'],
-                );
-            })->toArray());
+        if (config('laravel-kata.debug-mode')) {
+            $this->addExitHintsFromViolations($statsBaseline['violations']);
+            $this->addExitHintsFromViolations($statsBefore['violations']);
         }
+
+        $this->addExitHintsFromViolations($statsRecord['violations']);
 
         return $result;
     }
@@ -539,7 +525,7 @@ class KataRunner
 
         $bar = $this->command?->getOutput()->createProgressBar($maxIterations);
         $bar?->setFormat("%message%\n %current%/%max% [%bar%] %percent:3s%%");
-        foreach (range(1, $maxIterations) as $i) {
+        foreach (range(1, $maxIterations) as $iteration) {
             $className = $reflectionMethod->class;
             $instance = app($className);
             $methodName = $reflectionMethod->name;
@@ -547,10 +533,10 @@ class KataRunner
                 '%s->%s(%d) [interations]',
                 $className,
                 $methodName,
-                $i
+                $iteration
             ));
 
-            $outputs[] = $instance->{$methodName}($i);
+            $outputs[] = $instance->{$methodName}($iteration);
 
             $bar?->advance();
             $instance = null;
@@ -574,15 +560,15 @@ class KataRunner
         $bar = $this->command?->getOutput()->createProgressBar($msMax);
         $bar?->setFormat("%message%\n %current%/%max% [%bar%] %percent:3s%%");
 
-        $i = 0;
+        $iteration = 0;
         do {
             $msLeft = now()->diffInMilliseconds($dateTimeEnd, false);
 
-            $i++;
+            $iteration++;
             $className = $reflectionMethod->class;
             $instance = app($className);
             $methodName = $reflectionMethod->name;
-            $outputs[] = $instance->{$methodName}($i);
+            $outputs[] = $instance->{$methodName}($iteration);
             $instance = null;
 
             $bar?->setProgress($msMax - $msLeft);
@@ -590,7 +576,7 @@ class KataRunner
                 '%s->%s(%d) [duration]',
                 $className,
                 $methodName,
-                $i
+                $iteration
             ));
         } while ($msLeft > 0);
 

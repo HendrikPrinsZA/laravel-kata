@@ -10,29 +10,17 @@ class KataChallenge
 
     protected int $maxIterations = 1;
 
-    public function __construct(protected Request $request)
+    public function __construct(protected ?Request $request = null)
     {
-        $this->maxSeconds = $request->get(
-            'max-seconds',
-            config(
-                'laravel-kata.max-seconds',
-                $this->maxSeconds
-            )
+        $this->maxSeconds = $this->request?->get('max-seconds') ?? config(
+            'laravel-kata.max-seconds',
+            $this->maxSeconds
         );
 
-        $this->maxIterations = $request->get(
-            'max-iterations',
-            config(
-                'laravel-kata.max-iterations',
-                $this->maxIterations
-            )
+        $this->maxIterations = $this->request?->get('max-iterations') ?? config(
+            'laravel-kata.max-iterations',
+            $this->maxIterations
         );
-
-        // dd([
-        //     'fn' => 'KataChallenge::__construct',
-        //     'this->maxSeconds' => $this->maxSeconds,
-        //     'this->maxIterations' => $this->maxIterations,
-        // ]);
     }
 
     public function getMaxSeconds(): int
