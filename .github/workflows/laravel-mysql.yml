@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DB_DATABASE: laravel
-      DB_USERNAME: root
+      DB_USERNAME: sail
       DB_PASSWORD: password
       BROADCAST_DRIVER: log
       CACHE_DRIVER: redis
