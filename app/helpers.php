@@ -14,6 +14,22 @@ if (! function_exists('help_me_code')) {
     }
 }
 
+if (! function_exists('array_subset_by_keys')) {
+    /**
+     * Returns a subset of the array by keys
+     */
+    function array_subset_by_keys(array $array, array $keys): array
+    {
+        $return = [];
+
+        foreach ($keys as $key) {
+            $return[$key] = $array[$key] ?? null;
+        }
+
+        return $return;
+    }
+}
+
 if (! function_exists('percentage_difference')) {
     /**
      * Calculates the percentage difference between two values.

@@ -37,8 +37,8 @@ class KataChallengeSample extends KataChallenge {
         $sum = 0;
         $precision = 1000000;
 
-        for ($i = 0; $i < $precision; $i++) {
-            $sum = ($i % 2 === 0)
+        for ($iteration = 0; $iteration < $precision; $iteration++) {
+            $sum = ($iteration % 2 === 0)
                 ? $sum - (4 / $denominator)
                 : $sum + (4 / $denominator);
 

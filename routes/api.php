@@ -1,6 +1,5 @@
 <?php
 
-use App\Kata\KataRunner;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Route;
@@ -93,8 +92,8 @@ Route::get('/kata/{challenge}/{method}', function (Request $request, string $cha
     ]);
 
     // TODO: Determine the counter dynamically
-    $i = $request->get('iteration', 1);
-    $data = $instance->{$method}($i);
+    $iteration = $request->get('iteration', 1);
+    $data = $instance->{$method}($iteration);
 
     return JsonResource::make([
         'success' => true,

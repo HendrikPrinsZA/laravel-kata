@@ -15,13 +15,12 @@ class KataChallengeSample extends KataChallenge
      *
      * Stolen from here https://www.geeksforgeeks.org/calculate-pi-with-python/
      */
-    public function calculatePi(int $i): float
+    public function calculatePi(): float
     {
         $denominator = 1;
         $sum = 0;
-        $precision = 100000;
 
-        for ($i = 0; $i < $precision; $i++) {
+        for ($i = 0; $i < 100000; $i++) {
             $sum = ($i % 2 === 0)
                 ? $sum + (4 / $denominator)
                 : $sum - (4 / $denominator);
