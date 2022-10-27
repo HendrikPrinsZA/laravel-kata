@@ -1,4 +1,9 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Replace with Laravel Kata logo"></a></p>
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=r_8Rw16uscg" target="_blank">
+    <img src="./public/laravel-kata-image-trans.png" width="600" alt="Replace with Laravel Kata logo">
+  </a>
+</p>
+
 
 <p align="center">
     (Generate badges here)
