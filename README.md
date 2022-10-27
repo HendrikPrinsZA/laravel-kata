@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://www.youtube.com/watch?v=r_8Rw16uscg" target="_blank">
-    <img src="./public/laravel-kata-image-trans.png" width="600" alt="Replace with Laravel Kata logo">
+    <img src="./public/laravel-kata-image-trans.png" width="100%" alt="Replace with Laravel Kata logo">
   </a>
 </p>
 
