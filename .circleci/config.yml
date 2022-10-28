@@ -18,7 +18,6 @@ orbs:
 commands:
   setup-npm:
     steps:
-      - checkout
       - restore_cache:
           keys:
             - cached-npm-{{ checksum "package-lock.json" }}
@@ -34,7 +33,6 @@ commands:
 
   setup-composer:
     steps:
-      - checkout
       - restore_cache:
           keys:
             - cached-composer-{{ checksum "composer.lock" }}
@@ -50,7 +48,6 @@ commands:
 
   setup-laravel:
     steps:
-      - checkout
       - run:
           name: Key
           command: |
@@ -90,6 +87,7 @@ jobs:
   test:
     <<: *defaults
     steps:
+      - checkout
       - setup-composer
       - setup-php
       - setup-laravel
@@ -99,7 +97,9 @@ jobs:
       - run:
           name: Run PHPUnit Tests (Parallel)
           command: |
-            php vendor/bin/paratest
+            php artisan test --parallel --processes=8 --runner WrapperRunner
+          # command: |
+          #   php vendor/bin/paratest
 
 workflows:
   lint-and-test:
