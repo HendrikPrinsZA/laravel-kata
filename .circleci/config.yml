@@ -2,25 +2,109 @@
 # See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
 
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
-jobs:
-  say-hello:
-    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
-    docker:
-      - image: cimg/base:stable
-    # Add steps to the job
-    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+defaults: &defaults
+  docker:
+    - image: cimg/php:8.1-node
+    - image: cimg/mysql:8.0
+      environment:
+        MYSQL_DATABASE: testing
+        MYSQL_ALLOW_EMPTY_PASSWORD: yes
+        MYSQL_ROOT_PASSWORD: ""
+    - image: redis
+
+orbs:
+  dockerize: ganta/dockerize@1.3.2
+
+commands:
+  setup-npm:
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - cached-npm-{{ checksum "package-lock.json" }}
+            - cached-npm-
+      - run:
+          name: NPM dependencies
+          command: |
+            npm i
+      - save_cache:
+          key: cached-npm-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+
+  setup-composer:
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - cached-composer-{{ checksum "composer.lock" }}
+            - cached-composer-
+      - run:
+          name: Composer dependencies
+          command: |
+            composer install --no-interaction
+      - save_cache:
+          key: cached-composer-{{ checksum "composer.lock" }}
+          paths:
+            - vendor
+
+  setup-laravel:
     steps:
       - checkout
       - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
+          name: Key
+          command: |
+            php artisan key:generate
+      # - run:
+      #     name: Install Application
+      #     command: |
+      #       ./vendor/bin/sail up -d --build
 
-# Invoke jobs via workflows
-# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+  setup-pcov:
+    steps:
+      - run:
+          name: Installing PHP pcov
+          command: |
+            sudo pecl install pcov-1.0.7
+            sudo docker-php-ext-enable pcov
+
+  setup-mysql:
+    steps:
+      - run:
+          name: Configure MySQL
+          command: |
+            mysql -h127.0.0.1 -uroot --execute="SET GLOBAL max_connections = 10000; SET GLOBAL mysqlx_max_connections = 10000;"
+
+jobs:
+  lint:
+    <<: *defaults
+    steps:
+      - setup-composer
+      - run:
+          name: "Linting with Laravel Pint"
+          command: |
+            ./vendor/bin/pint
+
+  test:
+    <<: *defaults
+    steps:
+      - setup-composer
+      - setup-pcov
+      - setup-laravel
+      # - setup-mysql
+      # - setup-npm
+      - dockerize/wait-mysql
+      # - run:
+      #     name: Run PHPUnit Tests (Standard)
+      #     command: |
+      #       php artisan test
+      - run:
+          name: Run PHPUnit Tests (Parallel)
+          command: |
+            php vendor/bin/paratest
+
 workflows:
-  say-hello-workflow:
+  lint-and-test:
     jobs:
-      - say-hello
+      - lint
+      - test

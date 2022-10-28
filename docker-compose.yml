@@ -2,6 +2,7 @@
 version: '3'
 services:
     laravel.test:
+        container_name: kata-laravel
         build:
             context: ./docker/8.1
             dockerfile: Dockerfile
@@ -21,48 +22,47 @@ services:
         volumes:
             - '.:/var/www/html'
         networks:
-            - sail
+            - laravel-kata
         depends_on:
             - mysql
             - redis
     mysql:
+        container_name: kata-mysql
         image: 'mysql/mysql-server:8.0'
         ports:
             - '${FORWARD_DB_PORT:-3306}:3306'
         environment:
-            MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
-            MYSQL_ROOT_HOST: "%"
+            MYSQL_ROOT_PASSWORD: '${DB_ROOT_PASSWORD}'
             MYSQL_DATABASE: '${DB_DATABASE}'
             MYSQL_USER: '${DB_USERNAME}'
             MYSQL_PASSWORD: '${DB_PASSWORD}'
-            MYSQL_ALLOW_EMPTY_PASSWORD: 1
+            MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
         volumes:
-            - 'sail-mysql:/var/lib/mysql'
-            - './vendor/laravel/sail/database/mysql/create-testing-database.sh:/docker-entrypoint-initdb.d/10-create-testing-database.sh'
-            - ./docker/mysql/my.cnf:/etc/my.cnf
+            - 'laravel-kata-mysql:/var/lib/mysql'
         networks:
-            - sail
+            - laravel-kata
         healthcheck:
             test: ["CMD", "mysqladmin", "ping", "-p${DB_PASSWORD}"]
             retries: 3
             timeout: 5s
     redis:
+        container_name: kata-redis
         image: 'redis:alpine'
         ports:
             - '${FORWARD_REDIS_PORT:-6379}:6379'
         volumes:
-            - 'sail-redis:/data'
+            - 'laravel-kata-redis:/data'
         networks:
-            - sail
+            - laravel-kata
         healthcheck:
             test: ["CMD", "redis-cli", "ping"]
             retries: 3
             timeout: 5s
 networks:
-    sail:
+    laravel-kata:
         driver: bridge
 volumes:
-    sail-mysql:
+    laravel-kata-mysql:
         driver: local
-    sail-redis:
+    laravel-kata-redis:
         driver: local
