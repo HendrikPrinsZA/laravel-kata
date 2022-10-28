@@ -57,8 +57,13 @@ commands:
             php -r "file_exists('.env') || copy('.env.example', '.env');"
             php artisan key:generate
 
-  setup-pcov:
+  setup-php:
     steps:
+      - run:
+          name: Installing PHP modules
+          command: |
+            sudo pecl install -o -f redis
+            sudo docker-php-ext-enable redis
       - run:
           name: Installing PHP pcov
           command: |
@@ -86,7 +91,7 @@ jobs:
     <<: *defaults
     steps:
       - setup-composer
-      - setup-pcov
+      - setup-php
       - setup-laravel
       # - setup-mysql
       # - setup-npm
