@@ -94,10 +94,6 @@ jobs:
       # - setup-mysql
       # - setup-npm
       - dockerize/wait-mysql
-      # - run:
-      #     name: Run PHPUnit Tests (Standard)
-      #     command: |
-      #       php artisan test
       - run:
           name: Run PHPUnit Tests (Parallel)
           command: |
