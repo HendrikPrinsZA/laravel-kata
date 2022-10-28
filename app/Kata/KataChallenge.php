@@ -21,6 +21,8 @@ class KataChallenge
             'laravel-kata.max-iterations',
             $this->maxIterations
         );
+
+        $this->setUp();
     }
 
     public function getMaxSeconds(): int
@@ -36,5 +38,9 @@ class KataChallenge
     public function baseline(): void
     {
         // Want at least 1 line, even if it is just a comment
+    }
+
+    protected function setUp(): void
+    {
     }
 }
