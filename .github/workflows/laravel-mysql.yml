@@ -35,9 +35,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: laravel-phpunit-action
-        uses: michelmelo/laravel-phpunit-action@master
-
       # Docs: https://github.com/shivammathur/setup-php
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
