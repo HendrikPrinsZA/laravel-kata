@@ -5,29 +5,17 @@ jobs:
   laravel:
     name: Laravel (PHP ${{ matrix.php-versions }})
     runs-on: ubuntu-latest
-    env:
-      DB_CONNECTION: mysql
-      DB_HOST: mysql
-      DB_PORT: 3306
-      DB_DATABASE: ${DB_DATABASE}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      BROADCAST_DRIVER: log
-      CACHE_DRIVER: redis
-      QUEUE_CONNECTION: redis
-      SESSION_DRIVER: redis
 
     # Docs: https://docs.github.com/en/actions/using-containerized-services
     services:
       mysql:
         image: mysql:latest
         env:
-          MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
-          MYSQL_ROOT_HOST: "%"
-          MYSQL_DATABASE: ${DB_DATABASE}
-          MYSQL_USER: ${DB_USERNAME}
-          MYSQL_PASSWORD: ${DB_PASSWORD}
-          MYSQL_ALLOW_EMPTY_PASSWORD: 1
+          MYSQL_ROOT_PASSWORD: ""
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_USER: sail
+          MYSQL_PASSWORD: password
+          MYSQL_DATABASE: laravel
         ports:
           - 3306/tcp
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
@@ -47,6 +35,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: laravel-phpunit-action
+        uses: michelmelo/laravel-phpunit-action@master
+
       # Docs: https://github.com/shivammathur/setup-php
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -54,6 +45,7 @@ jobs:
           php-version: ${{ matrix.php-versions }}
           extensions: mbstring, dom, fileinfo, mysql
           coverage: xdebug
+
 
       # Local MySQL service in GitHub hosted environments is disabled by default.
       # If you are using it instead of service containers, make sure you start it.
