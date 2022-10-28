@@ -9,9 +9,9 @@ jobs:
       DB_CONNECTION: mysql
       DB_HOST: mysql
       DB_PORT: 3306
-      DB_DATABASE: vesper_tests
-      DB_USERNAME: root
-      DB_PASSWORD: ""
+      DB_DATABASE: $DB_DATABASE
+      DB_USERNAME: $DB_USERNAME
+      DB_PASSWORD: $DB_PASSWORD
       BROADCAST_DRIVER: log
       CACHE_DRIVER: redis
       QUEUE_CONNECTION: redis
@@ -22,9 +22,12 @@ jobs:
       mysql:
         image: mysql:latest
         env:
-          MYSQL_DATABASE: vesper_tests
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
-          MYSQL_ROOT_PASSWORD: ""
+          MYSQL_ROOT_PASSWORD: "${DB_PASSWORD}"
+          MYSQL_ROOT_HOST: "%"
+          MYSQL_DATABASE: $DB_DATABASE
+          MYSQL_USER: $DB_USERNAME
+          MYSQL_PASSWORD: $DB_PASSWORD
+          MYSQL_ALLOW_EMPTY_PASSWORD: 1
         ports:
           - 3306/tcp
         options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
