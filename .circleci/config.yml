@@ -54,11 +54,8 @@ commands:
       - run:
           name: Key
           command: |
+            php -r "file_exists('.env') || copy('.env.example', '.env');"
             php artisan key:generate
-      # - run:
-      #     name: Install Application
-      #     command: |
-      #       ./vendor/bin/sail up -d --build
 
   setup-pcov:
     steps:
