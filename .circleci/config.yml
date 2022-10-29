@@ -53,8 +53,7 @@ commands:
       - run:
           name: Key
           command: |
-            php -r "file_exists('.env') || copy('.env.example', '.env');"
-            php artisan key:generate
+            ./bin/init.sh
 
   setup-php:
     steps:

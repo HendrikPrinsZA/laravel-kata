@@ -13,11 +13,23 @@ Convenient script to ensure environment is ready to go
 - Identify and flag new dependency configs, maybe by comparing .env with .env.example
 - Optimise and introduce as a git hook
 - Auto spin up environment with sail
+- Ensure all dependencies are available, like `composer`, `php`, etc
 '
 
 PATH_TO_SCRIPT_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+PATH_TO_REPO="$PATH_TO_SCRIPT_DIR/../"
 
-source $PATH_TO_SCRIPT_DIR/../.env
+echo "PATH_TO_SCRIPT_DIR=$PATH_TO_SCRIPT_DIR"
+echo "PATH_TO_REPO=$PATH_TO_REPO"
+
+if [ ! -f "$PATH_TO_REPO/.env" ]; then
+  echo "Copied .env.example to .env"
+  cp "$PATH_TO_REPO/.env.example" "$PATH_TO_REPO/.env"
+  php -r "file_exists('.env') || copy('.env.example', '.env');"
+  php artisan key:generate
+fi
+
+source $PATH_TO_REPO/.env
 
 # Install composer dependencies
 # TODO: Investigate why local is so much quicker, sees environmental
@@ -29,12 +41,3 @@ composer install
 
 # Migrate testing database
 ./vendor/bin/sail artisan migrate --database=testing --seed --force --no-interaction
-
-exit 0
-
-# docker exec -it kata-mysql mysql -u root -e "CREATE USER 'root'@'192.%' IDENTIFIED BY '';GRANT ALL PRIVILEGES ON *.* TO 'root'@'192.%';FLUSH PRIVILEGES;"
-
-docker exec -it kata-mysql mysql -u root -e "DROP DATABASE IF EXISTS testing; CREATE DATABASE testing;"
-
-# DROP USER 'sail'@'%';
-docker exec -it kata-mysql mysql -u root -e "CREATE USER 'sail'@'%' IDENTIFIED BY 'password'; GRANT ALL PRIVILEGES ON *.* TO 'sail'@'%'; FLUSH PRIVILEGES;"
