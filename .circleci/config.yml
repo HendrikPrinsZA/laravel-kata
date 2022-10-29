@@ -7,9 +7,13 @@ defaults: &defaults
     - image: cimg/php:8.1-node
     - image: cimg/mysql:8.0
       environment:
-        MYSQL_DATABASE: testing
-        MYSQL_ALLOW_EMPTY_PASSWORD: yes
-        MYSQL_ROOT_PASSWORD: ""
+        MYSQL_DATABASE: "laravel"
+        MYSQL_ALLOW_EMPTY_PASSWORD: 1
+        MYSQL_ROOT_HOST: "%"
+        MYSQL_ROOT_PASSWORD: "root_password"
+        MYSQL_HOST: "%"
+        MYSQL_USER: "sail"
+        MYSQL_PASSWORD: "password"
     - image: redis
 
 orbs:
@@ -49,10 +53,9 @@ commands:
   setup-laravel:
     steps:
       - run:
-          name: Key
+          name: Initiate Laravel environment
           command: |
-            php -r "file_exists('.env') || copy('.env.example', '.env');"
-            php artisan key:generate
+            ./bin/init.sh
 
   setup-php:
     steps:
@@ -70,7 +73,9 @@ commands:
       - run:
           name: Configure MySQL
           command: |
-            mysql -h127.0.0.1 -uroot --execute="SET GLOBAL max_connections = 10000; SET GLOBAL mysqlx_max_connections = 10000;"
+            sudo apt-get update
+            sudo apt-get install mysql-client
+            mysql -h127.0.0.1 -uroot -proot_password --execute="SET GLOBAL max_connections = 10000; SET GLOBAL mysqlx_max_connections = 10000;"
 
 jobs:
   lint:
@@ -89,8 +94,9 @@ jobs:
       - checkout
       - setup-composer
       - setup-php
-      - setup-laravel
       - dockerize/wait-mysql
+      - setup-mysql
+      - setup-laravel
       - run:
           name: Run tests
           command: |
@@ -99,6 +105,7 @@ jobs:
               -p 8 \
               --runner=WrapperRunner \
               --coverage-clover=clover.xml \
+              --log-junit ~/phpunit/junit.xml \
               --stop-on-failure
       - run:
           name: Upload test results
@@ -110,6 +117,8 @@ jobs:
               -t "${CODECOV_TOKEN}" \
               -n "${CIRCLE_BUILD_NUM}" \
               -Z
+      - store_test_results:
+          path: ~/phpunit
 
   deploy:
     docker:

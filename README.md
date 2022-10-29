@@ -94,6 +94,8 @@ brew install k6
 ---
 
 ## Wishlist
+- Optimise CI/CD with CircleCI
+  - Create dedicated docker image (self maintained)
 - Drive contribution by PR gamification
   - Short: Verify and publish score for ranking on centralised DB, consider firebase
   - Counter on lines of changes on file vs improvement from before (how?)
