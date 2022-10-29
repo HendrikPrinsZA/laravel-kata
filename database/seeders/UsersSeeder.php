@@ -9,7 +9,7 @@ class UsersSeeder extends Seeder
 {
     public function run()
     {
-        if (User::last()?->id > 0) {
+        if (User::first()?->id > 0) {
             return;
         }
 
