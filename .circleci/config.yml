@@ -73,7 +73,9 @@ commands:
       - run:
           name: Configure MySQL
           command: |
-            mysql -h127.0.0.1 -uroot --execute="SET GLOBAL max_connections = 10000; SET GLOBAL mysqlx_max_connections = 10000;"
+            sudo apt-get update
+            sudo apt-get install mysql-client
+            mysql -h127.0.0.1 -uroot -proot_password --execute="SET GLOBAL max_connections = 10000; SET GLOBAL mysqlx_max_connections = 10000;"
 
 jobs:
   lint:
@@ -93,6 +95,7 @@ jobs:
       - setup-composer
       - setup-php
       - dockerize/wait-mysql
+      - setup-mysql
       - setup-laravel
       - run:
           name: Run tests
