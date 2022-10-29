@@ -9,7 +9,9 @@ class UsersSeeder extends Seeder
 {
     public function run()
     {
-        User::truncate();
+        if (User::last()?->id > 0) {
+            return;
+        }
 
         User::factory()->create([
             'name' => 'Test User',
