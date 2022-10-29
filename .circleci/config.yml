@@ -78,6 +78,7 @@ jobs:
   lint:
     <<: *defaults
     steps:
+      - checkout
       - setup-composer
       - run:
           name: "Linting with Laravel Pint"
@@ -91,15 +92,11 @@ jobs:
       - setup-composer
       - setup-php
       - setup-laravel
-      # - setup-mysql
-      # - setup-npm
       - dockerize/wait-mysql
       - run:
           name: Run PHPUnit Tests (Parallel)
           command: |
             php artisan test --parallel --processes=8 --runner WrapperRunner
-          # command: |
-          #   php vendor/bin/paratest
 
 workflows:
   lint-and-test:
