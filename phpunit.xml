@@ -20,9 +20,9 @@
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
-        <env name="DB_DATABASE" value="testing"/>
-        <env name="DB_USERNAME" value="root"/>
-        <env name="DB_PASSWORD" value=""/>
+        <!-- <env name="DB_DATABASE" value="testing"/> -->
+        <!-- <env name="DB_USERNAME" value="root"/> -->
+        <!-- <env name="DB_PASSWORD" value=""/> -->
         <env name="BROADCAST_DRIVER" value="redis"/>
         <env name="CACHE_DRIVER" value="redis"/>
         <env name="SESSION_DRIVER" value="redis"/>
