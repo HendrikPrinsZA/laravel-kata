@@ -4,6 +4,7 @@ namespace App\Kata\Challenges;
 
 use App\Kata\KataChallenge;
 use App\Models\User;
+use Database\Seeders\UsersSeeder;
 use Illuminate\Support\Facades\Artisan;
 
 class KataChallengeEloquent extends KataChallenge

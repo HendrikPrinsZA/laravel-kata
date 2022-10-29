@@ -60,12 +60,10 @@ commands:
           name: Installing PHP modules
           command: |
             yes 'no' | sudo pecl install -f redis || true
-            sudo docker-php-ext-enable redis
       - run:
           name: Installing PHP pcov
           command: |
             sudo pecl install pcov-1.0.7
-            sudo docker-php-ext-enable pcov
 
   setup-mysql:
     steps:
