@@ -26,7 +26,7 @@ class KataTestCommand extends Command
         $connectionInterface = DB::connection($connection);
 
         try {
-            $connectionInterface->getPDO();
+            $connectionInterface->getPdo();
             $connected = true;
         } catch (Exception $e) {
             $this->warn($e->getMessage());
