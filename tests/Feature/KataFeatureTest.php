@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -72,6 +73,8 @@ final class KataFeatureTest extends TestCase
      */
     public function test_api_kata_challenges_challenge_method(array $challengeMethods): void
     {
+        $this->assertNotNull(User::first(), 'Expected users, but none found');
+
         foreach ($challengeMethods as $challenge => $methods) {
             $challengeRecord = sprintf('%sRecord', $challenge);
 
