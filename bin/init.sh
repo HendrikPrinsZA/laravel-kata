@@ -38,6 +38,8 @@ if [ "${CI_MODE}" == "circleci" ]; then
 
     php artisan kata:test
 
+    mysql -uroot -proot_password -e "DROP DATABASE IF EXISTS testing; CREATE DATABASE testing;"
+
     php artisan migrate:refresh --seed --no-interaction --force
     php artisan migrate:refresh --database=testing --seed --force --no-interaction
     exit 0
