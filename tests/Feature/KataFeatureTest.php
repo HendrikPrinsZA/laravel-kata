@@ -2,10 +2,13 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 final class KataFeatureTest extends TestCase
 {
+    use RefreshDatabase;
+
     const RESPONSE_STRUCTURES = [
         'challenges' => [
             'success' => 'boolean',
