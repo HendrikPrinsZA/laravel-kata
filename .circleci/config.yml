@@ -103,8 +103,7 @@ jobs:
           command: |
             php -d pcov.enabled=1 vendor/bin/paratest \
               --passthru-php="'-d' 'pcov.enabled=1'" \
-              --parallel \
-              --processes=8 \
+              -p 8 \
               --runner=WrapperRunner \
               --coverage-clover=clover.xml \
               --stop-on-failure
