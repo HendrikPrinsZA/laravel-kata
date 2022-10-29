@@ -3,12 +3,12 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 final class KataFeatureTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     const RESPONSE_STRUCTURES = [
         'challenges' => [
