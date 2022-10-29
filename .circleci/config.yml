@@ -92,9 +92,16 @@ jobs:
       - setup-laravel
       - dockerize/wait-mysql
       - run:
-          name: Run PHPUnit Tests (Parallel)
+          name: Run tests (Parallel)
           command: |
-            php artisan test --parallel --processes=2 --runner WrapperRunner
+            php artisan test \
+              --parallel \
+              --processes=8 \
+              --runner=WrapperRunner
+      - run:
+          name: Run tests (with cov)
+          command: |
+            php -d pcov.enabled=1 vendor/bin/paratest --passthru-php="'-d' 'pcov.enabled=1'"
 
 workflows:
   lint-and-test:
