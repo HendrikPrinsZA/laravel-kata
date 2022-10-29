@@ -5,11 +5,13 @@ version: 2.1
 defaults: &defaults
   docker:
     - image: cimg/php:8.1-node
-    - image: cimg/mysql:8.0
+    - image: cimg/mysql:latest
       environment:
-        MYSQL_DATABASE: testing
-        MYSQL_ALLOW_EMPTY_PASSWORD: yes
-        MYSQL_ROOT_PASSWORD: ""
+        MYSQL_DATABASE: "$DB_TEST_DATABASE"
+        MYSQL_ALLOW_EMPTY_PASSWORD: 1
+        MYSQL_ROOT_PASSWORD: "$DB_ROOT_PASSWORD"
+        MYSQL_USER: "$DB_USERNAME"
+        MYSQL_PASSWORD: "$DB_PASSWORD"
     - image: redis
 
 orbs:
@@ -123,12 +125,12 @@ jobs:
 workflows:
   lint-and-test:
     jobs:
-      - lint
+      # - lint
       - test:
           context: "LaravelKata"
       - deploy:
           requires:
-            - lint
+            # - lint
             - test
           filters:
             branches:
