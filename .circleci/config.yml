@@ -10,10 +10,10 @@ defaults: &defaults
         MYSQL_DATABASE: "testing"
         MYSQL_ALLOW_EMPTY_PASSWORD: 1
         MYSQL_ROOT_HOST: "%"
-        MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+        MYSQL_ROOT_PASSWORD: "root_password"
         MYSQL_HOST: "%"
-        MYSQL_USER: "${DB_USERNAME}"
-        MYSQL_PASSWORD: "${DB_PASSWORD}"
+        MYSQL_USER: "sail"
+        MYSQL_PASSWORD: "password"
     - image: redis
 
 orbs:
