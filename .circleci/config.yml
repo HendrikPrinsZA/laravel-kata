@@ -132,12 +132,12 @@ jobs:
 workflows:
   lint-and-test:
     jobs:
-      # - lint
+      - lint
       - test:
           context: "LaravelKata"
       - deploy:
           requires:
-            # - lint
+            - lint
             - test
           filters:
             branches:
