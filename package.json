@@ -11,7 +11,7 @@
         "**/*.php": "./vendor/bin/pint --preset laravel"
     },
     "devDependencies": {
-        "axios": "^0.27",
+        "axios": "^1.1",
         "chokidar": "^3.5.3",
         "husky": "^8.0.1",
         "laravel-vite-plugin": "^0.7.0",
