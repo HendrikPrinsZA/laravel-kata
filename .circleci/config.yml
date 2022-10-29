@@ -96,7 +96,7 @@ jobs:
       - run:
           name: Run PHPUnit Tests (Parallel)
           command: |
-            php artisan test --parallel --processes=8 --runner WrapperRunner
+            php artisan test --parallel --processes=2 --runner WrapperRunner
 
 workflows:
   lint-and-test:
