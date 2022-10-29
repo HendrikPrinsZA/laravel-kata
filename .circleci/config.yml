@@ -92,8 +92,8 @@ jobs:
       - checkout
       - setup-composer
       - setup-php
-      - setup-laravel
       - dockerize/wait-mysql
+      - setup-laravel
       - run:
           name: Run tests
           command: |

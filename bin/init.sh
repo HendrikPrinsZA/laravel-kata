@@ -38,7 +38,7 @@ if [ "${CI_MODE}" == "circleci" ]; then
 
     php artisan kata:test
 
-    # php artisan migrate:refresh --seed --no-interaction --force
+    php artisan migrate:refresh --seed --no-interaction --force
     php artisan migrate:refresh --database=testing --seed --force --no-interaction
     exit 0
 fi
