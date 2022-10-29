@@ -33,6 +33,7 @@ if [ "${CI_MODE}" == "circleci" ]; then
 
     composer install
     mysql -uroot -proot_password -e "DROP DATABASE IF EXISTS testing; CREATE DATABASE testing;"
+    mysql -uroot -proot_password -e "GRANT ALL PRIVILEGES ON *.* TO 'sail'@'%'; FLUSH PRIVILEGES;"
 
     php artisan kata:test
 
