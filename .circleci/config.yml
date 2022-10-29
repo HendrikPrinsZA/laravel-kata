@@ -102,7 +102,7 @@ jobs:
           name: Run tests (with cov)
           command: |
             php -d pcov.enabled=1 vendor/bin/paratest \
-              --passthru-php="'-d' 'pcov.enabled=1'"
+              --passthru-php="'-d' 'pcov.enabled=1'" \
               --parallel \
               --processes=8 \
               --runner=WrapperRunner \
