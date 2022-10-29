@@ -9,7 +9,9 @@ defaults: &defaults
       environment:
         MYSQL_DATABASE: "$DB_TEST_DATABASE"
         MYSQL_ALLOW_EMPTY_PASSWORD: 1
+        MYSQL_ROOT_HOST: "%"
         MYSQL_ROOT_PASSWORD: "$DB_ROOT_PASSWORD"
+        MYSQL_HOST: "%"
         MYSQL_USER: "$DB_USERNAME"
         MYSQL_PASSWORD: "$DB_PASSWORD"
     - image: redis
@@ -51,7 +53,7 @@ commands:
   setup-laravel:
     steps:
       - run:
-          name: Key
+          name: Initiate Laravel environment
           command: |
             ./bin/init.sh
 
