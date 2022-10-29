@@ -7,13 +7,5 @@
 # - If passed, auto add changed before commit
 
 # Hacked for now
-./vendor/bin/sail pint
+./vendor/bin/pint
 git add --all
-
-npm test
-
-# lint staged files
-# lint-staged
-
-# run tests
-# npm test

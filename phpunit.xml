@@ -20,11 +20,17 @@
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
-        <env name="CACHE_DRIVER" value="array"/>
         <env name="DB_DATABASE" value="testing"/>
+        <env name="DB_USERNAME" value="root"/>
+        <env name="DB_PASSWORD" value=""/>
+        <env name="BROADCAST_DRIVER" value="redis"/>
+        <env name="CACHE_DRIVER" value="redis"/>
+        <env name="SESSION_DRIVER" value="redis"/>
+        <env name="SESSION_LIFETIME" value="120"/>
+        <env name="REDIS_PASSWORD" value="null"/>
+        <env name="REDIS_PORT" value="6379"/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
-        <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
     </php>
 </phpunit>

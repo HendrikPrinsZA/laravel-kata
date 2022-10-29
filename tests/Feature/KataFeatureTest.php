@@ -2,10 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
+use Database\Seeders\UsersSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 final class KataFeatureTest extends TestCase
 {
+    use RefreshDatabase;
+
     const RESPONSE_STRUCTURES = [
         'challenges' => [
             'success' => 'boolean',
@@ -69,6 +74,9 @@ final class KataFeatureTest extends TestCase
      */
     public function test_api_kata_challenges_challenge_method(array $challengeMethods): void
     {
+        $this->seed(UsersSeeder::class);
+        $this->assertNotNull(User::first(), 'Expected users, but none found');
+
         foreach ($challengeMethods as $challenge => $methods) {
             $challengeRecord = sprintf('%sRecord', $challenge);
 

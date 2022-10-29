@@ -1,0 +1,135 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine.
+# See: https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
+
+defaults: &defaults
+  docker:
+    - image: cimg/php:8.1-node
+    - image: cimg/mysql:8.0
+      environment:
+        MYSQL_DATABASE: testing
+        MYSQL_ALLOW_EMPTY_PASSWORD: yes
+        MYSQL_ROOT_PASSWORD: ""
+    - image: redis
+
+orbs:
+  dockerize: ganta/dockerize@1.3.2
+
+commands:
+  setup-npm:
+    steps:
+      - restore_cache:
+          keys:
+            - cached-npm-{{ checksum "package-lock.json" }}
+            - cached-npm-
+      - run:
+          name: NPM dependencies
+          command: |
+            npm i
+      - save_cache:
+          key: cached-npm-{{ checksum "package-lock.json" }}
+          paths:
+            - node_modules
+
+  setup-composer:
+    steps:
+      - restore_cache:
+          keys:
+            - cached-composer-{{ checksum "composer.lock" }}
+            - cached-composer-
+      - run:
+          name: Composer dependencies
+          command: |
+            composer install --no-interaction
+      - save_cache:
+          key: cached-composer-{{ checksum "composer.lock" }}
+          paths:
+            - vendor
+
+  setup-laravel:
+    steps:
+      - run:
+          name: Key
+          command: |
+            php -r "file_exists('.env') || copy('.env.example', '.env');"
+            php artisan key:generate
+
+  setup-php:
+    steps:
+      - run:
+          name: Installing PHP modules
+          command: |
+            yes 'no' | sudo pecl install -f redis || true
+      - run:
+          name: Installing PHP pcov
+          command: |
+            sudo pecl install pcov-1.0.7
+
+  setup-mysql:
+    steps:
+      - run:
+          name: Configure MySQL
+          command: |
+            mysql -h127.0.0.1 -uroot --execute="SET GLOBAL max_connections = 10000; SET GLOBAL mysqlx_max_connections = 10000;"
+
+jobs:
+  lint:
+    <<: *defaults
+    steps:
+      - checkout
+      - setup-composer
+      - run:
+          name: "Linting with Laravel Pint"
+          command: |
+            ./vendor/bin/pint
+
+  test:
+    <<: *defaults
+    steps:
+      - checkout
+      - setup-composer
+      - setup-php
+      - setup-laravel
+      - dockerize/wait-mysql
+      - run:
+          name: Run tests
+          command: |
+            php -d pcov.enabled=1 vendor/bin/paratest \
+              --passthru-php="'-d' 'pcov.enabled=1'" \
+              -p 8 \
+              --runner=WrapperRunner \
+              --coverage-clover=clover.xml \
+              --stop-on-failure
+      - run:
+          name: Upload test results
+          command: |
+            curl -Os https://uploader.codecov.io/latest/linux/codecov
+            chmod +x codecov
+            ./codecov \
+              -f clover.xml \
+              -t "${CODECOV_TOKEN}" \
+              -n "${CIRCLE_BUILD_NUM}" \
+              -Z
+
+  deploy:
+    docker:
+      - image: alpine
+    steps:
+      - run:
+          name: Deploy
+          command: |
+            echo "Do deployment here"
+
+workflows:
+  lint-and-test:
+    jobs:
+      - lint
+      - test:
+          context: "LaravelKata"
+      - deploy:
+          requires:
+            - lint
+            - test
+          filters:
+            branches:
+              only: master
