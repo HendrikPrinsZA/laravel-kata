@@ -4,9 +4,16 @@
   </a>
 </p>
 
-
-<p align="center">
-    (Generate badges here)
+<p>
+  <a href="https://dl.circleci.com/status-badge/redirect/gh/HendrikPrinsZA/laravel-kata/tree/main">
+    <img src="https://dl.circleci.com/status-badge/img/gh/HendrikPrinsZA/laravel-kata/tree/main.svg?style=shield">
+  </a>
+  <a href="https://wakatime.com/badge/user/69e63dcc-57e6-4f88-914d-47f7875e06e1/project/87ef3f09-e831-47e5-8f10-99255f5649a8">
+    <img src="https://wakatime.com/badge/user/69e63dcc-57e6-4f88-914d-47f7875e06e1/project/87ef3f09-e831-47e5-8f10-99255f5649a8.svg" alt="wakatime">
+  </a>
+  <a href="https://codecov.io/github/HendrikPrinsZA/laravel-kata">
+    <img src="https://codecov.io/github/HendrikPrinsZA/laravel-kata/branch/main/graph/badge.svg?token=LH2CA7W0AT"/> 
+  </a>
 </p>
 
 ## About Laravel Kata
