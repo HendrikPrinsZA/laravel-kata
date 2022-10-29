@@ -105,6 +105,7 @@ jobs:
               -p 8 \
               --runner=WrapperRunner \
               --coverage-clover=clover.xml \
+              --log-junit ~/phpunit/junit.xml \
               --stop-on-failure
       - run:
           name: Upload test results
@@ -116,6 +117,8 @@ jobs:
               -t "${CODECOV_TOKEN}" \
               -n "${CIRCLE_BUILD_NUM}" \
               -Z
+      - store_test_results:
+          path: ~/phpunit
 
   deploy:
     docker:
