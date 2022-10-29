@@ -101,10 +101,27 @@ jobs:
       - run:
           name: Run tests (with cov)
           command: |
-            php -d pcov.enabled=1 vendor/bin/paratest --passthru-php="'-d' 'pcov.enabled=1'"
+            php -d pcov.enabled=1 vendor/bin/paratest \
+              --passthru-php="'-d' 'pcov.enabled=1'"
+              --parallel \
+              --processes=8 \
+              --runner=WrapperRunner \
+              --coverage-clover=clover.xml \
+              --stop-on-failure
+      - run:
+          name: Upload Coverage Results to Codecov
+          command: |
+            curl -Os https://uploader.codecov.io/latest/linux/codecov
+            chmod +x codecov
+            ./codecov \
+              -f clover.xml \
+              -t "${CODECOV_TOKEN}" \
+              -n "${CIRCLE_BUILD_NUM}" \
+              -Z
 
 workflows:
   lint-and-test:
     jobs:
       - lint
-      - test
+      - test:
+          context: "LaravelKata"
