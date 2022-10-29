@@ -9,16 +9,16 @@ use Illuminate\Support\Facades\Artisan;
 
 class KataChallengeEloquent extends KataChallenge
 {
-    protected function setUp(): void
-    {
-        if (User::first()?->id > 0) {
-        } else {
-            Artisan::call('db:seed', [
-                '--class' => UsersSeeder::class,
-                '--force' => true,
-            ]);
-        }
-    }
+    // protected function setUp(): void
+    // {
+    //     if (User::first()?->id > 0) {
+    //     } else {
+    //         Artisan::call('db:seed', [
+    //             '--class' => UsersSeeder::class,
+    //             '--force' => true,
+    //         ]);
+    //     }
+    // }
 
     public function baseline(): void
     {
