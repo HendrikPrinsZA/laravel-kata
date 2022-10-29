@@ -37,7 +37,9 @@ source $PATH_TO_REPO/.env
 composer install
 
 # Migrate main database
-./vendor/bin/sail artisan migrate --seed --no-interaction --force
+# ./vendor/bin/sail artisan migrate --seed --no-interaction --force
+php artisan migrate --seed --no-interaction --force
 
 # Migrate testing database
-./vendor/bin/sail artisan migrate --database=testing --seed --force --no-interaction
+# ./vendor/bin/sail artisan migrate --database=testing --seed --force --no-interaction
+php artisan migrate --database=testing --seed --force --no-interaction
