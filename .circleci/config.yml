@@ -149,15 +149,15 @@ jobs:
 workflows:
   lint-and-test:
     jobs:
-      # - lint
-      # - test:
-      #     context: "LaravelKata"
+      - lint
+      - test:
+          context: "LaravelKata"
       - gains:
           context: "LaravelKata"
       - deploy:
           requires:
-            # - lint
-            # - test
+            - lint
+            - test
             - gains
           filters:
             branches:
