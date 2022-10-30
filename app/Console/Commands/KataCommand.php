@@ -24,7 +24,7 @@ class KataCommand extends Command
         try {
             $this->kataRunner->run();
         } catch (KataChallengeScoreException $exception) {
-            $this->warn($exception->getMessage());
+            $this->error($exception->getMessage());
 
             return 1;
         }
