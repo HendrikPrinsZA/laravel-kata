@@ -12,7 +12,7 @@ trait HasExitHintsTrait
 
     public function __destruct()
     {
-        if (is_null($this->command)) {
+        if (! isset($this->command) || is_null($this->command)) {
             return;
         }
 
@@ -26,18 +26,17 @@ trait HasExitHintsTrait
             return;
         }
 
-        $randomHint = $this->exitHints->random(1)->first();
-
-        $this->command->warn($randomHint);
+        $this->command->warn($this->getRandomExitHint());
     }
 
-    private function addExitHint(string $message): void
+    protected function getExitHints(): Collection
     {
-        if (is_null($this->exitHints)) {
-            $this->exitHints = collect();
-        }
+        return $this->exitHints;
+    }
 
-        $this->exitHints->push($message);
+    protected function getRandomExitHint(): string
+    {
+        return (string) $this->exitHints->random(1)->first();
     }
 
     protected function addExitHintsFromViolations(array $violations): void
@@ -70,5 +69,14 @@ trait HasExitHintsTrait
 
             $this->addExitHint($message);
         }
+    }
+
+    private function addExitHint(string $message): void
+    {
+        if (is_null($this->exitHints)) {
+            $this->exitHints = collect();
+        }
+
+        $this->exitHints->push($message);
     }
 }

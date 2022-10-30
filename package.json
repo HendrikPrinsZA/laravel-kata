@@ -5,7 +5,8 @@
         "build": "vite build",
         "benchmark:script": "./bin/benchmark.js",
         "prepare": "husky install",
-        "test": "./vendor/bin/sail test"
+        "test": "./vendor/bin/sail test",
+        "test:coverage": "./bin/coverage.sh"
     },
     "lint-staged": {
         "**/*.php": "./vendor/bin/pint --preset laravel"
