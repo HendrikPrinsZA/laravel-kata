@@ -7,6 +7,11 @@ use App\Models\User;
 
 class KataChallengeEloquent extends KataChallenge
 {
+    protected function setUp(): void
+    {
+        $this->maxIterations = 100;
+    }
+
     public function baseline(): void
     {
     }

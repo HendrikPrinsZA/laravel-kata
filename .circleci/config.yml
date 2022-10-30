@@ -53,9 +53,9 @@ commands:
   setup-laravel:
     steps:
       - run:
-          name: Initiate Laravel environment
+          name: Reset Laravel environment
           command: |
-            ./bin/init.sh
+            ./bin/reset.sh
 
   setup-php:
     steps:
@@ -120,6 +120,21 @@ jobs:
       - store_test_results:
           path: ~/phpunit
 
+  gains:
+    <<: *defaults
+    steps:
+      - checkout
+      - setup-composer
+      - setup-npm
+      - setup-php
+      - dockerize/wait-mysql
+      - setup-mysql
+      - setup-laravel
+      - run:
+          name: Run benchmark (Kata)
+          command: |
+            npm run benchmark:kata
+
   deploy:
     docker:
       - image: alpine
@@ -132,13 +147,16 @@ jobs:
 workflows:
   lint-and-test:
     jobs:
-      - lint
-      - test:
+      # - lint
+      # - test:
+      #     context: "LaravelKata"
+      - gains:
           context: "LaravelKata"
       - deploy:
           requires:
-            - lint
-            - test
+            # - lint
+            # - test
+            - benchmark
           filters:
             branches:
               only: master
