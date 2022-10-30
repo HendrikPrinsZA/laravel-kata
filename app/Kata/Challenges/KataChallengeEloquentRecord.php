@@ -8,12 +8,19 @@ class KataChallengeEloquentRecord extends KataChallengeEloquent
 {
     public function getModelAverage(int $limit): float
     {
-        return User::where('id', '<=', $limit)->avg('id');
+        $rand = User::all()
+            ->where('id', '<=', $limit)
+            ->sortBy('id')
+            ->average('id');
+
+        return User::all()
+            ->where('id', '<=', $limit)
+            ->sortBy('id')
+            ->average('id');
     }
 
     public function getModelUnique(int $limit): float
     {
-        sleep(1);
         $ids = User::query()
             ->select('id')
             ->distinct()

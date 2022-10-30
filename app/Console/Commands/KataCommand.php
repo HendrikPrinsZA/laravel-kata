@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Kata\Exceptions\KataChallengeScoreException;
 use App\Kata\KataRunner;
 use Illuminate\Console\Command;
 
@@ -20,7 +21,13 @@ class KataCommand extends Command
             'failOnScore' => true,
         ]);
 
-        $this->kataRunner->run();
+        try {
+            $this->kataRunner->run();
+        } catch (KataChallengeScoreException $exception) {
+            $this->warn($exception->getMessage());
+
+            return 1;
+        }
 
         return 0;
     }
