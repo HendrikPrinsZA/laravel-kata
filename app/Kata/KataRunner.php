@@ -223,7 +223,7 @@ class KataRunner
         $this->command->info('## Report');
         $this->command->table($headers, [$row]);
 
-        if ($this->failOnScore && ($reportData['stats']['record']['scores']['total'] >= $reportData['stats']['before']['scores']['total'])) {
+        if ($reportData['stats']['record']['scores']['total'] >= $reportData['stats']['before']['scores']['total']) {
             throw new KataChallengeScoreException(sprintf(
                 '%s::%s is not good enough!',
                 $resultRecord->getClassName(),
