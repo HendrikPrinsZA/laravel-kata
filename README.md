@@ -40,69 +40,35 @@ The term was first coined by Dave Thomas, co-author of the book The Pragmatic Pr
 ## Sample challenge
 Sample challenge to calculate the value of `pi`.
 
-### Worst
+### Bad
 ```php
-class KataChallengeSample extends KataChallenge {
-    public function calculatePi(int $limit): float
-    {
-        $denominator = 1;
-        $sum = 0;
-        $precision = 1000000;
-
-        for ($iteration = 0; $iteration < $precision; $iteration++) {
-            $sum = ($iteration % 2 === 0)
-                ? $sum - (4 / $denominator)
-                : $sum + (4 / $denominator);
-
-            $denominator += 2;
-        }
-
-        return round($sum, 2);
-    }
+public function calculatePi(int $limit): float
+{
+  $denominator = 1;
+  $sum = 0;
+  for ($i = 0; $i < 100000; $i++) {
+    $sum = ($i % 2 === 0)
+      ? $sum + (4 / $denominator)
+      : $sum - (4 / $denominator);
+    $denominator += 2;
+  }
+  return round($sum, 2);
 }
 ```
 
 ### Better
-```php 
-class KataChallengeSampleRecord extends KataChallengeSample {
-    public function calculatePi(int $limit): float {
-        return pi();
-    }
+```php
+public function calculatePi(int $limit): float
+{
+  return round(pi(), 2);
 }
 ```
 
 ### Best
-```php 
-class KataChallengeSampleRecord extends KataChallengeSample {
-    public function calculatePi(int $limit): float {
-        return M_PI;
-    }
+```php
+public function calculatePi(int $limit): float
+{
+  return round(M_PI, 2);
 }
 ```
----
-## Benchmarking (Grafana Labs K6)
-Wanted to stay away from this as it seems like a hook into a difficult commercial agreement. But checking...
 
-### Install with brew
-```
-brew install k6
-```
-
-### Refs
-- https://github.com/grafana/k6#install
-- https://betterprogramming.pub/an-introduction-to-k6-an-api-load-testing-tool-132a0d87827d
----
-
-## Wishlist
-- Optimise CI/CD with CircleCI
-  - Create dedicated docker image (self maintained)
-- Drive contribution by PR gamification
-  - Short: Verify and publish score for ranking on centralised DB, consider firebase
-  - Counter on lines of changes on file vs improvement from before (how?)
-    - Maybe percentage of changes V/S % increase
-- Automatically generate the README by sections
-  - Anonymous cloud service to claim records
-    - `[GET] https://laravel-kata.com/join`
-        - `{'url': 'https://laravel-kata.com/instance/123', 'uid': 'XYZ001'}`
-    - `[GET] https://laravel-kata.com/join?uid=XYZ001`
-    - `[GET] https://laravel-kata.com/claim?uid=XYZ001` -> `https://github.com/login?client_id=X..`
