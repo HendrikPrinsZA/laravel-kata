@@ -29,7 +29,8 @@ class KataChallengeEloquent extends KataChallenge
 
     public function getModelUnique(int $limit): float
     {
-        $ids = User::where('id', '<=', $limit)
+        $ids = User::all()
+            ->where('id', '<=', $limit)
             ->pluck('id')
             ->unique();
 

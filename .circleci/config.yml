@@ -134,6 +134,8 @@ jobs:
           name: Run benchmark (Kata)
           command: |
             npm run benchmark:kata
+      - store_artifacts:
+          path: storage/app/laravel-kata
 
   deploy:
     docker:
