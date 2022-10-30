@@ -191,6 +191,8 @@ class KataRunner
         ];
 
         if (config('laravel-kata.show-code-snippets')) {
+            $resultBeforeOutputMd5 = $resultBefore->getOutputsMd5();
+            $resultRecordOutputMd5 = $resultRecord->getOutputsMd5();
             $this->command->info(sprintf('# %s', help_me_code($resultRecord->getReflectionMethod())));
             $this->command->table([
                 '',
@@ -204,8 +206,8 @@ class KataRunner
                 ],
                 [
                     'Outputs md5',
-                    $resultBefore->getOutputsMd5(),
-                    $resultRecord->getOutputsMd5(),
+                    $resultBeforeOutputMd5,
+                    $this->wrapInFormat($resultRecordOutputMd5, $resultRecordOutputMd5 === $resultBeforeOutputMd5),
                 ],
                 [
                     implode("\n", [
@@ -222,6 +224,14 @@ class KataRunner
 
         $this->command->info('## Report');
         $this->command->table($headers, [$row]);
+
+        if ($resultRecordOutputMd5 !== $resultBeforeOutputMd5) {
+            throw new KataChallengeScoreException(sprintf(
+                '%s::%s is completely wrong!',
+                $resultRecord->getClassName(),
+                $resultRecord->getMethodName()
+            ));
+        }
 
         if ($reportData['stats']['record']['scores']['total'] >= $reportData['stats']['before']['scores']['total']) {
             throw new KataChallengeScoreException(sprintf(

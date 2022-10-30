@@ -21,20 +21,17 @@ class KataChallengeEloquent extends KataChallenge
      */
     public function getModelAverage(int $limit): float
     {
-        return User::where('id', '<=', $limit)->avg('id');
-        // return User::all()
-        //     ->where('id', '<=', $limit)
-        //     ->sortBy('id')
-        //     ->average('id');
+        return User::all()
+            ->where('id', '<=', $limit)
+            ->sortBy('id')
+            ->average('id');
     }
 
-    public function getModelUnique(int $limit): float
+    public function getModelUnique(int $limit): iterable
     {
-        $ids = User::all()
+        return User::all()
             ->where('id', '<=', $limit)
             ->pluck('id')
             ->unique();
-
-        return $ids->average();
     }
 }
