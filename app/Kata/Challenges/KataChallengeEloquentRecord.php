@@ -13,6 +13,7 @@ class KataChallengeEloquentRecord extends KataChallengeEloquent
 
     public function getModelUnique(int $limit): float
     {
+        sleep(1);
         $ids = User::query()
             ->select('id')
             ->distinct()
