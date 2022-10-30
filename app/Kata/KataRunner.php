@@ -5,6 +5,7 @@ namespace App\Kata;
 use App\Kata\Challenges\KataChallengeSample;
 use App\Kata\Enums\KataRunnerIterationMode;
 use App\Kata\Enums\KataRunnerMode;
+use App\Kata\Exceptions\KataChallengeScoreException;
 use App\Kata\Objects\KataChallengeResultObject;
 use App\Kata\Traits\HasExitHintsTrait;
 use Carbon\Carbon;
@@ -42,8 +43,10 @@ class KataRunner
 
     protected array $kataChallenges;
 
-    public function __construct(protected ?Command $command = null)
-    {
+    public function __construct(
+        protected ?Command $command = null,
+        protected bool $failOnScore = false
+    ) {
         $this->createdAt = now();
         $this->command = $command;
         $this->kataChallenges = config('laravel-kata.challenges', [
@@ -80,6 +83,29 @@ class KataRunner
 
     protected function report(Collection $results): void
     {
+        foreach ($results as $methodResults) {
+            foreach ($methodResults as $method => $methodResult) {
+                // TODO: Move to filter before
+                // - Something bad with dynamic class methods
+                if (! $methodResult) {
+                    continue;
+                }
+
+                /** @var KataChallengeResultObject $resultBefore */
+                $resultBefore = $methodResult[KataRunnerMode::BEFORE->value];
+
+                /** @var KataChallengeResultObject $resultRecord */
+                $resultRecord = $methodResult[KataRunnerMode::RECORD->value];
+
+                $this->printScoresTable($resultBefore, $resultRecord);
+            }
+        }
+    }
+
+    protected function printScoresTable(
+        KataChallengeResultObject $resultBefore,
+        KataChallengeResultObject $resultRecord
+    ): void {
         $showExtendedScores = config('laravel-kata.show-extended-scores');
 
         $headers = $showExtendedScores ? [
@@ -95,120 +121,124 @@ class KataRunner
             'Report',
         ];
 
-        foreach ($results as $methodResults) {
-            foreach ($methodResults as $method => $methodResult) {
-                // TODO: Move to filter before
-                // - Something bad with dynamic class methods
-                if (! $methodResult) {
-                    continue;
-                }
+        $reportData = $this->getReportData($resultBefore, $resultRecord);
 
-                /** @var KataChallengeResultObject $resultBefore */
-                $resultBefore = $methodResult[KataRunnerMode::BEFORE->value];
+        $reportText = implode("\n", [
+            sprintf(
+                '%s (%s)',
+                $reportData['stats']['record']['line_count'],
+                $reportData['stats']['before']['line_count']
+            ),
+            sprintf(
+                '%s (%s)',
+                count($reportData['stats']['record']['violations']),
+                count($reportData['stats']['before']['violations'])
+            ),
+            sprintf(
+                '%s (%s)',
+                round($reportData['stats']['record']['duration'], 2),
+                round($reportData['stats']['before']['duration'], 2)
+            ),
+            sprintf(
+                '%s (%s)',
+                $reportData['stats']['record']['iterations'],
+                $reportData['stats']['before']['iterations']
+            ),
+            sprintf(
+                '%s (%s)',
+                $this->wrapInFormat(round($reportData['stats']['record']['scores']['total'], 2),
+                    $reportData['stats']['record']['scores']['total'] < $reportData['stats']['before']['scores']['total']
+                ),
+                round($reportData['stats']['before']['scores']['total'], 2)
+            ),
+        ]);
 
-                /** @var KataChallengeResultObject $resultRecord */
-                $resultRecord = $methodResult[KataRunnerMode::RECORD->value];
+        $showExtendedScores = config('laravel-kata.show-extended-scores');
 
-                $reportData = $this->getReportData($resultBefore, $resultRecord);
+        $keys = [
+            'line_count',
+            'violations',
+            'duration',
+            'iterations',
+        ];
 
-                $reportText = implode("\n", [
-                    sprintf(
-                        '%s (%s)',
-                        $reportData['stats']['record']['line_count'],
-                        $reportData['stats']['before']['line_count']
-                    ),
-                    sprintf(
-                        '%s (%s)',
-                        count($reportData['stats']['record']['violations']),
-                        count($reportData['stats']['before']['violations'])
-                    ),
-                    sprintf(
-                        '%s (%s)',
-                        round($reportData['stats']['record']['duration'], 2),
-                        round($reportData['stats']['before']['duration'], 2)
-                    ),
-                    sprintf(
-                        '%s (%s)',
-                        $reportData['stats']['record']['iterations'],
-                        $reportData['stats']['before']['iterations']
-                    ),
-                    sprintf(
-                        '%s (%s)',
-                        $this->wrapInFormat(round($reportData['stats']['record']['scores']['total'], 2),
-                            $reportData['stats']['record']['scores']['total'] < $reportData['stats']['before']['scores']['total']
-                        ),
-                        round($reportData['stats']['before']['scores']['total'], 2)
-                    ),
-                ]);
+        $linesBefore = [];
+        $linesRecord = [];
+        foreach ($keys as $key) {
+            $linesBefore[] = $reportData['stats']['before']['scores'][$key];
+            $linesRecord[] = $reportData['stats']['record']['scores'][$key];
+        }
+        $linesBefore[] = $reportData['stats']['before']['scores']['total'];
+        $linesRecord[] = $reportData['stats']['record']['scores']['total'];
+        $scoresBeforeText = implode("\n", $linesBefore);
+        $scoresRecordText = implode("\n", $linesRecord);
 
-                $keys = [
-                    'line_count',
-                    'violations',
-                    'duration',
-                    'iterations',
-                ];
+        $keys[] = 'score';
 
-                $linesBefore = [];
-                $linesRecord = [];
-                foreach ($keys as $key) {
-                    $linesBefore[] = $reportData['stats']['before']['scores'][$key];
-                    $linesRecord[] = $reportData['stats']['record']['scores'][$key];
-                }
-                $linesBefore[] = $reportData['stats']['before']['scores']['total'];
-                $linesRecord[] = $reportData['stats']['record']['scores']['total'];
-                $scoresBeforeText = implode("\n", $linesBefore);
-                $scoresRecordText = implode("\n", $linesRecord);
+        $keysLookup = implode("\n", array_values($keys));
 
-                $keys[] = 'score';
+        $row = $showExtendedScores ? [
+            $keysLookup,
+            $reportText,
+            $resultBefore->getStatsAsText(),
+            $resultRecord->getStatsAsText(),
+            $scoresBeforeText,
+            $scoresRecordText,
+            $keysLookup,
+        ] : [
+            $keysLookup,
+            $reportText,
+        ];
 
-                $keysLookup = implode("\n", array_values($keys));
-
-                $row = $showExtendedScores ? [
-                    $keysLookup,
-                    $reportText,
+        if (config('laravel-kata.show-code-snippets')) {
+            $resultBeforeOutputMd5 = $resultBefore->getOutputsMd5();
+            $resultRecordOutputMd5 = $resultRecord->getOutputsMd5();
+            $this->command->info(sprintf('# %s', help_me_code($resultRecord->getReflectionMethod())));
+            $this->command->table([
+                '',
+                'Before',
+                'Record',
+            ], [
+                [
+                    'Code',
+                    $resultBefore->getCodeSnippet(),
+                    $resultRecord->getCodeSnippet(),
+                ],
+                [
+                    'Outputs md5',
+                    $resultBeforeOutputMd5,
+                    $this->wrapInFormat($resultRecordOutputMd5, $resultRecordOutputMd5 === $resultBeforeOutputMd5),
+                ],
+                [
+                    implode("\n", [
+                        'line_count',
+                        'violations',
+                        'duration',
+                        'iterations',
+                    ]),
                     $resultBefore->getStatsAsText(),
                     $resultRecord->getStatsAsText(),
-                    $scoresBeforeText,
-                    $scoresRecordText,
-                    $keysLookup,
-                ] : [
-                    $keysLookup,
-                    $reportText,
-                ];
+                ],
+            ]);
+        }
 
-                if (config('laravel-kata.show-code-snippets')) {
-                    $this->command->info(sprintf('# %s', help_me_code($resultRecord->getReflectionMethod())));
-                    $this->command->table([
-                        '',
-                        'Before',
-                        'Record',
-                    ], [
-                        [
-                            'Code',
-                            $resultBefore->getCodeSnippet(),
-                            $resultRecord->getCodeSnippet(),
-                        ],
-                        [
-                            'Outputs md5',
-                            $resultBefore->getOutputsMd5(),
-                            $resultRecord->getOutputsMd5(),
-                        ],
-                        [
-                            implode("\n", [
-                                'line_count',
-                                'violations',
-                                'duration',
-                                'iterations',
-                            ]),
-                            $resultBefore->getStatsAsText(),
-                            $resultRecord->getStatsAsText(),
-                        ],
-                    ]);
-                }
+        $this->command->info('## Report');
+        $this->command->table($headers, [$row]);
 
-                $this->command->info('## Report');
-                $this->command->table($headers, [$row]);
-            }
+        if ($resultRecordOutputMd5 !== $resultBeforeOutputMd5) {
+            throw new KataChallengeScoreException(sprintf(
+                '%s::%s is completely wrong!',
+                $resultRecord->getClassName(),
+                $resultRecord->getMethodName()
+            ));
+        }
+
+        if ($reportData['stats']['record']['scores']['total'] >= $reportData['stats']['before']['scores']['total']) {
+            throw new KataChallengeScoreException(sprintf(
+                '%s::%s is not good enough!',
+                $resultRecord->getClassName(),
+                $resultRecord->getMethodName()
+            ));
         }
     }
 

@@ -11,14 +11,12 @@ class KataChallengeEloquentRecord extends KataChallengeEloquent
         return User::where('id', '<=', $limit)->avg('id');
     }
 
-    public function getModelUnique(int $limit): float
+    public function getModelUnique(int $limit): iterable
     {
-        $ids = User::query()
+        return User::query()
             ->select('id')
             ->distinct()
             ->where('id', '<=', $limit)
             ->pluck('id');
-
-        return $ids->average();
     }
 }

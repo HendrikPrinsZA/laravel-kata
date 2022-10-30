@@ -7,6 +7,11 @@ use App\Models\User;
 
 class KataChallengeEloquent extends KataChallenge
 {
+    protected function setUp(): void
+    {
+        $this->maxIterations = 100;
+    }
+
     public function baseline(): void
     {
     }
@@ -22,12 +27,11 @@ class KataChallengeEloquent extends KataChallenge
             ->average('id');
     }
 
-    public function getModelUnique(int $limit): float
+    public function getModelUnique(int $limit): iterable
     {
-        $ids = User::where('id', '<=', $limit)
+        return User::all()
+            ->where('id', '<=', $limit)
             ->pluck('id')
             ->unique();
-
-        return $ids->average();
     }
 }
