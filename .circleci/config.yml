@@ -108,7 +108,7 @@ jobs:
               --log-junit ~/phpunit/junit.xml \
               --stop-on-failure
       - run:
-          name: Upload test results
+          name: Upload coverage results
           command: |
             curl -Os https://uploader.codecov.io/latest/linux/codecov
             chmod +x codecov
