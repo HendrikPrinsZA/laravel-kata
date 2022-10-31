@@ -5,6 +5,7 @@
         "build": "vite build",
         "prepare": "husky install",
         "test": "./bin/test.sh",
+        "reset": "./bin/reset.sh",
         "benchmark:kata": "./bin/benchmark-kata.sh"
     },
     "lint-staged": {
