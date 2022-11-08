@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "93d99b8aa87bbdfc93aad5d10c548061",
+    "content-hash": "12baa3ca10e0a3e242a431fdf2451d25",
     "packages": [
         {
             "name": "brick/math",
@@ -6672,28 +6672,28 @@
         },
         {
             "name": "tightenco/tlint",
-            "version": "v6.3.0",
+            "version": "v7.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tighten/tlint.git",
-                "reference": "001743e6560757a1a225196e613f11cd8fdb8421"
+                "reference": "f3c1856955e1535cada2030b78a84ee7693f82d0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tighten/tlint/zipball/001743e6560757a1a225196e613f11cd8fdb8421",
-                "reference": "001743e6560757a1a225196e613f11cd8fdb8421",
+                "url": "https://api.github.com/repos/tighten/tlint/zipball/f3c1856955e1535cada2030b78a84ee7693f82d0",
+                "reference": "f3c1856955e1535cada2030b78a84ee7693f82d0",
                 "shasum": ""
             },
             "require": {
                 "illuminate/view": "*",
-                "nikic/php-parser": "^4.12",
-                "php": ">=7.3",
+                "nikic/php-parser": "^4.15",
+                "php": ">=8.0",
                 "symfony/console": "^4.4.30 || ^5.3.7 || ^6.0",
                 "symfony/process": "^4.4.20 || ^5.0.9 || ^6.0"
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^3.1",
-                "phpunit/phpunit": "^8.5.16 || ^9.0",
+                "phpunit/phpunit": "^9.0",
                 "symfony/var-dumper": "^5.0"
             },
             "bin": [
@@ -6720,9 +6720,9 @@
             "homepage": "https://github.com/tighten/tlint",
             "support": {
                 "issues": "https://github.com/tighten/tlint/issues",
-                "source": "https://github.com/tighten/tlint/tree/v6.3.0"
+                "source": "https://github.com/tighten/tlint/tree/v7.0.1"
             },
-            "time": "2022-04-25T18:24:39+00:00"
+            "time": "2022-11-04T19:45:13+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
