@@ -7348,16 +7348,16 @@
         },
         {
             "name": "itsgoingd/clockwork",
-            "version": "v5.1.10",
+            "version": "v5.1.11",
             "source": {
                 "type": "git",
                 "url": "https://github.com/itsgoingd/clockwork.git",
-                "reference": "8ceb38246028483750573c05dc4f9c17ddb65b7b"
+                "reference": "a790200347f0c6d07e2fca252ccb446df87520c6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/itsgoingd/clockwork/zipball/8ceb38246028483750573c05dc4f9c17ddb65b7b",
-                "reference": "8ceb38246028483750573c05dc4f9c17ddb65b7b",
+                "url": "https://api.github.com/repos/itsgoingd/clockwork/zipball/a790200347f0c6d07e2fca252ccb446df87520c6",
+                "reference": "a790200347f0c6d07e2fca252ccb446df87520c6",
                 "shasum": ""
             },
             "require": {
@@ -7404,7 +7404,7 @@
             ],
             "support": {
                 "issues": "https://github.com/itsgoingd/clockwork/issues",
-                "source": "https://github.com/itsgoingd/clockwork/tree/v5.1.10"
+                "source": "https://github.com/itsgoingd/clockwork/tree/v5.1.11"
             },
             "funding": [
                 {
@@ -7412,7 +7412,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2022-10-19T21:46:50+00:00"
+            "time": "2022-11-02T21:11:04+00:00"
         },
         {
             "name": "jean85/pretty-package-versions",
