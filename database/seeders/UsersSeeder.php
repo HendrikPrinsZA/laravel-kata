@@ -3,11 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Seeder;
 
-class UsersSeeder extends Seeder
+class UsersSeeder extends BaseSeeder
 {
-    public function run()
+    public function seed(): void
     {
         if (! is_null(User::first())) {
             return;

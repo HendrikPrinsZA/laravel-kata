@@ -1,6 +1,7 @@
 <?php
 
 use App\Kata\Challenges\KataChallengeEloquent;
+use App\Kata\Challenges\KataChallengeMySQL;
 use App\Kata\Challenges\KataChallengePhp;
 use App\Kata\Challenges\KataChallengeSample;
 use App\Kata\Enums\KataRunMode;
@@ -44,9 +45,10 @@ $getValue = fn (string $key, mixed $dafault = null) => env($key, $defaults[$key]
 
 return [
     'challenges' => [
-        KataChallengeSample::class,
-        KataChallengePhp::class,
-        KataChallengeEloquent::class,
+        // KataChallengeSample::class,
+        // KataChallengePhp::class,
+        // KataChallengeEloquent::class,
+        KataChallengeMySQL::class,
     ],
     'max-seconds' => $getValue('LK_MAX_SECONDS', 3),
     'max-iterations' => $getValue('LK_MAX_ITERATIONS', 1000),

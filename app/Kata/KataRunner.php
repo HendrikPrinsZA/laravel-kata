@@ -214,6 +214,11 @@ class KataRunner
                     $resultBeforeOutputMd5,
                     $this->wrapInFormat($resultRecordOutputMd5, $resultRecordOutputMd5 === $resultBeforeOutputMd5),
                 ],
+                // [
+                //     'Outputs json',
+                //     $resultBefore->getOutputsJson(),
+                //     $resultRecord->getOutputsJson(),
+                // ],
                 [
                     implode("\n", [
                         'line_count',
@@ -503,6 +508,8 @@ class KataRunner
         // Loop again to separate the concerns
         foreach ($this->iterationModes as $iterationMode) {
             $result[$iterationMode->value]['outputs_count'] = count($result[$iterationMode->value]['outputs']);
+
+            $result[$iterationMode->value]['outputs_json'] = json_encode($result[$iterationMode->value]['outputs'], JSON_PRETTY_PRINT, 12);
             $result[$iterationMode->value]['outputs_md5'] = md5(json_encode($result[$iterationMode->value]['outputs']));
             $result[$iterationMode->value]['duration'] = $result[$iterationMode->value]['event']->duration();
 
