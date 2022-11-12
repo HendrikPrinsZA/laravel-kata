@@ -107,7 +107,6 @@ class KataRunner
         KataChallengeResultObject $resultRecord
     ): void {
         $showExtendedScores = config('laravel-kata.show-extended-scores');
-
         $headers = $showExtendedScores ? [
             'Field',
             'Report',
@@ -122,6 +121,13 @@ class KataRunner
         ];
 
         $reportData = $this->getReportData($resultBefore, $resultRecord);
+
+        $this->command->info(sprintf(
+            "# %s::%s\n- %s",
+            $resultRecord->getClassName(),
+            $resultRecord->getMethodName(),
+            help_me_code($resultRecord->getReflectionMethod())
+        ));
 
         $reportText = implode("\n", [
             sprintf(
@@ -193,7 +199,6 @@ class KataRunner
         if (config('laravel-kata.show-code-snippets')) {
             $resultBeforeOutputMd5 = $resultBefore->getOutputsMd5();
             $resultRecordOutputMd5 = $resultRecord->getOutputsMd5();
-            $this->command->info(sprintf('# %s', help_me_code($resultRecord->getReflectionMethod())));
             $this->command->table([
                 '',
                 'Before',
@@ -270,7 +275,7 @@ class KataRunner
                 $statsBefore['line_count']
             ),
             'violations' => percentage_change(
-                5,
+                20,
                 count($statsBefore['violations']),
                 true
             ),
@@ -291,7 +296,7 @@ class KataRunner
                 $statsRecord['line_count']
             ),
             'violations' => percentage_change(
-                5,
+                count($statsBaseline['violations']),
                 count($statsRecord['violations']),
                 true
             ),
@@ -369,7 +374,7 @@ class KataRunner
             );
 
             Storage::disk('local')->put($filePath, json_encode($result));
-            $this->command?->info(sprintf('Saved output to %s', $filePath));
+            $this->command?->warn(sprintf('Saved output to %s', $filePath));
         }
 
         if (config('laravel-kata.debug-mode')) {
