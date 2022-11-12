@@ -44,8 +44,8 @@ $getValue = fn (string $key, mixed $dafault = null) => env($key, $defaults[$key]
 
 return [
     'challenges' => [
-        // KataChallengeSample::class,
-        // KataChallengePhp::class,
+        KataChallengeSample::class,
+        KataChallengePhp::class,
         KataChallengeEloquent::class,
     ],
     'max-seconds' => $getValue('LK_MAX_SECONDS', 3),
