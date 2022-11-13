@@ -12,9 +12,7 @@ abstract class BaseSeeder extends Seeder
         $this->cleanup();
     }
 
-    public function seed(): void
-    {
-    }
+    abstract public function seed(): void;
 
     protected function cleanup(): void
     {
