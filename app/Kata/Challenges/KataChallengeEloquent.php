@@ -17,9 +17,9 @@ class KataChallengeEloquent extends KataChallenge
     }
 
     /**
-     * Eloquent aggregates / Average
+     * Eloquent collections / Average
      */
-    public function getModelAverage(int $limit): float
+    public function getCollectionAverage(int $limit): float
     {
         return User::all()
             ->where('id', '<=', $limit)
@@ -27,11 +27,40 @@ class KataChallengeEloquent extends KataChallenge
             ->average('id');
     }
 
-    public function getModelUnique(int $limit): iterable
+    /**
+     * Eloquent collections / Unique
+     */
+    public function getCollectionUnique(int $limit): iterable
     {
         return User::all()
             ->where('id', '<=', $limit)
             ->pluck('id')
             ->unique();
+    }
+
+    /**
+     * Eloquent collections / Count
+     */
+    public function getCollectionCount(int $limit): int
+    {
+        return User::all()
+            ->where('id', '<=', $limit)
+            ->count();
+    }
+
+    /**
+     * Eloquent collections / Count
+     *
+     * Don’t use a collection to count the number of related entries.
+     *
+     * See https://codeburst.io/how-to-use-laravels-eloquent-efficiently-d46f5c392ca8
+     */
+    public function getCollectionRelatedCount(int $limit): int
+    {
+        return User::all()
+            ->where('id', '<=', $limit)
+            ->last()
+            ->blogs
+            ->count();
     }
 }
