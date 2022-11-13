@@ -13,5 +13,6 @@ class DatabaseSeeder extends BaseSeeder
         $this->call(UsersSeeder::class);
         $this->call(BlogsSeeder::class);
         $this->call(CurrenciesSeeder::class);
+        $this->call(ExchangeRatesSeeder::class);
     }
 }
