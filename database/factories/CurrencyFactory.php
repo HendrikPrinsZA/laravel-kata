@@ -6,7 +6,7 @@ use App\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Blog>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Currency>
  */
 class CurrencyFactory extends Factory
 {

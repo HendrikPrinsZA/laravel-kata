@@ -22,7 +22,6 @@ class BlogsSeeder extends BaseSeeder
         $maxUserBlogs = config('laravel-kata.dummy-data.max-user-blogs');
         User::all()->each(fn (User $user) => Blog::factory()->count($maxUserBlogs)->create([
             'user_id' => $user->id,
-        ])
-        );
+        ]));
     }
 }
