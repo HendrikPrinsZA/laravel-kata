@@ -6,9 +6,10 @@ use App\Kata\Challenges\KataChallengeSample;
 
 return [
     'challenges' => [
-        KataChallengeSample::class,
+        // KataChallengeSample::class,
         KataChallengePhp::class,
-        KataChallengeEloquent::class,
+        // KataChallengeEloquent::class,
+        // KataChallengeMySQL::class,
     ],
     'max-seconds' => 3,
     'max-iterations' => 1000,

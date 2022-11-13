@@ -20,7 +20,7 @@ class KataChallengePhp extends KataChallenge
     public function loopWithCondition(int $limit): float
     {
         $output = $limit;
-        $items = range(1, $limit);
+        $items = range(1, $limit * 10);
         for ($x = 0; $x < count($items); $x++) {
             $output += $output / $items[$x];
         }
