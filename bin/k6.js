@@ -9,8 +9,8 @@ import { sleep } from 'k6';
  * - https://circleci.com/developer/orbs/orb/k6io/test
  */
 
-const URL = 'http://localhost/api/kata/challenge/KataChallengeEloquent/getModelUnique';
-// const URL = 'http://localhost/api/kata/challenge/KataChallengeEloquentRecord/getModelUnique';
+const URL = 'http://localhost/api/kata/KataChallengeEloquent/getCollectionUnique';
+// const URL = 'http://localhost/api/kata/KataChallengeEloquentRecord/getCollectionUnique';
 
 export let options = {
     vus: 5,

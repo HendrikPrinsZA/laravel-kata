@@ -3,13 +3,12 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Seeder;
 
-class UsersSeeder extends Seeder
+class UsersSeeder extends BaseSeeder
 {
-    public function run()
+    public function seed(): void
     {
-        if (User::first()?->id > 0) {
+        if (! is_null(User::first())) {
             return;
         }
 
@@ -18,6 +17,6 @@ class UsersSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        User::factory(1000)->create();
+        User::factory(config('laravel-kata.dummy-data.max-users') - 1)->create();
     }
 }
