@@ -30,7 +30,7 @@ $defaults = match ($runMode) {
         'LK_MAX_ITERATIONS' => 1000,
 
         'LK_DD_MAX_USERS' => 1000,
-        'LK_DD_MAX_USER_BLOGS' => 100,
+        'LK_DD_MAX_USER_BLOGS' => 10,
     ],
     KataRunMode::TEST => [
         'LK_MAX_SECONDS' => 0,

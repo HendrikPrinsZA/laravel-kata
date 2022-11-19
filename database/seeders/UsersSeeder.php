@@ -8,15 +8,23 @@ class UsersSeeder extends BaseSeeder
 {
     public function seed(): void
     {
-        if (! is_null(User::first())) {
+        $maxUsers = config('laravel-kata.dummy-data.max-users');
+        if (User::count() >= $maxUsers) {
             return;
         }
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+        if (! User::firstWhere('email', 'test@example.com')) {
+            User::factory()->makeOne([
+                'name' => 'Test User',
+                'email' => 'test@example.com',
+            ])->save();
+        }
 
-        User::factory(config('laravel-kata.dummy-data.max-users') - 1)->create();
+        /** @var \App\Collections\UserCollection $users */
+        $users = User::factory(config('laravel-kata.dummy-data.max-users') - 1)
+            // ->count(config('laravel-kata.dummy-data.max-users') - 1)
+            ->make();
+
+        $users->upsert();
     }
 }

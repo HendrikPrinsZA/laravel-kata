@@ -13,4 +13,16 @@ class KataChallengeMySQLRecord extends KataChallengeMySQL
 
         return $this->select($sql, $params)[0]->count;
     }
+
+    public function getRecordsBasedOnDateRange(int $limit): int
+    {
+        $sql = "SELECT * FROM exchange_rates WHERE date BETWEEN CAST(:startDate AS DATE) AND CAST(:endDate AS DATE) LIMIT $limit;";
+        $params = [
+            'startDate' => now()->subYear()->startOfYear()->toDateString(),
+            'endDate' => now()->subYear()->endOfYear()->toDateString(),
+        ];
+        $rows = $this->select($sql, $params);
+
+        return count($rows);
+    }
 }
