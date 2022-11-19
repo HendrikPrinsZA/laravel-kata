@@ -27,6 +27,8 @@ trait HasExitHintsTrait
         }
 
         $this->command->warn($this->getRandomExitHint());
+
+        parent::__destruct();
     }
 
     protected function getExitHints(): Collection
