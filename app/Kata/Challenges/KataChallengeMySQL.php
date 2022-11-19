@@ -7,30 +7,26 @@ use Illuminate\Support\Facades\DB;
 
 class KataChallengeMySQL extends KataChallenge
 {
-    protected function setUp(): void
-    {
-        $this->maxIterations = 3;
-        $this->maxSeconds = 3;
-    }
-
     public function baseline(): void
     {
     }
 
-    /**
-     * Get row count
-     */
-    public function getSample(int $limit): int
+    public function getRecordsBasedOnDateRange(int $limit): int
     {
-        $sql = 'SELECT COUNT(*) AS `count`, SLEEP(1) FROM users WHERE id <= :id';
-        $params = [
-            'id' => $limit,
-        ];
+        $sql = <<<SQL
+SELECT *
+FROM exchange_rates E
+WHERE
+E.date LIKE CONCAT(YEAR(NOW()) - 1, '-%')
+LIMIT $limit
+SQL;
 
-        return $this->select($sql, $params)[0]->count;
+        $rows = $this->select($sql);
+
+        return count($rows);
     }
 
-    protected function select(string $sql, array $params): array
+    protected function select(string $sql, array $params = []): array
     {
         $sql = str_replace('SELECT', 'SELECT SQL_NO_CACHE', $sql);
 

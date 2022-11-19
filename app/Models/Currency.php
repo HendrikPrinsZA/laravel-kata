@@ -19,4 +19,9 @@ class Currency extends Model
     protected $casts = [
         'code' => CurrencyCode::class,
     ];
+
+    /**
+     * Required for collection::upsert()
+     */
+    public string $collection_unique_attributes = 'code';
 }

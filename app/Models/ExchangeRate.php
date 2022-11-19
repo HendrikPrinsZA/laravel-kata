@@ -23,6 +23,15 @@ class ExchangeRate extends Model
         'rate' => 'float',
     ];
 
+    /**
+     * Required for collection::upsert()
+     */
+    public array $collection_unique_attributes = [
+        'base_currency_id',
+        'target_currency_id',
+        'date',
+    ];
+
     public function baseCurrency(): BelongsTo
     {
         return $this->belongsTo(Currency::class);

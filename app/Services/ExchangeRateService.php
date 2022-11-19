@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Collections\CurrencyCollection;
 use App\Collections\ExchangeRateCollection;
 use App\Enums\CurrencyCode;
 use App\Models\Currency;
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\Http;
 
 class ExchangeRateService
 {
+    protected const MAX_YEARS = 2;
+
     protected const API_HOST = 'https://api.exchangerate.host';
 
     public function syncCurrencies(): void
@@ -21,6 +24,7 @@ class ExchangeRateService
         $symbols = collect($response->json('symbols'))
             ->filter(fn ($symbol) => $codes->contains($symbol['code']));
 
+        $currencies = CurrencyCollection::make();
         foreach ($symbols as $symbol) {
             $code = $symbol['code'];
             $name = $symbol['description'];
@@ -37,13 +41,15 @@ class ExchangeRateService
                 'code' => CurrencyCode::from($code),
                 'name' => $name,
             ]);
-            $currency->save();
+            $currencies->push($currency);
         }
+
+        $currencies->upsert();
     }
 
     public function syncExchangeRates(): void
     {
-        $dateStart = ExchangeRate::max('date') ?? now()->subYears(10)->toDateString();
+        $dateStart = ExchangeRate::max('date') ?? now()->subYears(self::MAX_YEARS)->toDateString();
         $dateStart = Carbon::createFromFormat('Y-m-d', $dateStart);
         $dateEnd = now()->subDay();
 
@@ -82,6 +88,7 @@ class ExchangeRateService
 
         $exchangeRates = ExchangeRateCollection::make();
         $rates = Http::get($url)->json('rates');
+
         foreach ($rates as $rawDate => $rawRates) {
             $date = Carbon::createFromFormat('Y-m-d', $rawDate);
             foreach ($rawRates as $currencyCode => $rate) {
@@ -94,13 +101,6 @@ class ExchangeRateService
             }
         }
 
-        $exchangeRates->chunk(500)->each(fn ($exchangeRatesChunk) => ExchangeRate::upsert($exchangeRatesChunk->toArray(), [
-            'base_currency_id',
-            'target_currency_id',
-            'date',
-        ], [
-            'rate',
-        ])
-        );
+        $exchangeRates->upsert();
     }
 }
