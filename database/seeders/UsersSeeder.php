@@ -22,7 +22,6 @@ class UsersSeeder extends BaseSeeder
 
         /** @var \App\Collections\UserCollection $users */
         $users = User::factory(config('laravel-kata.dummy-data.max-users') - 1)
-            // ->count(config('laravel-kata.dummy-data.max-users') - 1)
             ->make();
 
         $users->upsert();
