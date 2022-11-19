@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-./vendor/bin/sail test
+./vendor/bin/sail test --parallel
