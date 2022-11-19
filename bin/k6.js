@@ -1,8 +1,16 @@
 import http from "k6/http";
 import { sleep } from 'k6';
 
-const URL = 'http://localhost/api/kata/challenge/KataChallengeEloquent/getModelUnique';
-// const URL = 'http://localhost/api/kata/challenge/KataChallengeEloquentRecord/getModelUnique';
+/**
+ * Integrate load tests with CI/CD
+ *
+ * Refs
+ * - https://k6.io/blog/integrating-load-testing-with-circleci/
+ * - https://circleci.com/developer/orbs/orb/k6io/test
+ */
+
+const URL = 'http://localhost/api/kata/KataChallengeEloquent/getCollectionUnique';
+// const URL = 'http://localhost/api/kata/KataChallengeEloquentRecord/getCollectionUnique';
 
 export let options = {
     vus: 5,

@@ -53,9 +53,9 @@ commands:
   setup-laravel:
     steps:
       - run:
-          name: Initiate Laravel environment
+          name: Reset Laravel environment
           command: |
-            ./bin/init.sh
+            ./bin/reset.sh
 
   setup-php:
     steps:
@@ -108,7 +108,7 @@ jobs:
               --log-junit ~/phpunit/junit.xml \
               --stop-on-failure
       - run:
-          name: Upload test results
+          name: Upload coverage results
           command: |
             curl -Os https://uploader.codecov.io/latest/linux/codecov
             chmod +x codecov
@@ -119,6 +119,23 @@ jobs:
               -Z
       - store_test_results:
           path: ~/phpunit
+
+  gains:
+    <<: *defaults
+    steps:
+      - checkout
+      - setup-composer
+      - setup-npm
+      - setup-php
+      - dockerize/wait-mysql
+      - setup-mysql
+      - setup-laravel
+      - run:
+          name: Run benchmark (Kata)
+          command: |
+            npm run benchmark:kata
+      - store_artifacts:
+          path: storage/app/laravel-kata
 
   deploy:
     docker:
@@ -135,10 +152,13 @@ workflows:
       - lint
       - test:
           context: "LaravelKata"
+      - gains:
+          context: "LaravelKata"
       - deploy:
           requires:
             - lint
             - test
+            - gains
           filters:
             branches:
               only: master

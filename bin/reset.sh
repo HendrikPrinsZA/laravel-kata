@@ -45,6 +45,7 @@ fi
 # TODO: Investigate why local is so much quicker, sees environmental
 source $PATH_TO_REPO/.env
 composer install
+docker exec -it kata-mysql mysql -uroot -proot_password -e "DROP DATABASE IF EXISTS laravel; CREATE DATABASE laravel;"
 docker exec -it kata-mysql mysql -uroot -proot_password -e "DROP DATABASE IF EXISTS testing; CREATE DATABASE testing;"
 docker exec -it kata-mysql mysql -uroot -proot_password -e "GRANT ALL PRIVILEGES ON *.* TO 'sail'@'%'; FLUSH PRIVILEGES;"
 ./vendor/bin/sail artisan migrate:refresh --seed --force --no-interaction

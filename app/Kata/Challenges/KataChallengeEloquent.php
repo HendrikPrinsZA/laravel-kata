@@ -7,14 +7,19 @@ use App\Models\User;
 
 class KataChallengeEloquent extends KataChallenge
 {
+    protected function setUp(): void
+    {
+        $this->maxIterations = 100;
+    }
+
     public function baseline(): void
     {
     }
 
     /**
-     * Eloquent aggregates / Average
+     * Eloquent collections / Average
      */
-    public function getModelAverage(int $limit): float
+    public function getCollectionAverage(int $limit): float
     {
         return User::all()
             ->where('id', '<=', $limit)
@@ -22,12 +27,40 @@ class KataChallengeEloquent extends KataChallenge
             ->average('id');
     }
 
-    public function getModelUnique(int $limit): float
+    /**
+     * Eloquent collections / Unique
+     */
+    public function getCollectionUnique(int $limit): iterable
     {
-        $ids = User::where('id', '<=', $limit)
+        return User::all()
+            ->where('id', '<=', $limit)
             ->pluck('id')
             ->unique();
+    }
 
-        return $ids->average();
+    /**
+     * Eloquent collections / Count
+     */
+    public function getCollectionCount(int $limit): int
+    {
+        return User::all()
+            ->where('id', '<=', $limit)
+            ->count();
+    }
+
+    /**
+     * Eloquent collections / Count
+     *
+     * Don’t use a collection to count the number of related entries.
+     *
+     * See https://codeburst.io/how-to-use-laravels-eloquent-efficiently-d46f5c392ca8
+     */
+    public function getCollectionRelatedCount(int $limit): int
+    {
+        return User::all()
+            ->where('id', '<=', $limit)
+            ->last()
+            ->blogs
+            ->count();
     }
 }

@@ -29,80 +29,77 @@ Katas are code challenges focused on improving skill and technique. Some train p
 
 The term was first coined by Dave Thomas, co-author of the book The Pragmatic Programmer as an acknowledgment to the Japanese concept of kata in the martial arts. Dave's version of the concept defines a code kata as an exercise in programming which helps a programmer sharpen their skills through practice and repetition. - [Codewars](https://docs.codewars.com/concepts/kata/)
 
-### Current 
+### Scope 
+- Sample (done)
 - Native PHP (draft)
 - Laravel Eloquent (draft)
-
-### Future
-- Native MySQL
-- Native Redis
+- Native MySQL (pending)
+- Native Redis (pending)
 
 ## Sample challenge
 Sample challenge to calculate the value of `pi`.
 
-### Worst
+### Baseline
 ```php
-class KataChallengeSample extends KataChallenge {
-    public function calculatePi(int $limit): float
-    {
-        $denominator = 1;
-        $sum = 0;
-        $precision = 1000000;
-
-        for ($iteration = 0; $iteration < $precision; $iteration++) {
-            $sum = ($iteration % 2 === 0)
-                ? $sum - (4 / $denominator)
-                : $sum + (4 / $denominator);
-
-            $denominator += 2;
-        }
-
-        return round($sum, 2);
-    }
+public function calculatePi(int $limit): float
+{
+  $denominator = 1;
+  $sum = 0;
+  for ($i = 0; $i < 100000; $i++) {
+    $sum = ($i % 2 === 0)
+      ? $sum + (4 / $denominator)
+      : $sum - (4 / $denominator);
+    $denominator += 2;
+  }
+  return round($sum, 2);
 }
 ```
 
-### Better
-```php 
-class KataChallengeSampleRecord extends KataChallengeSample {
-    public function calculatePi(int $limit): float {
-        return pi();
-    }
+### Record
+```php
+public function calculatePi(int $limit): float
+{
+  return round(M_PI, 2);
 }
 ```
 
-### Best
-```php 
-class KataChallengeSampleRecord extends KataChallengeSample {
-    public function calculatePi(int $limit): float {
-        return M_PI;
-    }
-}
+### Report
+```text
++-------------+------------------------------------------+--------------------------------------+
+|             | Before                                   | Record                               |
++-------------+------------------------------------------+--------------------------------------+
+| Code        | public function calculatePi(): float     | public function calculatePi(): float |
+|             | {                                        | {                                    |
+|             |     $denominator = 1;                    |     return round(M_PI, 2);           |
+|             |     $sum = 0;                            | }                                    |
+|             |     for ($i = 0; $i < 100000; $i++) {    |                                      |
+|             |         $sum = ($i % 2 === 0)            |                                      |
+|             |             ? $sum + (4 / $denominator)  |                                      |
+|             |             : $sum - (4 / $denominator); |                                      |
+|             |         $denominator += 2;               |                                      |
+|             |     }                                    |                                      |
+|             |     return round($sum, 2);               |                                      |
+|             | }                                        |                                      |
+|             |                                          |                                      |
+| Outputs md5 | 60b3da123ce4f982e362d1fd843ecb0d         | 60b3da123ce4f982e362d1fd843ecb0d     |
+| line_count  | 14                                       | 3                                    |
+| violations  | 0                                        | 0                                    |
+| duration    | 15933.131217957                          | 204.85305786133                      |
+| iterations  | 189                                      | 10480                                |
+| ----------- | ---------------------------------------- | ------------------------------------ |
+| score       | 0.97684952701574                         | -0.094345035495324                   |
++-------------+------------------------------------------+--------------------------------------+
 ```
----
-## Benchmarking (Grafana Labs K6)
-Wanted to stay away from this as it seems like a hook into a difficult commercial agreement. But checking...
 
-### Install with brew
+### Score breakdown
+```text
++------------+-------------------+-----------------+-----------------+------------------+--------------------+------------+
+| Field      | Report            | Stats (Before)  | Stats (Record)  | Score (Before)   | Score (Record)     | Field      |
++------------+-------------------+-----------------+-----------------+------------------+--------------------+------------+
+| line_count | 3 (14)            | 14              | 3               | 0.85714285714286 | 0.33333333333333   | line_count |
+| violations | 0 (0)             | 0               | 0               | 0.999999998      | 0.999999998        | violations |
+| duration   | 204.85 (15933.13) | 15933.131217957 | 204.85305786133 | 0.9827432488429  | -0.34220149531666  | duration   |
+| iterations | 10480 (189)       | 189             | 10480           | 0.98168427173176 | -0.015602287043318 | iterations |
+| score      | -0.09 (0.98)      |                 |                 | 0.97684952701574 | -0.094345035495324 | score      |
++------------+-------------------+-----------------+-----------------+------------------+--------------------+------------+
 ```
-brew install k6
-```
-
-### Refs
-- https://github.com/grafana/k6#install
-- https://betterprogramming.pub/an-introduction-to-k6-an-api-load-testing-tool-132a0d87827d
----
-
-## Wishlist
-- Optimise CI/CD with CircleCI
-  - Create dedicated docker image (self maintained)
-- Drive contribution by PR gamification
-  - Short: Verify and publish score for ranking on centralised DB, consider firebase
-  - Counter on lines of changes on file vs improvement from before (how?)
-    - Maybe percentage of changes V/S % increase
-- Automatically generate the README by sections
-  - Anonymous cloud service to claim records
-    - `[GET] https://laravel-kata.com/join`
-        - `{'url': 'https://laravel-kata.com/instance/123', 'uid': 'XYZ001'}`
-    - `[GET] https://laravel-kata.com/join?uid=XYZ001`
-    - `[GET] https://laravel-kata.com/claim?uid=XYZ001` -> `https://github.com/login?client_id=X..`

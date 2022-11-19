@@ -7,7 +7,7 @@ class KataChallengePhpRecord extends KataChallengePhp
     public function loopWithCondition(int $limit): float
     {
         $output = $limit;
-        $items = range(1, $limit);
+        $items = range(1, $limit * 10);
         foreach ($items as $item) {
             $output += $output / $item;
         }
