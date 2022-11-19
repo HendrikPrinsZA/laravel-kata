@@ -12,6 +12,7 @@ class UserTest extends TestCase
 
     public function test_factory()
     {
+        User::all()->each(fn (User $user) => $user->delete());
         User::factory()->count(10)->create();
         $this->assertCount(10, User::all());
     }
