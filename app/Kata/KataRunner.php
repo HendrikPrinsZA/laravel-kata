@@ -73,32 +73,29 @@ class KataRunner
         $results = collect();
 
         foreach ($this->kataChallenges as $kataChallenge) {
-            $results->push($this->handleChallenge($kataChallenge));
-        }
+            $result = $this->handleChallenge($kataChallenge);
 
-        $this->report($results);
+            $this->report($result);
+            $results->push($result);
+        }
 
         return $results;
     }
 
-    protected function report(Collection $results): void
+    protected function report(array $results): void
     {
-        foreach ($results as $methodResults) {
-            foreach ($methodResults as $method => $methodResult) {
-                // TODO: Move to filter before
-                // - Something bad with dynamic class methods
-                if (! $methodResult) {
-                    continue;
-                }
-
-                /** @var KataChallengeResultObject $resultBefore */
-                $resultBefore = $methodResult[KataRunnerMode::BEFORE->value];
-
-                /** @var KataChallengeResultObject $resultRecord */
-                $resultRecord = $methodResult[KataRunnerMode::RECORD->value];
-
-                $this->printScoresTable($resultBefore, $resultRecord);
+        foreach ($results as $methodResult) {
+            if (! $methodResult) {
+                continue;
             }
+
+            /** @var KataChallengeResultObject $resultBefore */
+            $resultBefore = $methodResult[KataRunnerMode::BEFORE->value];
+
+            /** @var KataChallengeResultObject $resultRecord */
+            $resultRecord = $methodResult[KataRunnerMode::RECORD->value];
+
+            $this->printScoresTable($resultBefore, $resultRecord);
         }
     }
 
@@ -258,8 +255,8 @@ class KataRunner
      * Breakdown
      * - 5%: code lines
      * - 5%: code violations
-     * - 45%: total seconds based on max iterations
-     * - 45%: total iterations based on max seconds
+     * - 40%: total seconds based on max iterations
+     * - 50%: total iterations based on max seconds
      *
      * Future:
      * - Score based on resources (10%)
@@ -319,15 +316,15 @@ class KataRunner
         $statsBefore['scores']['total'] = array_sum([
             $statsBefore['scores']['line_count'] * 0.05,
             $statsBefore['scores']['violations'] * 0.05,
-            $statsBefore['scores']['duration'] * 0.45,
-            $statsBefore['scores']['iterations'] * 0.45,
+            $statsBefore['scores']['duration'] * 0.40,
+            $statsBefore['scores']['iterations'] * 0.50,
         ]);
 
         $statsRecord['scores']['total'] = array_sum([
             $statsRecord['scores']['line_count'] * 0.05,
             $statsRecord['scores']['violations'] * 0.05,
-            $statsRecord['scores']['duration'] * 0.45,
-            $statsRecord['scores']['iterations'] * 0.45,
+            $statsRecord['scores']['duration'] * 0.40,
+            $statsRecord['scores']['iterations'] * 0.50,
         ]);
 
         return $statsRecord['scores']['total'];
