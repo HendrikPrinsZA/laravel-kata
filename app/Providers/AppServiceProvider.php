@@ -26,7 +26,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot()
     {
         ParallelTesting::setUpProcess(function ($token) {
-            Artisan::call('migrate --seed');
+            Artisan::call('migrate');
         });
     }
 }

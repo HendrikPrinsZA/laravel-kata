@@ -3,12 +3,12 @@
 namespace Tests\Unit\Kata\Traits;
 
 use App\Kata\Traits\HasExitHintsTrait;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class HasExitHintsTraitTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
     use HasExitHintsTrait;
 
     public function test_is_true()
