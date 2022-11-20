@@ -55,7 +55,7 @@ commands:
       - run:
           name: Reset Laravel environment
           command: |
-            ./bin/reset
+            ./bin/reset.sh
 
   setup-php:
     steps:
