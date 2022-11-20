@@ -13,22 +13,6 @@ class KataChallengePhp extends KataChallenge
     }
 
     /**
-     * Never Use Count or Any Other Methods in The Condition Section of a Loop
-     *
-     * See https://www.codeclouds.com/blog/php-profiling-performance-optimization/
-     */
-    public function loopWithCondition(int $limit): float
-    {
-        $output = $limit;
-        $items = range(1, $limit * 10);
-        for ($x = 0; $x < count($items); $x++) {
-            $output += $output / $items[$x];
-        }
-
-        return $output;
-    }
-
-    /**
      * Don't use preg_replace unless you really need to
      *
      * See https://www.site24x7.com/blog/a-developers-guide-to-optimizing-php-performance
@@ -48,5 +32,23 @@ class KataChallengePhp extends KataChallenge
         ], $text);
 
         return floatval(md5($text));
+    }
+
+    /**
+     * Never Use Count or Any Other Methods in The Condition Section of a Loop
+     *
+     * See https://www.codeclouds.com/blog/php-profiling-performance-optimization/
+     *
+     * Note: Deprecated, as it seems like later versions of PHP is smart enough!
+     */
+    protected function loopWithCondition(int $limit): float
+    {
+        $output = $limit;
+        $items = range(1, $limit * 10);
+        for ($x = 0; $x < count($items); $x++) {
+            $output += $output / $items[$x];
+        }
+
+        return $output;
     }
 }
