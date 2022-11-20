@@ -73,32 +73,29 @@ class KataRunner
         $results = collect();
 
         foreach ($this->kataChallenges as $kataChallenge) {
-            $results->push($this->handleChallenge($kataChallenge));
-        }
+            $result = $this->handleChallenge($kataChallenge);
 
-        $this->report($results);
+            $this->report($result);
+            $results->push($result);
+        }
 
         return $results;
     }
 
-    protected function report(Collection $results): void
+    protected function report(array $results): void
     {
-        foreach ($results as $methodResults) {
-            foreach ($methodResults as $method => $methodResult) {
-                // TODO: Move to filter before
-                // - Something bad with dynamic class methods
-                if (! $methodResult) {
-                    continue;
-                }
-
-                /** @var KataChallengeResultObject $resultBefore */
-                $resultBefore = $methodResult[KataRunnerMode::BEFORE->value];
-
-                /** @var KataChallengeResultObject $resultRecord */
-                $resultRecord = $methodResult[KataRunnerMode::RECORD->value];
-
-                $this->printScoresTable($resultBefore, $resultRecord);
+        foreach ($results as $methodResult) {
+            if (! $methodResult) {
+                continue;
             }
+
+            /** @var KataChallengeResultObject $resultBefore */
+            $resultBefore = $methodResult[KataRunnerMode::BEFORE->value];
+
+            /** @var KataChallengeResultObject $resultRecord */
+            $resultRecord = $methodResult[KataRunnerMode::RECORD->value];
+
+            $this->printScoresTable($resultBefore, $resultRecord);
         }
     }
 
@@ -107,7 +104,6 @@ class KataRunner
         KataChallengeResultObject $resultRecord
     ): void {
         $showExtendedScores = config('laravel-kata.show-extended-scores');
-
         $headers = $showExtendedScores ? [
             'Field',
             'Report',
@@ -122,6 +118,13 @@ class KataRunner
         ];
 
         $reportData = $this->getReportData($resultBefore, $resultRecord);
+
+        $this->command->info(sprintf(
+            "# %s::%s\n- %s",
+            $resultRecord->getClassName(),
+            $resultRecord->getMethodName(),
+            help_me_code($resultRecord->getReflectionMethod())
+        ));
 
         $reportText = implode("\n", [
             sprintf(
@@ -193,7 +196,6 @@ class KataRunner
         if (config('laravel-kata.show-code-snippets')) {
             $resultBeforeOutputMd5 = $resultBefore->getOutputsMd5();
             $resultRecordOutputMd5 = $resultRecord->getOutputsMd5();
-            $this->command->info(sprintf('# %s', help_me_code($resultRecord->getReflectionMethod())));
             $this->command->table([
                 '',
                 'Before',
@@ -209,6 +211,11 @@ class KataRunner
                     $resultBeforeOutputMd5,
                     $this->wrapInFormat($resultRecordOutputMd5, $resultRecordOutputMd5 === $resultBeforeOutputMd5),
                 ],
+                // [
+                //     'Outputs json',
+                //     $resultBefore->getOutputsJson(),
+                //     $resultRecord->getOutputsJson(),
+                // ],
                 [
                     implode("\n", [
                         'line_count',
@@ -248,8 +255,8 @@ class KataRunner
      * Breakdown
      * - 5%: code lines
      * - 5%: code violations
-     * - 45%: total seconds based on max iterations
-     * - 45%: total iterations based on max seconds
+     * - 40%: total seconds based on max iterations
+     * - 50%: total iterations based on max seconds
      *
      * Future:
      * - Score based on resources (10%)
@@ -270,7 +277,7 @@ class KataRunner
                 $statsBefore['line_count']
             ),
             'violations' => percentage_change(
-                5,
+                20,
                 count($statsBefore['violations']),
                 true
             ),
@@ -291,7 +298,7 @@ class KataRunner
                 $statsRecord['line_count']
             ),
             'violations' => percentage_change(
-                5,
+                count($statsBaseline['violations']),
                 count($statsRecord['violations']),
                 true
             ),
@@ -309,15 +316,15 @@ class KataRunner
         $statsBefore['scores']['total'] = array_sum([
             $statsBefore['scores']['line_count'] * 0.05,
             $statsBefore['scores']['violations'] * 0.05,
-            $statsBefore['scores']['duration'] * 0.45,
-            $statsBefore['scores']['iterations'] * 0.45,
+            $statsBefore['scores']['duration'] * 0.40,
+            $statsBefore['scores']['iterations'] * 0.50,
         ]);
 
         $statsRecord['scores']['total'] = array_sum([
             $statsRecord['scores']['line_count'] * 0.05,
             $statsRecord['scores']['violations'] * 0.05,
-            $statsRecord['scores']['duration'] * 0.45,
-            $statsRecord['scores']['iterations'] * 0.45,
+            $statsRecord['scores']['duration'] * 0.40,
+            $statsRecord['scores']['iterations'] * 0.50,
         ]);
 
         return $statsRecord['scores']['total'];
@@ -369,7 +376,7 @@ class KataRunner
             );
 
             Storage::disk('local')->put($filePath, json_encode($result));
-            $this->command?->info(sprintf('Saved output to %s', $filePath));
+            $this->command?->warn(sprintf('Saved output to %s', $filePath));
         }
 
         if (config('laravel-kata.debug-mode')) {
@@ -498,6 +505,8 @@ class KataRunner
         // Loop again to separate the concerns
         foreach ($this->iterationModes as $iterationMode) {
             $result[$iterationMode->value]['outputs_count'] = count($result[$iterationMode->value]['outputs']);
+
+            $result[$iterationMode->value]['outputs_json'] = json_encode($result[$iterationMode->value]['outputs'], JSON_PRETTY_PRINT, 12);
             $result[$iterationMode->value]['outputs_md5'] = md5(json_encode($result[$iterationMode->value]['outputs']));
             $result[$iterationMode->value]['duration'] = $result[$iterationMode->value]['event']->duration();
 

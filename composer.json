@@ -13,7 +13,7 @@
         "laravel/tinker": "^2.7",
         "phpmd/phpmd": "^2.13",
         "spiral/roadrunner": "^2.11",
-        "tightenco/tlint": "^6.3"
+        "tightenco/tlint": "^7.0"
     },
     "require-dev": {
         "brianium/paratest": "^6.6",

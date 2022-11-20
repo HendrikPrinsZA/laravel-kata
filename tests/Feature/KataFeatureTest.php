@@ -4,12 +4,12 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Database\Seeders\UsersSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
 
 final class KataFeatureTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseMigrations;
 
     const RESPONSE_STRUCTURES = [
         'challenges' => [
