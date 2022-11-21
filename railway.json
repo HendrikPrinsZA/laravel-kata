@@ -1,7 +1,7 @@
 {
   "build": {
     "builder": "nixpacks",
-    "buildCommand": "npm run reset"
+    "buildCommand": "php artisan migrate --seed"
   },
   "deploy": {
     "startCommand": "echo starting!",
