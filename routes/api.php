@@ -26,6 +26,12 @@ Route::get('/', function (Request $request) {
     return response("I'm a teapot", 418);
 });
 
+Route::get('/health', function (Request $request) {
+    return JsonResource::make([
+        'success' => true,
+    ]);
+});
+
 /**
  * Get the list of challenges
  */
