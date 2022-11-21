@@ -13,6 +13,7 @@
         "laravel/sanctum": "^3.0",
         "laravel/tinker": "^2.7",
         "phpmd/phpmd": "^2.13",
+        "predis/predis": "^2.0",
         "spiral/roadrunner": "^2.11",
         "tightenco/tlint": "^7.0"
     },
