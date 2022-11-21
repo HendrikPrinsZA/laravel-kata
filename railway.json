@@ -1,7 +1,7 @@
 {
   "build": {
     "builder": "nixpacks",
-    "buildCommand": "echo building!"
+    "buildCommand": "npm run reset"
   },
   "deploy": {
     "startCommand": "echo starting!",
