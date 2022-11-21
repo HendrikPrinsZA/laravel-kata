@@ -8,5 +8,12 @@
       "healthcheckPath": "/",
       "healthcheckTimeout": 100,
       "restartPolicyType": "never"
+    },
+    "environments": {
+      "pr": {
+        "deploy": {
+          "startCommand": "echo 'start command for all pull requests!'"
+        }
+      }
     }
   }

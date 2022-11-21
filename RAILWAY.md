@@ -1,5 +1,9 @@
 # Railway
 
+#### References
+- https://docs.railway.app/deploy/config-as-code
+- https://invariance.dev/2022-08-04-deploy-laravel-on-railway.html
+
 ## Install and configure Railway CLI
 1. Install 
 ```sh
