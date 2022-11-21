@@ -25,6 +25,23 @@ if [ ! -f "$PATH_TO_REPO/.env" ]; then
   php artisan key:generate
 fi
 
+if [ "${CI_MODE}" == "railway" ]; then
+    echo "Running in CircliCI mode"
+    echo "DB_HOST_OVERRIDE=127.0.0.1" >> "$PATH_TO_REPO/.env"
+
+    source $PATH_TO_REPO/.env
+
+    # composer install
+    # mysql -h127.0.0.1 -uroot -proot_password -e "DROP DATABASE IF EXISTS testing; CREATE DATABASE testing;"
+    # mysql -h127.0.0.1 -uroot -proot_password -e "GRANT ALL PRIVILEGES ON *.* TO 'sail'@'%'; FLUSH PRIVILEGES;"
+
+    php artisan kata:test
+
+    # php artisan migrate:refresh --seed --no-interaction --force
+    # php artisan migrate:refresh --database=testing --seed --force --no-interaction
+    exit 0
+fi
+
 if [ "${CI_MODE}" == "circleci" ]; then
     echo "Running in CircliCI mode"
     echo "DB_HOST_OVERRIDE=127.0.0.1" >> "$PATH_TO_REPO/.env"
