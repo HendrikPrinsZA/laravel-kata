@@ -1,19 +1,10 @@
 {
     "build": {
-      "builder": "nixpacks",
-      "buildCommand": "echo building!"
+      "builder": "DOCKERFILE",
+      "dockerfilePath": "docker/8.1-railway/Dockerfile"
     },
     "deploy": {
-      "startCommand": "echo starting!",
-      "healthcheckPath": "/",
-      "healthcheckTimeout": 100,
-      "restartPolicyType": "never"
-    },
-    "environments": {
-      "pr": {
-        "deploy": {
-          "startCommand": "echo 'start command for all pull requests!'"
-        }
-      }
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10
     }
-  }
+}
