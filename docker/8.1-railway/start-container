@@ -10,11 +10,11 @@ fi
 
 npm install
 composer install
+chmod -R ugo+rw /.composer
 
 # if [ "${CI_MODE}" == "circleci" ]; then fi
-
-php artisan migrate
-chmod -R ugo+rw /.composer
+# php artisan migrate --seed
+npm run reset
 
 if [ ! -z "$PORT" ]; then
     sed -i -e "s/--port=80/--port=$PORT/g" /etc/supervisor/conf.d/supervisord.conf
