@@ -141,8 +141,10 @@ class KataChallengeResultObject extends JsonResource
 
     public function getOutputsJson(
         KataRunnerIterationMode $kataRunnerIterationMode = KataRunnerIterationMode::MAX_ITERATIONS,
-    ): string {
-        return $this->result[$kataRunnerIterationMode->value]['outputs_json'];
+    ): mixed {
+        $outputJson = $this->result[$kataRunnerIterationMode->value]['outputs_json'];
+
+        return json_decode($outputJson);
     }
 
     public function getClassName(): string

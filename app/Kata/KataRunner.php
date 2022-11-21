@@ -8,6 +8,7 @@ use App\Kata\Enums\KataRunnerMode;
 use App\Kata\Exceptions\KataChallengeScoreException;
 use App\Kata\Objects\KataChallengeResultObject;
 use App\Kata\Traits\HasExitHintsTrait;
+use App\Utilities\DiffUtility;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Console\Command;
@@ -211,11 +212,6 @@ class KataRunner
                     $resultBeforeOutputMd5,
                     $this->wrapInFormat($resultRecordOutputMd5, $resultRecordOutputMd5 === $resultBeforeOutputMd5),
                 ],
-                // [
-                //     'Outputs json',
-                //     $resultBefore->getOutputsJson(),
-                //     $resultRecord->getOutputsJson(),
-                // ],
                 [
                     implode("\n", [
                         'line_count',
@@ -233,6 +229,12 @@ class KataRunner
         $this->command->table($headers, [$row]);
 
         if ($resultRecordOutputMd5 !== $resultBeforeOutputMd5) {
+            $diff = DiffUtility::friendlyDiff(
+                $resultBefore->getOutputsJson(),
+                $resultRecord->getOutputsJson(),
+            );
+            $this->command->info($diff);
+
             throw new KataChallengeScoreException(sprintf(
                 '%s::%s is completely wrong!',
                 $resultRecord->getClassName(),
@@ -506,8 +508,8 @@ class KataRunner
         foreach ($this->iterationModes as $iterationMode) {
             $result[$iterationMode->value]['outputs_count'] = count($result[$iterationMode->value]['outputs']);
 
-            $result[$iterationMode->value]['outputs_json'] = json_encode($result[$iterationMode->value]['outputs'], JSON_PRETTY_PRINT, 12);
-            $result[$iterationMode->value]['outputs_md5'] = md5(json_encode($result[$iterationMode->value]['outputs']));
+            $result[$iterationMode->value]['outputs_json'] = json_encode($result[$iterationMode->value]['outputs']);
+            $result[$iterationMode->value]['outputs_md5'] = md5($result[$iterationMode->value]['outputs_json']);
             $result[$iterationMode->value]['duration'] = $result[$iterationMode->value]['event']->duration();
 
             // Unset expensive keys
