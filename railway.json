@@ -1,10 +1,10 @@
 {
   "build": {
-    "builder": "nixpacks",
-    "buildCommand": "php artisan migrate --seed"
+    "builder": "nixpacks"
   },
   "deploy": {
-    "startCommand": "php artisan serve --quiet",
+    "healthcheckPath": "/api/health",
+    "healthcheckTimeout": 100,
     "restartPolicyType": "never"
   }
 }
