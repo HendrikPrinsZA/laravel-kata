@@ -4,7 +4,7 @@ services:
     laravel.test:
         container_name: kata-laravel
         build:
-            context: ./docker/8.1-railway
+            context: ./docker/8.1
             dockerfile: Dockerfile
             args:
                 CI_MODE: '${CI_MODE}'
