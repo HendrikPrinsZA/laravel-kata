@@ -41,7 +41,6 @@ fi
 if [ "${CI_MODE}" == "circleci" ]; then
     echo "Running in CircliCI"
     echo "DB_HOST_OVERRIDE=127.0.0.1" >> "$PATH_TO_REPO/.env"
-
     source $PATH_TO_REPO/.env
 
     composer install
