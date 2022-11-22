@@ -24,25 +24,33 @@ echo "PATH_TO_REPO=$PATH_TO_REPO"
 ls -la $PATH_TO_REPO
 
 if [ ! -f "$PATH_TO_REPO/.env" ]; then
-  echo "Copied .env.example to .env"
-  cp "$PATH_TO_REPO/.env.example" "$PATH_TO_REPO/.env"
-  php artisan key:generate
+    if [ "${CI_MODE}" == "railway" ]; then
+        echo "Copied .env.example to .env"
+        cp "$PATH_TO_REPO/.env.railway" "$PATH_TO_REPO/.env"
+    else
+        echo "Copied .env.example to .env"
+        cp "$PATH_TO_REPO/.env.example" "$PATH_TO_REPO/.env"
+        php artisan key:generate
+    fi
 fi
 
 if [ "${CI_MODE}" == "railway" ]; then
     echo "Running in CircliCI mode"
-    echo "DB_HOST_OVERRIDE=127.0.0.1" >> "$PATH_TO_REPO/.env"
-
     source $PATH_TO_REPO/.env
 
+    echo "DB_HOST=${DB_HOST}"
+    echo "DB_PORT=${DB_PORT}"
+    echo "DB_DATABASE=${DB_DATABASE}"
+    echo "DB_USERNAME=${DB_USERNAME}"
+    echo "DB_PASSWORD=${DB_PASSWORD}"
+    echo "DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}"
+
     # composer install
-    # mysql -h127.0.0.1 -uroot -proot_password -e "DROP DATABASE IF EXISTS testing; CREATE DATABASE testing;"
-    # mysql -h127.0.0.1 -uroot -proot_password -e "GRANT ALL PRIVILEGES ON *.* TO 'sail'@'%'; FLUSH PRIVILEGES;"
+    mysql -h${DB_HOST} -u${DB_USERNAME} -p${DB_PASSWORD} -e "DROP DATABASE IF EXISTS testing; CREATE DATABASE testing;"
+    mysql -h${DB_HOST} -u${DB_USERNAME} -p${DB_PASSWORD} -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%'; FLUSH PRIVILEGES;"
 
-    # php artisan kata:test
-
-    # php artisan migrate:refresh --seed --no-interaction --force
-    # php artisan migrate:refresh --database=testing --seed --force --no-interaction
+    php artisan migrate:refresh --seed --no-interaction --force
+    php artisan migrate:refresh --database=testing --seed --force --no-interaction
     exit 0
 fi
 

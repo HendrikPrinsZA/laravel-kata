@@ -1,6 +1,7 @@
 {
   "build": {
-    "builder": "nixpacks"
+    "builder": "nixpacks",
+    "buildCommand": "npm run reset"
   },
   "deploy": {
     "healthcheckPath": "/api/health",
