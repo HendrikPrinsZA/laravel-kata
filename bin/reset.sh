@@ -35,27 +35,15 @@ if [ ! -f "$PATH_TO_REPO/.env" ]; then
 fi
 
 if [ "${CI_MODE}" == "railway" ]; then
-    echo "Running in CircliCI mode"
+    echo "Running in Railway"
     source $PATH_TO_REPO/.env
 
-    echo "DB_HOST=${DB_HOST}"
-    echo "DB_PORT=${DB_PORT}"
-    echo "DB_DATABASE=${DB_DATABASE}"
-    echo "DB_USERNAME=${DB_USERNAME}"
-    echo "DB_PASSWORD=${DB_PASSWORD}"
-    echo "DB_ROOT_PASSWORD=${DB_ROOT_PASSWORD}"
-
-    # composer install
-    mysql -h${DB_HOST} -u${DB_USERNAME} -p${DB_PASSWORD} -e "DROP DATABASE IF EXISTS testing; CREATE DATABASE testing;"
-    mysql -h${DB_HOST} -u${DB_USERNAME} -p${DB_PASSWORD} -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'%'; FLUSH PRIVILEGES;"
-
-    php artisan migrate:refresh --seed --no-interaction --force
-    php artisan migrate:refresh --database=testing --seed --force --no-interaction
+    php artisan migrate --seed --no-interaction --force
     exit 0
 fi
 
 if [ "${CI_MODE}" == "circleci" ]; then
-    echo "Running in CircliCI mode"
+    echo "Running in CircliCI"
     echo "DB_HOST_OVERRIDE=127.0.0.1" >> "$PATH_TO_REPO/.env"
 
     source $PATH_TO_REPO/.env
