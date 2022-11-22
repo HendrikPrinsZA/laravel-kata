@@ -19,10 +19,6 @@ Convenient script to ensure environment is ready to go
 PATH_TO_SCRIPT_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 PATH_TO_REPO="$PATH_TO_SCRIPT_DIR/../"
 
-echo "=== DEBUGGING ==="
-echo "PATH_TO_REPO=$PATH_TO_REPO"
-ls -la $PATH_TO_REPO
-
 if [ ! -f "$PATH_TO_REPO/.env" ]; then
     if [ "${CI_MODE}" == "railway" ]; then
         echo "Copied .env.example to .env"
