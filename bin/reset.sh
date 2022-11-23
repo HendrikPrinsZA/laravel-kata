@@ -32,6 +32,7 @@ fi
 
 if [ "${CI_MODE}" == "railway" ]; then
     echo "Running in Railway"
+
     source $PATH_TO_REPO/.env
 
     php artisan migrate --seed --no-interaction --force
