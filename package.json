@@ -1,24 +1,27 @@
 {
     "private": true,
+    "type": "module",
     "scripts": {
-        "dev": "vite",
-        "build": "vite build",
         "prepare": "husky install",
         "test": "./bin/test.sh",
         "reset": "./bin/reset.sh",
-        "benchmark:kata": "./bin/benchmark-kata.sh"
+        "benchmark:kata": "./bin/benchmark-kata.sh",
+        "client-dev": "astro dev",
+        "client-start": "astro dev",
+        "client-build": "astro build",
+        "client-preview": "astro preview",
+        "client-astro": "astro"
     },
     "lint-staged": {
         "**/*.php": "./vendor/bin/pint --preset laravel"
     },
     "devDependencies": {
-        "axios": "^1.1",
-        "chokidar": "^3.5.3",
         "husky": "^8.0.2",
         "laravel-vite-plugin": "^0.7.0",
         "lint-staged": "^13.0.3",
-        "lodash": "^4.17.19",
-        "postcss": "^8.4.19",
         "vite": "^3.2.3"
+    },
+    "dependencies": {
+        "astro": "^1.6.10"
     }
 }
