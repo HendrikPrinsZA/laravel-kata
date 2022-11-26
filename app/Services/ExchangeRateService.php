@@ -17,7 +17,7 @@ class ExchangeRateService
 
     protected const API_HOST = 'https://api.exchangerate.host';
 
-    public function syncCurrencies(): void
+    public function getCurrencies(): CurrencyCollection
     {
         $codes = collect(CurrencyCode::cases())->pluck('value');
         $response = Http::get(sprintf('%s/symbols', self::API_HOST));
@@ -44,13 +44,16 @@ class ExchangeRateService
             $currencies->push($currency);
         }
 
-        $currencies->upsert();
+        return $currencies;
     }
 
     public function syncExchangeRates(): void
     {
         $dateStart = ExchangeRate::max('date') ?? now()->subYears(self::MAX_YEARS)->toDateString();
+
         $dateStart = Carbon::createFromFormat('Y-m-d', $dateStart);
+
+        // Check from yesterday
         $dateEnd = now()->subDay();
 
         // Skip, because we have the latest data
@@ -65,14 +68,16 @@ class ExchangeRateService
         }
     }
 
-    protected function syncExchangeRatesPeriod(Carbon $startDate, Carbon $endDate): void
+    private function syncExchangeRatesPeriod(Carbon $startDate, Carbon $endDate): void
     {
+        // Get the currency codes
+        // - The base is EUR, so filter out
         $codes = collect(CurrencyCode::cases())
             ->filter(fn (CurrencyCode $currencyCode) => $currencyCode !== CurrencyCode::EUR)
             ->pluck('value');
 
         $url = sprintf(
-            '%s/timeseries?start_date=%s&end_date=%s&base=%s&symbols=USD,ZAR',
+            '%s/timeseries?start_date=%s&end_date=%s&base=%s&symbols=%s',
             self::API_HOST,
             $startDate->toDateString(),
             $endDate->toDateString(),

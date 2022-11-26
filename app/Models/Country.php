@@ -2,23 +2,18 @@
 
 namespace App\Models;
 
-use App\Enums\CurrencyCode;
 use App\Traits\HasCollection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Currency extends Model
+class Country extends Model
 {
-    use HasFactory, HasCollection;
+    use HasCollection, HasFactory;
 
     protected $fillable = [
         'code',
         'name',
-    ];
-
-    protected $casts = [
-        'code' => CurrencyCode::class,
     ];
 
     /**
@@ -26,8 +21,8 @@ class Currency extends Model
      */
     public string $collection_unique_attributes = 'code';
 
-    public function countries(): HasMany
+    public function currency(): BelongsTo
     {
-        return $this->hasMany(Country::class);
+        return $this->belongsTo(Currency::class);
     }
 }

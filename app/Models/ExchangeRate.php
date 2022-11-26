@@ -14,6 +14,7 @@ class ExchangeRate extends Model
     protected $fillable = [
         'base_currency_id',
         'target_currency_id',
+        'target_currency_code',
         'date',
         'rate',
     ];
