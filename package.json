@@ -15,7 +15,7 @@
         "axios": "^1.1",
         "chokidar": "^3.5.3",
         "husky": "^8.0.2",
-        "laravel-vite-plugin": "^0.7.0",
+        "laravel-vite-plugin": "^0.7.1",
         "lint-staged": "^13.0.3",
         "lodash": "^4.17.19",
         "postcss": "^8.4.19",
