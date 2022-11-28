@@ -3863,16 +3863,16 @@
         },
         {
             "name": "spiral/roadrunner",
-            "version": "v2.11.4",
+            "version": "v2.12.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/roadrunner-server/roadrunner.git",
-                "reference": "bee07c00a8954945156ca3e3de9c032b530abd01"
+                "reference": "33bebe596b6c920634ec9386d818b912939de94b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/roadrunner-server/roadrunner/zipball/bee07c00a8954945156ca3e3de9c032b530abd01",
-                "reference": "bee07c00a8954945156ca3e3de9c032b530abd01",
+                "url": "https://api.github.com/repos/roadrunner-server/roadrunner/zipball/33bebe596b6c920634ec9386d818b912939de94b",
+                "reference": "33bebe596b6c920634ec9386d818b912939de94b",
                 "shasum": ""
             },
             "require": {
@@ -3898,9 +3898,9 @@
             "description": "RoadRunner: High-performance PHP application server and process manager written in Go and powered with plugins",
             "support": {
                 "issues": "https://github.com/roadrunner-server/roadrunner/issues",
-                "source": "https://github.com/roadrunner-server/roadrunner/tree/v2.11.4"
+                "source": "https://github.com/roadrunner-server/roadrunner/tree/v2.12.0"
             },
-            "time": "2022-10-06T14:25:16+00:00"
+            "time": "2022-11-24T14:32:20+00:00"
         },
         {
             "name": "spiral/roadrunner-cli",
