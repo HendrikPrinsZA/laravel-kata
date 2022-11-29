@@ -97,9 +97,11 @@ Route::get('/kata/{challenge}/{method}', function (Request $request, string $cha
         'request' => &$request,
     ]);
 
-    // TODO: Determine the counter dynamically
-    $iteration = $request->get('iteration', 1);
-    $data = $instance->{$method}($iteration);
+    $data = [];
+    $iterations = $request->get('iterations', 1);
+    foreach (range(1, $iterations) as $iteration) {
+        $data[] = $instance->{$method}($iteration);
+    }
 
     return JsonResource::make([
         'success' => true,
