@@ -13,13 +13,13 @@ use Illuminate\Support\Facades\Http;
 
 class ExchangeRateService
 {
-    protected const MAX_YEARS = 2;
+    protected const MAX_YEARS = 20;
 
     protected const API_HOST = 'https://api.exchangerate.host';
 
-    public function syncCurrencies(): void
+    public function getCurrencies(): CurrencyCollection
     {
-        $codes = collect(CurrencyCode::cases())->pluck('value');
+        $codes = CurrencyCode::all()->pluck('code');
         $response = Http::get(sprintf('%s/symbols', self::API_HOST));
         $symbols = collect($response->json('symbols'))
             ->filter(fn ($symbol) => $codes->contains($symbol['code']));
@@ -29,14 +29,6 @@ class ExchangeRateService
             $code = $symbol['code'];
             $name = $symbol['description'];
 
-            $currency = Currency::firstWhere('code', $code);
-            if (! is_null($currency)) {
-                $currency->name = $name;
-                $currency->save();
-
-                continue;
-            }
-
             $currency = Currency::factory()->make([
                 'code' => CurrencyCode::from($code),
                 'name' => $name,
@@ -44,13 +36,16 @@ class ExchangeRateService
             $currencies->push($currency);
         }
 
-        $currencies->upsert();
+        return $currencies;
     }
 
     public function syncExchangeRates(): void
     {
         $dateStart = ExchangeRate::max('date') ?? now()->subYears(self::MAX_YEARS)->toDateString();
+
         $dateStart = Carbon::createFromFormat('Y-m-d', $dateStart);
+
+        // Check from yesterday
         $dateEnd = now()->subDay();
 
         // Skip, because we have the latest data
@@ -65,14 +60,16 @@ class ExchangeRateService
         }
     }
 
-    protected function syncExchangeRatesPeriod(Carbon $startDate, Carbon $endDate): void
+    private function syncExchangeRatesPeriod(Carbon $startDate, Carbon $endDate): void
     {
+        // Get the currency codes
+        // - The base is EUR, so filter out
         $codes = collect(CurrencyCode::cases())
             ->filter(fn (CurrencyCode $currencyCode) => $currencyCode !== CurrencyCode::EUR)
             ->pluck('value');
 
         $url = sprintf(
-            '%s/timeseries?start_date=%s&end_date=%s&base=%s&symbols=USD,ZAR',
+            '%s/timeseries?start_date=%s&end_date=%s&base=%s&symbols=%s',
             self::API_HOST,
             $startDate->toDateString(),
             $endDate->toDateString(),
@@ -81,7 +78,9 @@ class ExchangeRateService
         );
 
         $currencyLookup = [
+            CurrencyCode::AED->value => Currency::firstWhere('code', CurrencyCode::AED),
             CurrencyCode::EUR->value => Currency::firstWhere('code', CurrencyCode::EUR),
+            CurrencyCode::GBP->value => Currency::firstWhere('code', CurrencyCode::GBP),
             CurrencyCode::USD->value => Currency::firstWhere('code', CurrencyCode::USD),
             CurrencyCode::ZAR->value => Currency::firstWhere('code', CurrencyCode::ZAR),
         ];
@@ -95,6 +94,7 @@ class ExchangeRateService
                 $exchangeRates->push(ExchangeRate::factory()->makeOne([
                     'base_currency_id' => $currencyLookup[CurrencyCode::EUR->value]->id,
                     'target_currency_id' => $currencyLookup[$currencyCode]->id,
+                    'target_currency_code' => $currencyLookup[$currencyCode]->code,
                     'date' => $date->toDateString(),
                     'rate' => $rate,
                 ]));

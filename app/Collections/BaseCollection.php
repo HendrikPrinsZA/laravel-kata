@@ -51,4 +51,21 @@ class BaseCollection extends Collection
 
         return true;
     }
+
+    public function delete(): bool
+    {
+        if ($this->isEmpty()) {
+            return true;
+        }
+
+        $first = $this->first();
+
+        /** @var Model $model */
+        $model = $first::class;
+
+        $ids = $this->pluck('id');
+        $model::query()->whereIn('id', $ids)->delete();
+
+        return $model::all()->isEmpty();
+    }
 }

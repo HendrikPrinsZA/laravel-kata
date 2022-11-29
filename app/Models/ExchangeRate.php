@@ -14,6 +14,7 @@ class ExchangeRate extends Model
     protected $fillable = [
         'base_currency_id',
         'target_currency_id',
+        'target_currency_code',
         'date',
         'rate',
     ];
@@ -23,9 +24,6 @@ class ExchangeRate extends Model
         'rate' => 'float',
     ];
 
-    /**
-     * Required for collection::upsert()
-     */
     public array $collection_unique_attributes = [
         'base_currency_id',
         'target_currency_id',

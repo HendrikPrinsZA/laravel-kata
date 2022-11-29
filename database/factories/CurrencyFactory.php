@@ -13,7 +13,11 @@ class CurrencyFactory extends Factory
     public function definition()
     {
         return [
-            'code' => CurrencyCode::EUR,
+            'code' => $this->faker->randomElement([
+                CurrencyCode::EUR,
+                CurrencyCode::USD,
+                CurrencyCode::ZAR,
+            ]),
             'name' => 'Euro',
         ];
     }
