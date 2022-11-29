@@ -39,11 +39,6 @@ The term was first coined by Dave Thomas, co-author of the book The Pragmatic Pr
 ## Sample challenge
 Sample challenge to calculate the value of `pi`.
 
-
-<p align="center">
-  <img src="./public/images/sample-report.png" width="100%" alt="Sample code">
-</p>
-
 ```php
 class KataChallengeSample
 {
@@ -69,3 +64,7 @@ class KataChallengeSampleRecord
   }
 }
 ```
+
+<p align="center">
+  <img src="./public/images/sample-report.png" width="100%" alt="Sample report">
+</p>
