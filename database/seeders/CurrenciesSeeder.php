@@ -15,7 +15,8 @@ class CurrenciesSeeder extends BaseSeeder
 
     public function seed(): void
     {
-        $this->exchangeRateService->syncCurrencies();
+        $currencies = $this->exchangeRateService->getCurrencies();
+        $currencies->upsert();
     }
 
     protected function cleanup(): void

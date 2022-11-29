@@ -10,9 +10,15 @@ class UserTest extends TestCase
 {
     use DatabaseTransactions;
 
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        User::all()->delete();
+    }
+
     public function test_factory()
     {
-        User::all()->each(fn (User $user) => $user->delete());
         User::factory()->count(10)->create();
         $this->assertCount(10, User::all());
     }

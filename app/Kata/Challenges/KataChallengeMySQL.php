@@ -2,6 +2,7 @@
 
 namespace App\Kata\Challenges;
 
+use App\Enums\CurrencyCode;
 use App\Kata\KataChallenge;
 use Illuminate\Support\Facades\DB;
 
@@ -11,19 +12,68 @@ class KataChallengeMySQL extends KataChallenge
     {
     }
 
-    public function getRecordsBasedOnDateRange(int $limit): int
+    public function orVersusIn(int $limit): array
     {
-        $sql = <<<SQL
-SELECT *
-FROM exchange_rates E
-WHERE
-E.date LIKE CONCAT(YEAR(NOW()) - 1, '-%')
-LIMIT $limit
-SQL;
+        $sql = <<<'SQL'
+        SELECT
+        E.target_currency_code AS `code`,
+        AVG(E.rate) AS `rate`
+        FROM exchange_rates E
+        WHERE
+        E.date > DATE(:dateFrom) AND
+        (
+            E.target_currency_code = 'AED' OR
+            E.target_currency_code = 'EUR' OR
+            E.target_currency_code = 'GBP' OR
+            E.target_currency_code = 'USD' OR
+            E.target_currency_code = 'ZAR'
+        )
+        GROUP BY E.target_currency_code
+        SQL;
 
-        $rows = $this->select($sql);
+        $params = [
+            'dateFrom' => now()->subDays($limit),
+        ];
 
-        return count($rows);
+        return $this->select($sql, $params);
+    }
+
+    /**
+     * Faster by string or int?
+     *
+     * Note: Unreliable results
+     */
+    protected function findRecordsBasedOnIndex(int $limit): array
+    {
+        $sql = <<<'SQL'
+        SELECT
+        E.target_currency_code AS `code`,
+        AVG(E.rate) AS `rate`
+        FROM exchange_rates E
+        WHERE
+        E.date > DATE(:dateFrom) AND
+        E.target_currency_code = :target_currency_code
+        GROUP BY E.target_currency_code
+        SQL;
+
+        $limit = $limit - 1;
+        $currencyCodes = CurrencyCode::all();
+        $sequenceId = $limit % $currencyCodes->count();
+        $currencyCode = $currencyCodes->get($sequenceId);
+
+        $params = [
+            'dateFrom' => now()->subDays($limit),
+            'target_currency_code' => $currencyCode['code'],
+        ];
+
+        return $this->select($sql, $params);
+    }
+
+    protected function selectOne(string $sql, array $params = []): mixed
+    {
+        $sql = str_replace('SELECT', 'SELECT SQL_NO_CACHE', $sql);
+
+        return DB::selectOne(DB::raw($sql), $params);
     }
 
     protected function select(string $sql, array $params = []): array

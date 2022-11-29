@@ -8,7 +8,6 @@ use App\Kata\Enums\KataRunnerMode;
 use App\Kata\Exceptions\KataChallengeScoreException;
 use App\Kata\Objects\KataChallengeResultObject;
 use App\Kata\Traits\HasExitHintsTrait;
-use App\Utilities\DiffUtility;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Console\Command;
@@ -104,232 +103,140 @@ class KataRunner
         KataChallengeResultObject $resultBefore,
         KataChallengeResultObject $resultRecord
     ): void {
-        $showExtendedScores = config('laravel-kata.show-extended-scores');
-        $headers = $showExtendedScores ? [
-            'Field',
-            'Report',
-            'Stats (Before)',
-            'Stats (Record)',
-            'Score (Before)',
-            'Score (Record)',
-            'Field',
-        ] : [
-            'Field',
-            'Report',
-        ];
-
         $reportData = $this->getReportData($resultBefore, $resultRecord);
-
         $this->command->info(sprintf(
-            "# %s::%s\n- %s",
+            '# %s::%s',
             $resultRecord->getClassName(),
             $resultRecord->getMethodName(),
-            help_me_code($resultRecord->getReflectionMethod())
         ));
-
-        $reportText = implode("\n", [
-            sprintf(
-                '%s (%s)',
-                $reportData['stats']['record']['line_count'],
-                $reportData['stats']['before']['line_count']
-            ),
-            sprintf(
-                '%s (%s)',
-                count($reportData['stats']['record']['violations']),
-                count($reportData['stats']['before']['violations'])
-            ),
-            sprintf(
-                '%s (%s)',
-                round($reportData['stats']['record']['duration'], 2),
-                round($reportData['stats']['before']['duration'], 2)
-            ),
-            sprintf(
-                '%s (%s)',
-                $reportData['stats']['record']['iterations'],
-                $reportData['stats']['before']['iterations']
-            ),
-            sprintf(
-                '%s (%s)',
-                $this->wrapInFormat(round($reportData['stats']['record']['scores']['total'], 2),
-                    $reportData['stats']['record']['scores']['total'] < $reportData['stats']['before']['scores']['total']
-                ),
-                round($reportData['stats']['before']['scores']['total'], 2)
-            ),
-        ]);
-
-        $showExtendedScores = config('laravel-kata.show-extended-scores');
-
-        $keys = [
-            'line_count',
-            'violations',
-            'duration',
-            'iterations',
-        ];
-
-        $linesBefore = [];
-        $linesRecord = [];
-        foreach ($keys as $key) {
-            $linesBefore[] = $reportData['stats']['before']['scores'][$key];
-            $linesRecord[] = $reportData['stats']['record']['scores'][$key];
-        }
-        $linesBefore[] = $reportData['stats']['before']['scores']['total'];
-        $linesRecord[] = $reportData['stats']['record']['scores']['total'];
-        $scoresBeforeText = implode("\n", $linesBefore);
-        $scoresRecordText = implode("\n", $linesRecord);
-
-        $keys[] = 'score';
-
-        $keysLookup = implode("\n", array_values($keys));
-
-        $row = $showExtendedScores ? [
-            $keysLookup,
-            $reportText,
-            $resultBefore->getStatsAsText(),
-            $resultRecord->getStatsAsText(),
-            $scoresBeforeText,
-            $scoresRecordText,
-            $keysLookup,
-        ] : [
-            $keysLookup,
-            $reportText,
-        ];
 
         if (config('laravel-kata.show-code-snippets')) {
             $resultBeforeOutputMd5 = $resultBefore->getOutputsMd5();
             $resultRecordOutputMd5 = $resultRecord->getOutputsMd5();
-            $this->command->table([
-                '',
-                'Before',
-                'Record',
-            ], [
+
+            $this->command->table(
                 [
-                    'Code',
+                    help_me_code($resultBefore->getReflectionMethod()),
+                    help_me_code($resultRecord->getReflectionMethod()),
+                ],
+                [[
                     $resultBefore->getCodeSnippet(),
                     $resultRecord->getCodeSnippet(),
                 ],
-                [
-                    'Outputs md5',
-                    $resultBeforeOutputMd5,
-                    $this->wrapInFormat($resultRecordOutputMd5, $resultRecordOutputMd5 === $resultBeforeOutputMd5),
-                ],
-                [
-                    implode("\n", [
-                        'line_count',
-                        'violations',
-                        'duration',
-                        'iterations',
-                    ]),
-                    $resultBefore->getStatsAsText(),
-                    $resultRecord->getStatsAsText(),
-                ],
-            ]);
+                    [
+                        $resultBeforeOutputMd5,
+                        wrap_in_format($resultRecordOutputMd5, $resultRecordOutputMd5 === $resultBeforeOutputMd5),
+                    ], ]
+            );
         }
 
-        $this->command->info('## Report');
-        $this->command->table($headers, [$row]);
+        $getScore = fn (string $field): array => [
+            $field,
+            data_get($reportData, sprintf('stats.before.%s', $field)),
+            data_get($reportData, sprintf('stats.record.%s', $field)),
+            wrap_in_format(
+                sprintf('%s%%', data_get($reportData, sprintf('stats.record.%s_gains_perc', $field))),
+                data_get($reportData, sprintf('stats.record.%s_gains_success', $field)),
+            ),
+        ];
 
-        if ($resultRecordOutputMd5 !== $resultBeforeOutputMd5) {
-            $diff = DiffUtility::friendlyDiff(
-                $resultBefore->getOutputsJson(),
-                $resultRecord->getOutputsJson(),
-            );
-            $this->command->info($diff);
+        $scoreRows = collect([
+            'outputs_md5',
+            'line_count',
+            'violations_count',
+            'iterations',
+            'duration',
+        ])->map(fn (string $field) => $getScore($field));
 
-            throw new KataChallengeScoreException(sprintf(
+        $this->command->table([
+            '',
+            'Before',
+            'Record',
+            'Gains',
+        ], $scoreRows);
+
+        if (! data_get($reportData, 'stats.record.gains_success')) {
+            $exception = sprintf(
                 '%s::%s is completely wrong!',
                 $resultRecord->getClassName(),
                 $resultRecord->getMethodName()
-            ));
-        }
+            );
 
-        if ($reportData['stats']['record']['scores']['total'] >= $reportData['stats']['before']['scores']['total']) {
-            throw new KataChallengeScoreException(sprintf(
-                '%s::%s is not good enough!',
-                $resultRecord->getClassName(),
-                $resultRecord->getMethodName()
-            ));
+            if (config('laravel-kata.debug-mode')) {
+                $this->command->warn($exception);
+
+                return;
+            }
+
+            throw new KataChallengeScoreException();
         }
     }
 
     /**
-     * Calculate the score
-     *
-     * Breakdown
-     * - 5%: code lines
-     * - 5%: code violations
-     * - 40%: total seconds based on max iterations
-     * - 50%: total iterations based on max seconds
+     * Calculate and append gains
      *
      * Future:
-     * - Score based on resources (10%)
-     *   - 70%: Memory
-     *   - 30%: CPU
-     * - Include benchmark scores (10%)
-     *   - 50%: Max concurrency before max response time threshold
-     *   - 50%: Average response time based on X threads (config.max_threads)
+     * - Baseline stats in math
+     * - Benchmark with K6
+     * - Resource usage Grafana
      */
-    protected function calculateScores(
-        array $statsBaseline,
-        array &$statsBefore,
-        array &$statsRecord
-    ): float {
-        $statsBefore['scores'] = [
-            'line_count' => percentage_change(
-                $statsBaseline['line_count'],
-                $statsBefore['line_count']
-            ),
-            'violations' => percentage_change(
-                20,
-                count($statsBefore['violations']),
-                true
-            ),
-            'duration' => percentage_change(
-                $statsBaseline['duration'],
-                $statsBefore['duration']
-            ),
-            'iterations' => percentage_change(
-                $statsBaseline['iterations'],
-                $statsBefore['iterations'],
-                true
-            ),
+    protected function calculateGains(
+        array $statsBefore,
+        array $statsRecord
+    ): array {
+        $fields = [
+            'outputs_md5' => 'string',
+            'line_count' => 'lt',
+            'violations_count' => 'lt',
+            'duration' => 'lt',
+            'iterations' => 'gt',
         ];
 
-        $statsRecord['scores'] = [
-            'line_count' => percentage_change(
-                $statsBaseline['line_count'],
-                $statsRecord['line_count']
-            ),
-            'violations' => percentage_change(
-                count($statsBaseline['violations']),
-                count($statsRecord['violations']),
-                true
-            ),
-            'duration' => percentage_change(
-                $statsBaseline['duration'],
-                $statsRecord['duration']
-            ),
-            'iterations' => percentage_change(
-                $statsBaseline['iterations'],
-                $statsRecord['iterations'],
-                true
-            ),
-        ];
+        foreach ($fields as $field => $mode) {
+            $success = false;
+            $value1 = $statsRecord[$field];
+            $value2 = $statsBefore[$field];
 
-        $statsBefore['scores']['total'] = array_sum([
-            $statsBefore['scores']['line_count'] * 0.05,
-            $statsBefore['scores']['violations'] * 0.05,
-            $statsBefore['scores']['duration'] * 0.40,
-            $statsBefore['scores']['iterations'] * 0.50,
-        ]);
+            if (in_array($mode, ['lt', 'gt'])) {
+                if ($mode === 'gt') {
+                    $value1 = $value2;
+                    $value2 = $statsRecord[$field];
+                }
 
-        $statsRecord['scores']['total'] = array_sum([
-            $statsRecord['scores']['line_count'] * 0.05,
-            $statsRecord['scores']['violations'] * 0.05,
-            $statsRecord['scores']['duration'] * 0.40,
-            $statsRecord['scores']['iterations'] * 0.50,
-        ]);
+                $gains = $value1 - $value2;
 
-        return $statsRecord['scores']['total'];
+                $percDiff = $value1 !== 0
+                    ? round(abs(($value1 - $value2) / $value1) * 100, 2)
+                    : 0;
+
+                $success = $value1 <= $value2;
+            }
+
+            if ($mode === 'string') {
+                $gains = 0;
+                $percDiff = 0;
+                $success = $value1 === $value2;
+            }
+
+            $statsRecord[sprintf('%s_gains_diff', $field)] = $gains;
+            $statsRecord[sprintf('%s_gains_perc', $field)] = $percDiff;
+            $statsRecord[sprintf('%s_gains_success', $field)] = $success;
+        }
+
+        $statsRecord['gains_perc'] = collect($statsRecord)->map(
+            fn ($value, $key) => str_ends_with($key, 'gains_perc') ? $value : null
+        )->filter()->average();
+
+        $statsRecord['gains_success'] = collect($statsRecord)->filter(
+            fn ($value, $key) => str_ends_with($key, 'gains_success') &&
+                ! str_starts_with($key, 'line_count') &&
+                ! str_starts_with($key, 'violations_count') &&
+                $value === false
+        )->count() === 0;
+
+        ksort($statsRecord);
+
+        return $statsRecord;
     }
 
     protected function getReportData(
@@ -344,15 +251,10 @@ class KataRunner
             $this->resultBaselineCache[$cacheKey] = $resultBaseline->getStats();
         }
         $statsBaseline = $this->resultBaselineCache[$cacheKey];
-
-        // Get stats
         $statsBefore = $resultBefore->getStats();
-        $statsRecord = $resultRecord->getStats();
-
-        $score = $this->calculateScores(
-            $statsBaseline,
+        $statsRecord = $this->calculateGains(
             $statsBefore,
-            $statsRecord
+            $resultRecord->getStats()
         );
 
         $className = $resultBefore->getClassName();
@@ -362,7 +264,6 @@ class KataRunner
         $result = [
             'class' => $className,
             'method' => $methodName,
-            'score' => $score,
             'stats' => [
                 'baseline' => $statsBaseline,
                 'before' => $statsBefore,
@@ -433,7 +334,7 @@ class KataRunner
      */
     protected function handleChallengeMethod(ReflectionMethod $reflectionMethod): array|bool
     {
-        // What, why?
+        // We don't want to handle the base class
         if ($reflectionMethod->class === KataChallenge::class) {
             return false;
         }
@@ -625,18 +526,5 @@ class KataRunner
         $this->command?->newLine();
 
         return $outputs;
-    }
-
-    protected function wrapInFormat(string $string, bool $success): string
-    {
-        return $success
-            ? sprintf('<fg=green>%s</>', $string)
-            : sprintf('<fg=red>%s</>', $string);
-
-        $el = $success
-            ? 'info'
-            : 'warn';
-
-        return sprintf('<%s>%s</%s>', $el, $string, $el);
     }
 }

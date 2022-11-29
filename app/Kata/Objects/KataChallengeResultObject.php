@@ -31,24 +31,6 @@ class KataChallengeResultObject extends JsonResource
             ->join('');
     }
 
-    public function getCodeSnippetLong(): string
-    {
-        $startLine = $this->reflectionMethod->getStartLine() - 1;
-        $endLine = $this->reflectionMethod->getEndLine();
-        $length = $endLine - $startLine;
-        $lines = file($this->reflectionMethod->getFileName());
-
-        $methodBody = collect(array_slice($lines, $startLine, $length))
-            ->join('');
-
-        return collect(array_merge([
-            '<?php',
-            sprintf('class %s {', $this->getClassName()),
-            $methodBody,
-            '}',
-        ]))->join("\n");
-    }
-
     public function getReflectionMethod(): ReflectionMethod
     {
         return $this->reflectionMethod;
@@ -61,43 +43,13 @@ class KataChallengeResultObject extends JsonResource
         return $reflectionClass->getMethod('baseline');
     }
 
-    protected function getViolations(): array
-    {
-        $process = new Process([
-            'bin/complexity.sh',
-            $this->reflectionMethod->getFileName(),
-        ]);
-
-        $process->run();
-
-        if (
-            ! $process->isSuccessful() &&
-            $process->getExitCode() !== 2 // [ignore] Exit Code: 2 (Misuse of shell builtins)
-        ) {
-            throw new ProcessFailedException($process);
-        }
-
-        $output = json_decode($process->getOutput(), true);
-
-        $violations = collect();
-        foreach ($output['files'] as $file) {
-            foreach ($file['violations'] as $violation) {
-                $violations->push($violation);
-            }
-        }
-
-        return $violations->toArray();
-    }
-
     public function getStatsAsText(): string
     {
         $stats = $this->getStats();
 
-        $stats['violations'] = count($stats['violations']);
-
         $keys = [
             'line_count',
-            'violations',
+            'violations_count',
             'duration',
             'iterations',
         ];
@@ -112,11 +64,14 @@ class KataChallengeResultObject extends JsonResource
 
     public function getStats(): array
     {
+        $violations = $this->getViolations();
+
         return [
             'duration' => $this->getDuration(),
             'iterations' => $this->getIterations(),
             'outputs_md5' => $this->getOutputsMd5(),
-            'violations' => $this->getViolations(),
+            'violations' => $violations,
+            'violations_count' => count($violations),
             'line_count' => $this->reflectionMethod->getEndLine() - $this->reflectionMethod->getStartLine(),
         ];
     }
@@ -157,5 +112,33 @@ class KataChallengeResultObject extends JsonResource
     public function getMethodName(): string
     {
         return $this->reflectionMethod->name;
+    }
+
+    private function getViolations(): array
+    {
+        $process = new Process([
+            'bin/complexity.sh',
+            $this->reflectionMethod->getFileName(),
+        ]);
+
+        $process->run();
+
+        if (
+            ! $process->isSuccessful() &&
+            $process->getExitCode() !== 2 // [ignore] Exit Code: 2 (Misuse of shell builtins)
+        ) {
+            throw new ProcessFailedException($process);
+        }
+
+        $output = json_decode($process->getOutput(), true);
+
+        $violations = collect();
+        foreach ($output['files'] as $file) {
+            foreach ($file['violations'] as $violation) {
+                $violations->push($violation);
+            }
+        }
+
+        return $violations->toArray();
     }
 }

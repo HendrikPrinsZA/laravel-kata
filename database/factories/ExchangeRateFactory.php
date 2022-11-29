@@ -15,6 +15,7 @@ class ExchangeRateFactory extends Factory
         return [
             'base_currency_id' => Currency::factory(),
             'target_currency_id' => Currency::factory(),
+            'target_currency_code' => 'Custom title for tests',
             'rate' => $this->faker->randomFloat(4, 0, 3),
             'date' => $this->faker->date(),
         ];

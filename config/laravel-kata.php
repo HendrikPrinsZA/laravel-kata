@@ -55,7 +55,6 @@ return [
     'show-hints' => false,
     'show-hints-extended' => false,
     'save-outputs' => $getValue('APP_DEBUG', false),
-    'show-extended-scores' => $getValue('APP_DEBUG', false),
     'show-code-snippets' => $getValue('APP_DEBUG', false),
     'debug-mode' => $getValue('APP_DEBUG', false),
 
