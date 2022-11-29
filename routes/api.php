@@ -94,7 +94,7 @@ Route::get('/kata/{challenge}/{method}', function (Request $request, string $cha
     );
 
     $instance = app($className, [
-        'request' => &$request,
+        'request' => $request,
     ]);
 
     $data = [];

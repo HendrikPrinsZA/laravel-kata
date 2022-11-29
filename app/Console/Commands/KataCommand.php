@@ -17,7 +17,7 @@ class KataCommand extends Command
     public function handle(): int
     {
         $this->kataRunner = app(KataRunner::class, [
-            'command' => &$this,
+            'command' => $this,
             'failOnScore' => true,
         ]);
 
