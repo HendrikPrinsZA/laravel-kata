@@ -16,20 +16,15 @@
   </a>
 </p>
 
-## About Laravel Kata
-The greatest collection of bad code to be used as challenges to training.
+# Laravel Kata
+The greatest collection of bad code.
 
-### Concepts
+#### Concepts
 - Learn the fundamentals
 - Expose common mistakes
-- Playground for theorycrafting
+- Lab to theorycraft mechanics
 
-## Katas - [Introduction video](https://www.youtube.com/watch?v=r_8Rw16uscg)
-Katas are code challenges focused on improving skill and technique. Some train programming fundamentals, while others focus on complex problem solving. Some are puzzles meant to test your creative problem solving, while others are based on real world coding scenarios.
-
-The term was first coined by Dave Thomas, co-author of the book The Pragmatic Programmer as an acknowledgment to the Japanese concept of kata in the martial arts. Dave's version of the concept defines a code kata as an exercise in programming which helps a programmer sharpen their skills through practice and repetition. - [Codewars](https://docs.codewars.com/concepts/kata/)
-
-### Scope 
+#### Scope 
 - Sample (done)
 - Native PHP (incomplete)
 - Laravel Eloquent (incomplete)
@@ -37,7 +32,7 @@ The term was first coined by Dave Thomas, co-author of the book The Pragmatic Pr
 - Native Redis (pending)
 
 ## Sample challenge
-Sample challenge to calculate the value of `pi`.
+Calculate the value of `pi`.
 
 ```php
 class KataChallengeSample
@@ -68,3 +63,8 @@ class KataChallengeSampleRecord
 <p align="center">
   <img src="./public/images/sample-report.png" width="100%" alt="Sample report">
 </p>
+
+## [What are katas?](https://www.youtube.com/watch?v=r_8Rw16uscg)
+Katas are code challenges focused on improving skill and technique. Some train programming fundamentals, while others focus on complex problem solving. Some are puzzles meant to test your creative problem solving, while others are based on real world coding scenarios.
+
+> The term was first coined by Dave Thomas, co-author of the book The Pragmatic Programmer as an acknowledgment to the Japanese concept of kata in the martial arts. Dave's version of the concept defines a code kata as an exercise in programming which helps a programmer sharpen their skills through practice and repetition. - [Codewars](https://docs.codewars.com/concepts/kata/)
