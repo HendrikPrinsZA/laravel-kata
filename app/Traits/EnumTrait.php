@@ -16,7 +16,10 @@ trait EnumTrait
             return $this->details();
         }
 
-        return $this->cases();
+        return [
+            'code' => $case->value,
+            'name' => $case->name,
+        ];
     }
 
     public static function all(): Collection

@@ -13,13 +13,13 @@ use Illuminate\Support\Facades\Http;
 
 class ExchangeRateService
 {
-    protected const MAX_YEARS = 2;
+    protected const MAX_YEARS = 20;
 
     protected const API_HOST = 'https://api.exchangerate.host';
 
     public function getCurrencies(): CurrencyCollection
     {
-        $codes = collect(CurrencyCode::cases())->pluck('value');
+        $codes = CurrencyCode::all()->pluck('code');
         $response = Http::get(sprintf('%s/symbols', self::API_HOST));
         $symbols = collect($response->json('symbols'))
             ->filter(fn ($symbol) => $codes->contains($symbol['code']));
@@ -28,14 +28,6 @@ class ExchangeRateService
         foreach ($symbols as $symbol) {
             $code = $symbol['code'];
             $name = $symbol['description'];
-
-            $currency = Currency::firstWhere('code', $code);
-            if (! is_null($currency)) {
-                $currency->name = $name;
-                $currency->save();
-
-                continue;
-            }
 
             $currency = Currency::factory()->make([
                 'code' => CurrencyCode::from($code),
@@ -86,7 +78,9 @@ class ExchangeRateService
         );
 
         $currencyLookup = [
+            CurrencyCode::AED->value => Currency::firstWhere('code', CurrencyCode::AED),
             CurrencyCode::EUR->value => Currency::firstWhere('code', CurrencyCode::EUR),
+            CurrencyCode::GBP->value => Currency::firstWhere('code', CurrencyCode::GBP),
             CurrencyCode::USD->value => Currency::firstWhere('code', CurrencyCode::USD),
             CurrencyCode::ZAR->value => Currency::firstWhere('code', CurrencyCode::ZAR),
         ];
@@ -100,6 +94,7 @@ class ExchangeRateService
                 $exchangeRates->push(ExchangeRate::factory()->makeOne([
                     'base_currency_id' => $currencyLookup[CurrencyCode::EUR->value]->id,
                     'target_currency_id' => $currencyLookup[$currencyCode]->id,
+                    'target_currency_code' => $currencyLookup[$currencyCode]->code,
                     'date' => $date->toDateString(),
                     'rate' => $rate,
                 ]));

@@ -2,6 +2,7 @@
 
 namespace App\Enums;
 
+use App\Collections\CurrencyCollection;
 use App\Models\Currency;
 use App\Traits\EnumTrait;
 use Exception;
@@ -11,13 +12,23 @@ enum CountryCode: string
     use EnumTrait;
 
     case NL = 'NL';
+    case UK = 'UK';
     case US = 'US';
     case ZA = 'ZA';
 
-    public function details(): array
+    protected function getCurrencies(): CurrencyCollection
     {
         $currencies = Currency::all();
+        if ($currencies->isEmpty()) {
+            throw new Exception(sprintf('No currencies found for "%s"', $this->name));
+        }
 
+        return $currencies;
+    }
+
+    public function details(): array
+    {
+        $currencies = $this->getCurrencies();
         if ($currencies->isEmpty()) {
             throw new Exception('No currencies found');
         }
@@ -27,6 +38,11 @@ enum CountryCode: string
                 'code' => $this->value,
                 'name' => 'The Netherlands',
                 'currency_id' => $currencies->firstWhere('code', CurrencyCode::EUR)->id,
+            ],
+            self::UK => [
+                'code' => $this->value,
+                'name' => 'United Kingdom',
+                'currency_id' => $currencies->firstWhere('code', CurrencyCode::GBP)->id,
             ],
             self::US => [
                 'code' => $this->value,
