@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://www.youtube.com/watch?v=r_8Rw16uscg" target="_blank">
-    <img src="./public/laravel-kata-image.png" width="100%" alt="Replace with Laravel Kata logo">
+    <img src="./public/images/laravel-kata-image-min.png" width="100%" alt="Replace with Laravel Kata logo">
   </a>
 </p>
 
@@ -31,75 +31,41 @@ The term was first coined by Dave Thomas, co-author of the book The Pragmatic Pr
 
 ### Scope 
 - Sample (done)
-- Native PHP (draft)
-- Laravel Eloquent (draft)
-- Native MySQL (pending)
+- Native PHP (incomplete)
+- Laravel Eloquent (incomplete)
+- Native MySQL (incomplete)
 - Native Redis (pending)
 
 ## Sample challenge
 Sample challenge to calculate the value of `pi`.
 
-### Baseline
+
+<p align="center">
+  <img src="./public/images/sample-report.png" width="100%" alt="Sample code">
+</p>
+
 ```php
-public function calculatePi(int $limit): float
+class KataChallengeSample
 {
-  $denominator = 1;
-  $sum = 0;
-  for ($i = 0; $i < 100000; $i++) {
-    $sum = ($i % 2 === 0)
-      ? $sum + (4 / $denominator)
-      : $sum - (4 / $denominator);
-    $denominator += 2;
+  public function calculatePi(int $limit): float
+  {
+    $denominator = 1;
+    $sum = 0;
+    for ($i = 0; $i < 100000; $i++) {
+      $sum = ($i % 2 === 0)
+        ? $sum + (4 / $denominator)
+        : $sum - (4 / $denominator);
+      $denominator += 2;
+    }
+    return round($sum, 2);
   }
-  return round($sum, 2);
 }
-```
 
-### Record
-```php
-public function calculatePi(int $limit): float
+class KataChallengeSampleRecord
 {
-  return round(M_PI, 2);
+  public function calculatePi(int $limit): float
+  {
+    return round(M_PI, 2);
+  }
 }
-```
-
-### Report
-```text
-+-------------+------------------------------------------+--------------------------------------+
-|             | Before                                   | Record                               |
-+-------------+------------------------------------------+--------------------------------------+
-| Code        | public function calculatePi(): float     | public function calculatePi(): float |
-|             | {                                        | {                                    |
-|             |     $denominator = 1;                    |     return round(M_PI, 2);           |
-|             |     $sum = 0;                            | }                                    |
-|             |     for ($i = 0; $i < 100000; $i++) {    |                                      |
-|             |         $sum = ($i % 2 === 0)            |                                      |
-|             |             ? $sum + (4 / $denominator)  |                                      |
-|             |             : $sum - (4 / $denominator); |                                      |
-|             |         $denominator += 2;               |                                      |
-|             |     }                                    |                                      |
-|             |     return round($sum, 2);               |                                      |
-|             | }                                        |                                      |
-|             |                                          |                                      |
-| Outputs md5 | 60b3da123ce4f982e362d1fd843ecb0d         | 60b3da123ce4f982e362d1fd843ecb0d     |
-| line_count  | 14                                       | 3                                    |
-| violations  | 0                                        | 0                                    |
-| duration    | 15933.131217957                          | 204.85305786133                      |
-| iterations  | 189                                      | 10480                                |
-| ----------- | ---------------------------------------- | ------------------------------------ |
-| score       | 0.97684952701574                         | -0.094345035495324                   |
-+-------------+------------------------------------------+--------------------------------------+
-```
-
-### Score breakdown
-```text
-+------------+-------------------+-----------------+-----------------+------------------+--------------------+------------+
-| Field      | Report            | Stats (Before)  | Stats (Record)  | Score (Before)   | Score (Record)     | Field      |
-+------------+-------------------+-----------------+-----------------+------------------+--------------------+------------+
-| line_count | 3 (14)            | 14              | 3               | 0.85714285714286 | 0.33333333333333   | line_count |
-| violations | 0 (0)             | 0               | 0               | 0.999999998      | 0.999999998        | violations |
-| duration   | 204.85 (15933.13) | 15933.131217957 | 204.85305786133 | 0.9827432488429  | -0.34220149531666  | duration   |
-| iterations | 10480 (189)       | 189             | 10480           | 0.98168427173176 | -0.015602287043318 | iterations |
-| score      | -0.09 (0.98)      |                 |                 | 0.97684952701574 | -0.094345035495324 | score      |
-+------------+-------------------+-----------------+-----------------+------------------+--------------------+------------+
 ```
