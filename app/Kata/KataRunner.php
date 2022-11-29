@@ -454,7 +454,7 @@ class KataRunner
         $event->end();
 
         return [
-            'event' => &$event,
+            'event' => $event,
             'outputs' => $outputs,
         ];
     }

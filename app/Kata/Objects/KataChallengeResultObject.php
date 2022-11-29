@@ -12,7 +12,7 @@ use Symfony\Component\Process\Process;
 class KataChallengeResultObject extends JsonResource
 {
     public function __construct(
-        protected ReflectionMethod &$reflectionMethod,
+        protected ReflectionMethod $reflectionMethod,
         protected array $result
     ) {
         parent::__construct($result);
