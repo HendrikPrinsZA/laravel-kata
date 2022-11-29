@@ -41,12 +41,12 @@ class BaseCollection extends Collection
             ->toArray();
 
         $this->chunk(self::UPSERT_MAX)->each(fn (Collection $rows) => $model::upsert(
-                $rows->map(fn (Model $row) => $row->getAttributes(array_merge(
-                    $updateFields
-                )))->toArray(),
-                $uniqueAttributes,
+            $rows->map(fn (Model $row) => $row->getAttributes(array_merge(
                 $updateFields
-            )
+            )))->toArray(),
+            $uniqueAttributes,
+            $updateFields
+        )
         );
 
         return true;
