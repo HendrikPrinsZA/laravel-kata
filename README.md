@@ -29,7 +29,7 @@ The greatest collection of bad code.
 - Native PHP (incomplete)
 - Laravel Eloquent (incomplete)
 - Native MySQL (incomplete)
-- Native Redis (pending)
+- Native Redis (pending 1)
 
 ## Sample challenge
 Calculate the value of `pi`.
