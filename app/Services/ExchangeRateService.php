@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Http;
 
 class ExchangeRateService
 {
-    protected const MAX_YEARS = 20;
+    protected const MAX_YEARS = 5;
 
     protected const API_HOST = 'https://api.exchangerate.host';
 
