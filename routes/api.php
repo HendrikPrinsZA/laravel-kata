@@ -23,7 +23,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
  * A teapot for Jason
  */
 Route::get('/', function (Request $request) {
-    $message = "I'm a teapot";
+    $message = "I'm a teapot, hi Jason!";
 
     return response($message, 418);
 });
