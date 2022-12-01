@@ -23,7 +23,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
  * A teapot for Jason
  */
 Route::get('/', function (Request $request) {
-    return response("I'm a teapot", 418);
+    $message = "I'm a teapot";
+
+    return response($message, 418);
 });
 
 Route::get('/health', function (Request $request) {
