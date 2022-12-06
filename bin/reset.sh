@@ -35,9 +35,6 @@ if [ "${CI_MODE}" == "railway" ]; then
     cat $PATH_TO_REPO/.env.railway >> $PATH_TO_REPO/.env
     source $PATH_TO_REPO/.env
 
-    # Debugging!
-    php artisan kata:test
-
     php artisan migrate --seed --no-interaction --force
 
     # TODO: Sync main production database to start with some base data
@@ -54,9 +51,6 @@ if [ "${CI_MODE}" == "circleci" ]; then
     mysql -h127.0.0.1 -uroot -proot_password -e "DROP DATABASE IF EXISTS testing; CREATE DATABASE testing;"
     mysql -h127.0.0.1 -uroot -proot_password -e "GRANT ALL PRIVILEGES ON *.* TO 'sail'@'%'; FLUSH PRIVILEGES;"
 
-    # Debugging!
-    php artisan kata:test
-
     php artisan migrate:refresh --seed --no-interaction --force
     php artisan migrate:refresh --database=testing --seed --force --no-interaction
 fi
@@ -71,15 +65,6 @@ if [ "${CI_MODE}" == "local" ]; then
     ./vendor/bin/sail artisan migrate:refresh --database=testing --seed --force --no-interaction
 fi
 
-echo "Launched with..."
-more $PATH_TO_REPO/.env
-
-# Load base variables
-# source $PATH_TO_REPO/.env
-
 # TODO: Figure out how to best link storage os agnostic
 # Generic commands
 # php artisan storage:link
-
-# TODO: Investigate why local is so much quicker, sees environmental
-
