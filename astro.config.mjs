@@ -6,19 +6,21 @@ import * as dotenv from 'dotenv'
 dotenv.config()
 
 let site = null;
-if (process.env.CI_MODE === 'local') {
-  site = 'http://localhost/laravel-kata';
-}
 
 // https://astro.build/config
-export default defineConfig({
-  site: site,
-  base: '/laravel-kata',
-  srcDir: './client/src',
-  publicDir: './client/public',
-  outDir: './client/dist',
-  integrations: [
-    vue(),
-    svelte()
-  ]
-});
+let config = {
+    base: '/laravel-kata',
+    srcDir: './client/src',
+    publicDir: './client/public',
+    outDir: './client/dist',
+    integrations: [
+      vue(),
+      svelte()
+    ]
+};
+
+if (process.env.CI_MODE === 'local') {
+  config.site = 'http://localhost/laravel-kata';
+}
+
+export default defineConfig(config);
