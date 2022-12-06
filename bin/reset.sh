@@ -31,9 +31,12 @@ fi
 # Append the railway env
 if [ "${CI_MODE}" == "railway" ]; then
     echo "Running in Railway"
-    echo "\n# Railway\n" >> $PATH_TO_REPO/.env
+    echo $'\n# Railway\n' >> $PATH_TO_REPO/.env
     cat $PATH_TO_REPO/.env.railway >> $PATH_TO_REPO/.env
     source $PATH_TO_REPO/.env
+
+    # Debugging!
+    php artisan kata:test
 
     php artisan migrate --seed --no-interaction --force
 
@@ -43,7 +46,7 @@ fi
 
 if [ "${CI_MODE}" == "circleci" ]; then
     echo "Running in CircliCI"
-    echo "\n# CircliCI\n" >> $PATH_TO_REPO/.env
+    echo $'\n# CircliCI\n' >> $PATH_TO_REPO/.env
     echo "DB_HOST_OVERRIDE=127.0.0.1" >> "$PATH_TO_REPO/.env"
     source $PATH_TO_REPO/.env
 
@@ -58,10 +61,7 @@ if [ "${CI_MODE}" == "circleci" ]; then
     php artisan migrate:refresh --database=testing --seed --force --no-interaction
 fi
 
-
-
 if [ "${CI_MODE}" == "local" ]; then
-    source $PATH_TO_REPO/.env
     source $PATH_TO_REPO/.env
     composer install
     docker exec -it kata-mysql mysql -uroot -proot_password -e "DROP DATABASE IF EXISTS laravel; CREATE DATABASE laravel;"
