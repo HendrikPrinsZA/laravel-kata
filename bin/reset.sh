@@ -39,11 +39,11 @@ if [ "${CI_MODE}" == "railway" ]; then
 
     # TODO: Sync main production database to start with some base data
     # - Performance, test with some load (exchange rates 20 years back)
-    # exit 0
 fi
 
 if [ "${CI_MODE}" == "circleci" ]; then
     echo "Running in CircliCI"
+    echo "\n# CircliCI\n" >> $PATH_TO_REPO/.env
     echo "DB_HOST_OVERRIDE=127.0.0.1" >> "$PATH_TO_REPO/.env"
     source $PATH_TO_REPO/.env
 
@@ -56,8 +56,9 @@ if [ "${CI_MODE}" == "circleci" ]; then
 
     php artisan migrate:refresh --seed --no-interaction --force
     php artisan migrate:refresh --database=testing --seed --force --no-interaction
-    # exit 0
 fi
+
+
 
 if [ "${CI_MODE}" == "local" ]; then
     source $PATH_TO_REPO/.env
@@ -70,8 +71,11 @@ if [ "${CI_MODE}" == "local" ]; then
     ./vendor/bin/sail artisan migrate:refresh --database=testing --seed --force --no-interaction
 fi
 
+echo "Launched with..."
+more $PATH_TO_REPO/.env
+
 # Load base variables
-source $PATH_TO_REPO/.env
+# source $PATH_TO_REPO/.env
 
 # TODO: Figure out how to best link storage os agnostic
 # Generic commands
