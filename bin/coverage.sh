@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 
 PATH_TO_SCRIPT_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 PATH_TO_REPO="$PATH_TO_SCRIPT_DIR/.."

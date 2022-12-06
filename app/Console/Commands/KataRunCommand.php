@@ -6,7 +6,7 @@ use App\Kata\Exceptions\KataChallengeScoreException;
 use App\Kata\KataRunner;
 use Illuminate\Console\Command;
 
-class KataCommand extends Command
+class KataRunCommand extends Command
 {
     protected $signature = 'kata:run {--mode=all}';
 

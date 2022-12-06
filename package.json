@@ -6,11 +6,11 @@
         "test": "./bin/test.sh",
         "reset": "./bin/reset.sh",
         "benchmark:kata": "./bin/benchmark-kata.sh",
-        "client-dev": "astro dev",
-        "client-start": "astro dev",
-        "client-build": "astro build",
-        "client-preview": "astro preview",
-        "client-astro": "astro"
+        "client:dev": "astro dev",
+        "client:start": "astro dev",
+        "client:build": "astro build",
+        "client:preview": "astro preview",
+        "client:astro": "astro"
     },
     "lint-staged": {
         "**/*.php": "./vendor/bin/pint --preset laravel"
@@ -22,6 +22,11 @@
         "vite": "^3.2.3"
     },
     "dependencies": {
-        "astro": "^1.6.10"
+        "@astrojs/svelte": "^1.0.2",
+        "@astrojs/vue": "^1.2.1",
+        "astro": "^1.6.10",
+        "dotenv": "^16.0.3",
+        "svelte": "^3.53.1",
+        "vue": "^3.2.45"
     }
 }

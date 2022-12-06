@@ -17,7 +17,7 @@
 </p>
 
 # Laravel Kata
-The greatest collection of bad code.
+The greatest collection of the worst code.
 
 #### Concepts
 - Learn the fundamentals

@@ -1,7 +1,10 @@
 <?php
 
+use Illuminate\Database\MySqlConnection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,13 +25,39 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 /**
  * A teapot for Jason
  */
-Route::get('/', function (Request $request) {
-    $message = "I'm a teapot, hi Jason!";
+Route::any('/', function (Request $request) {
+    $message = "I'm a teapot!";
 
     return response($message, 418);
 });
 
+/**
+ * Check the app health
+ */
 Route::get('/health', function (Request $request) {
+    try {
+        /** @var MySqlConnection $connection */
+        $connection = DB::connection();
+        $connection->getPDO();
+        $connection->getDatabaseName();
+    } catch (Exception $exception) {
+        return JsonResource::make([
+            'success' => false,
+            'message' => 'Unable to connect to MySQL',
+            'error' => $exception->getMessage(),
+        ]);
+    }
+
+    try {
+        Redis::connection()->ping();
+    } catch (Exception $exception) {
+        return JsonResource::make([
+            'success' => false,
+            'message' => 'Unable to connect to Redis',
+            'error' => $exception->getMessage(),
+        ]);
+    }
+
     return JsonResource::make([
         'success' => true,
     ]);

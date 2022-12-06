@@ -39,7 +39,7 @@ jobs:
       - name: Build artifacts
         run: |
           npm i
-          npm run client-build
+          npm run client:build
       - name: Upload artifacts
         uses: actions/upload-pages-artifact@v1
         with:
