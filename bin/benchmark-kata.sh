@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -e
-
 if [ "${CI_MODE}" == "circleci" ]; then
     php artisan kata:run
 

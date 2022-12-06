@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Exception;
 use Illuminate\Console\Command;
+use Illuminate\Database\MySqlConnection;
 use Illuminate\Support\Facades\DB;
 
 class KataTestCommand extends Command
@@ -22,23 +23,18 @@ class KataTestCommand extends Command
 
     protected function testConnection($connection = 'mysql'): bool
     {
-        $connected = false;
-        $connectionInterface = DB::connection($connection);
-
         try {
-            $connectionInterface->getPdo();
-            $connected = true;
+            /** @var MySqlConnection $connection */
+            $connection = DB::connection($connection);
+            $connection->getPDO();
+            $connection->getDatabaseName();
         } catch (Exception $e) {
             $this->warn($e->getMessage());
-        }
-
-        if (! $connected) {
-            $this->warn(sprintf('Database: %s', $connectionInterface->getDatabaseName()));
 
             return false;
         }
 
-        $this->info(sprintf('Database: %s', $connectionInterface->getDatabaseName()));
+        $this->info(sprintf('Database: %s', $connection->getDatabaseName()));
 
         return true;
     }
