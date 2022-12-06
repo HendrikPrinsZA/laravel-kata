@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -x
 
 : '
 # Init Script
@@ -40,7 +39,7 @@ if [ "${CI_MODE}" == "railway" ]; then
 
     # TODO: Sync main production database to start with some base data
     # - Performance, test with some load (exchange rates 20 years back)
-    exit 0
+    # exit 0
 fi
 
 if [ "${CI_MODE}" == "circleci" ]; then
@@ -57,9 +56,19 @@ if [ "${CI_MODE}" == "circleci" ]; then
 
     php artisan migrate:refresh --seed --no-interaction --force
     php artisan migrate:refresh --database=testing --seed --force --no-interaction
-    exit 0
+    # exit 0
 fi
 
+if [ "${CI_MODE}" == "local" ]; then
+    source $PATH_TO_REPO/.env
+    source $PATH_TO_REPO/.env
+    composer install
+    docker exec -it kata-mysql mysql -uroot -proot_password -e "DROP DATABASE IF EXISTS laravel; CREATE DATABASE laravel;"
+    docker exec -it kata-mysql mysql -uroot -proot_password -e "DROP DATABASE IF EXISTS testing; CREATE DATABASE testing;"
+    docker exec -it kata-mysql mysql -uroot -proot_password -e "GRANT ALL PRIVILEGES ON *.* TO 'sail'@'%'; FLUSH PRIVILEGES;"
+    ./vendor/bin/sail artisan migrate:refresh --seed --force --no-interaction
+    ./vendor/bin/sail artisan migrate:refresh --database=testing --seed --force --no-interaction
+fi
 
 # Load base variables
 source $PATH_TO_REPO/.env
@@ -69,10 +78,4 @@ source $PATH_TO_REPO/.env
 # php artisan storage:link
 
 # TODO: Investigate why local is so much quicker, sees environmental
-source $PATH_TO_REPO/.env
-composer install
-docker exec -it kata-mysql mysql -uroot -proot_password -e "DROP DATABASE IF EXISTS laravel; CREATE DATABASE laravel;"
-docker exec -it kata-mysql mysql -uroot -proot_password -e "DROP DATABASE IF EXISTS testing; CREATE DATABASE testing;"
-docker exec -it kata-mysql mysql -uroot -proot_password -e "GRANT ALL PRIVILEGES ON *.* TO 'sail'@'%'; FLUSH PRIVILEGES;"
-./vendor/bin/sail artisan migrate:refresh --seed --force --no-interaction
-./vendor/bin/sail artisan migrate:refresh --database=testing --seed --force --no-interaction
+
