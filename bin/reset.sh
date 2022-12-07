@@ -22,6 +22,7 @@ PATH_TO_REPO="$PATH_TO_SCRIPT_DIR/../"
 echo "PATH_TO_REPO is '${PATH_TO_REPO}'"
 echo "Listing files..."
 ls -la $PATH_TO_REPO
+source $PATH_TO_REPO/.env
 
 # Always load the example env
 if [ ! -f "$PATH_TO_REPO/.env" ]; then
