@@ -65,5 +65,5 @@ if [ "${CI_MODE}" == "local" ]; then
     docker exec -it kata-mysql mysql -uroot -proot_password -e "GRANT ALL PRIVILEGES ON *.* TO 'sail'@'%'; FLUSH PRIVILEGES;"
     ./vendor/bin/sail artisan migrate:refresh --seed --force --no-interaction
     ./vendor/bin/sail artisan migrate:refresh --database=testing --seed --force --no-interaction
-    ./vendor/bin/sail artisan storage:link
+    # ./vendor/bin/sail artisan storage:link
 fi

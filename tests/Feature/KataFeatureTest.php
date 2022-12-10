@@ -15,12 +15,14 @@ final class KataFeatureTest extends TestCase
         'challenges' => [
             'success' => 'boolean',
             'data' => 'array',
-            'data.0' => 'string',
+            'data.0.challenge' => 'string',
+            'data.0.methods' => 'array',
         ],
         'challenge' => [
             'success' => 'boolean',
             'data' => 'array',
-            'data.0' => 'string',
+            'data.0.challenge' => 'string',
+            'data.0.methods' => 'array',
         ],
     ];
 
@@ -39,7 +41,7 @@ final class KataFeatureTest extends TestCase
         $response->assertStatus(200);
         $this->assertJsonResponseFormat($response, self::RESPONSE_STRUCTURES['challenges']);
 
-        return array_values($response->json('data'));
+        return collect($response->json('data'))->pluck('challenge')->toArray();
     }
 
     /**
@@ -57,7 +59,7 @@ final class KataFeatureTest extends TestCase
             $response->assertStatus(200);
             $this->assertJsonResponseFormat($response, self::RESPONSE_STRUCTURES['challenge']);
 
-            $challengeMethods[$challenge] = $response->json('data');
+            $challengeMethods[$challenge] = collect($response->json('data'))->first()['methods'];
         }
 
         return $challengeMethods;

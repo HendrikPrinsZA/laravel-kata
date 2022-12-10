@@ -16,7 +16,7 @@ let config = {
     integrations: [
       vue(),
       svelte()
-    ]
+    ],
 };
 
 if (process.env.CI_MODE === 'local') {
