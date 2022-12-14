@@ -9,10 +9,12 @@ let site = null;
 
 // https://astro.build/config
 let config = {
+    output: 'server',
     base: '/laravel-kata',
     srcDir: './client/src',
     publicDir: './client/public',
     outDir: './client/dist',
+    routes: './src/pages',
     integrations: [
       vue(),
       svelte()
