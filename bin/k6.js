@@ -14,9 +14,6 @@ const METHOD = 'calculatePi';
 const MODE = 'Before';
 // const MODE = 'Record';
 
-// const target_vus_env = `${__ENV.TARGET_VUS}`;
-// const target_vus = isNumeric(target_vus_env) ? Number(target_vus_env) : default_vus;
-
 const VUS_DEFAULT = 5;
 const VUS_MAX = 200;
 
@@ -24,13 +21,14 @@ export const options = {
     vus: VUS_DEFAULT,
     stages: [
         { duration: "5s", target: 10 },
-        { duration: "1m", target: Math.floor(VUS_MAX / 3) },
-        { duration: "2m", target: VUS_MAX },
-        { duration: "5s", target: 0 },
+        { duration: "1m", target: Math.floor(VUS_MAX / 5) },
+        { duration: "3m", target: VUS_MAX },
+        { duration: "30s", target: 0 },
     ],
-    // thresholds: {
-    //   'http_req_duration': ['p(95)<20000', 'p(99)<30000'],
-    // },
+    thresholds: {
+        http_req_failed: ['rate<0.01'],
+        http_req_duration: ['p(90) < 400'],
+    },
     ext: {
         loadimpact: {
             projectID: 3620115,
@@ -92,5 +90,5 @@ export default (authToken) => {
         check(response, { "status is 200": (r) => r.status === 200 });
     }
 
-    sleep(1);
+    sleep(.300);
 };

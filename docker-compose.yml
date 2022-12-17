@@ -100,18 +100,6 @@ services:
         volumes:
             - 'laravel-kata-grafana:/etc/grafana/provisioning/'
 
-    k6:
-        image: grafana/k6:latest
-        platform: linux/amd64
-        networks:
-            - laravel-kata-k6
-        ports:
-            - "6565:6565"
-        environment:
-            - K6_OUT=influxdb=http://influxdb:8086/k6
-        volumes:
-            - ./bin/k6:/scripts
-
 volumes:
     laravel-kata-mysql:
         driver: local
