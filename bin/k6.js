@@ -1,5 +1,5 @@
 import http from "k6/http";
-import { sleep } from "k6";
+import { sleep, check } from "k6";
 
 /**
  * Integrate load tests with CI/CD
@@ -9,17 +9,24 @@ import { sleep } from "k6";
  * - https://circleci.com/developer/orbs/orb/k6io/test
  * - https://k6.io/docs/examples/advanced-api-flow/
  */
-const CLASS = 'KataChallengeEloquent';
-const METHOD = 'getCollectionCount';
+const CLASS = 'KataChallengeSample';
+const METHOD = 'calculatePi';
 const MODE = 'Before';
 // const MODE = 'Record';
 
+// const target_vus_env = `${__ENV.TARGET_VUS}`;
+// const target_vus = isNumeric(target_vus_env) ? Number(target_vus_env) : default_vus;
+
+const VUS_DEFAULT = 5;
+const VUS_MAX = 200;
+
 export const options = {
-    vus: 5,
+    vus: VUS_DEFAULT,
     stages: [
-        { duration: "10s", target: 10 },
-        { duration: "1m", target: 50 },
-        { duration: "30s", target: 0 },
+        { duration: "5s", target: 10 },
+        { duration: "1m", target: Math.floor(VUS_MAX / 3) },
+        { duration: "2m", target: VUS_MAX },
+        { duration: "5s", target: 0 },
     ],
     // thresholds: {
     //   'http_req_duration': ['p(95)<20000', 'p(99)<30000'],
@@ -65,9 +72,11 @@ export default (authToken) => {
         const params = {
             iterations
         }
-        const res = http.request('GET', url, params, requestConfigWithTag({
+        const response = http.request('GET', url, params, requestConfigWithTag({
             name: 'Before'
         }));
+
+        check(response, { "status is 200": (r) => r.status === 200 });
     }
 
     if (MODE === 'Record') {
@@ -76,9 +85,11 @@ export default (authToken) => {
         const params = {
             iterations
         }
-        const res = http.request('GET', url, params, requestConfigWithTag({
+        const response = http.request('GET', url, params, requestConfigWithTag({
             name: 'Record'
         }));
+
+        check(response, { "status is 200": (r) => r.status === 200 });
     }
 
     sleep(1);
