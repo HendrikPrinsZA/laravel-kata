@@ -23,7 +23,7 @@
     },
     "dependencies": {
         "@astrojs/svelte": "^1.0.2",
-        "@astrojs/vue": "^1.2.1",
+        "@astrojs/vue": "^1.2.2",
         "astro": "^1.6.14",
         "dotenv": "^16.0.3",
         "svelte": "^3.54.0",
