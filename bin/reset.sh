@@ -19,9 +19,7 @@ Convenient script to ensure environment is ready to go
 PATH_TO_SCRIPT_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 PATH_TO_REPO="$PATH_TO_SCRIPT_DIR/../"
 
-echo "PATH_TO_REPO is '${PATH_TO_REPO}'"
-echo "Listing files..."
-ls -la $PATH_TO_REPO
+# TODO: Check if this breaks the logic!
 source $PATH_TO_REPO/.env
 
 # Always load the example env
@@ -37,9 +35,11 @@ if [ "${CI_MODE}" == "railway" ]; then
     source $PATH_TO_REPO/.env
 
     php artisan migrate --seed --no-interaction --force
+    php artisan storage:link
 
     # TODO: Sync main production database to start with some base data
-    # - Performance, test with some load (exchange rates 20 years back)
+    # - Performance boost, test with some load (exchange rates 20 years back)
+    # - Set up shared env in Railway
 fi
 
 if [ "${CI_MODE}" == "circleci" ]; then
@@ -54,6 +54,7 @@ if [ "${CI_MODE}" == "circleci" ]; then
 
     php artisan migrate:refresh --seed --no-interaction --force
     php artisan migrate:refresh --database=testing --seed --force --no-interaction
+    php artisan storage:link
 fi
 
 if [ "${CI_MODE}" == "local" ]; then
@@ -64,8 +65,5 @@ if [ "${CI_MODE}" == "local" ]; then
     docker exec -it kata-mysql mysql -uroot -proot_password -e "GRANT ALL PRIVILEGES ON *.* TO 'sail'@'%'; FLUSH PRIVILEGES;"
     ./vendor/bin/sail artisan migrate:refresh --seed --force --no-interaction
     ./vendor/bin/sail artisan migrate:refresh --database=testing --seed --force --no-interaction
+    # ./vendor/bin/sail artisan storage:link
 fi
-
-# TODO: Figure out how to best link storage os agnostic
-# Generic commands
-# php artisan storage:link

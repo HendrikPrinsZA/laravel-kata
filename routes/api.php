@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\Api\GainsController;
+use App\Http\Controllers\Api\KataController;
 use Illuminate\Database\MySqlConnection;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Route;
@@ -35,107 +38,90 @@ Route::any('/', function (Request $request) {
  * Check the app health
  */
 Route::get('/health', function (Request $request) {
-    // try {
-    //     /** @var MySqlConnection $connection */
-    //     $connection = DB::connection();
-    //     $connection->getPDO();
-    //     $connection->getDatabaseName();
-    // } catch (Exception $exception) {
-    //     return JsonResource::make([
-    //         'success' => false,
-    //         'message' => 'Unable to connect to MySQL',
-    //         'error' => $exception->getMessage(),
-    //     ]);
-    // }
-
-    // try {
-    //     Redis::connection()->ping();
-    // } catch (Exception $exception) {
-    //     return JsonResource::make([
-    //         'success' => false,
-    //         'message' => 'Unable to connect to Redis',
-    //         'error' => $exception->getMessage(),
-    //     ]);
-    // }
-
-    return JsonResource::make([
-        'success' => true,
-    ]);
-});
-
-/**
- * Get the list of challenges
- */
-Route::get('/kata', function (Request $request) {
-    return JsonResource::make([
-        'success' => true,
-        'data' => collect(config('laravel-kata.challenges', []))
-            ->map(function ($className) {
-                $classNameParts = explode('\\', $className);
-
-                return array_pop($classNameParts);
-            })
-            ->toArray(),
-    ]);
-});
-
-/**
- * Get the list of challenge's methods
- */
-Route::get('/kata/{challenge}', function (Request $request, string $challenge) {
-    $class = sprintf(
-        'App\\Kata\\Challenges\\%s',
-        $challenge
-    );
+    $data = [
+        'api' => true,
+        'database' => false,
+        'cache' => false,
+    ];
+    $errors = [];
+    $suggestions = [];
 
     try {
-        $reflectionClass = new ReflectionClass($class);
-    } catch (ReflectionException $exception) {
-        throw new Exception(sprintf(
-            'Something bad happened: %s',
+        /** @var MySqlConnection $connection */
+        $connection = DB::connection();
+        $connection->getPDO();
+        $connection->getDatabaseName();
+        $data['database'] = true;
+    } catch (Exception $exception) {
+        $errors[] = sprintf(
+            'Unable to connect to MySQL: %s',
             $exception->getMessage()
-        ));
+        );
+        $suggestions[] = 'Run the following command `sail down && sail up -d && npm run reset`';
+        $suggestions[] = sprintf(
+            'How to test: `docker exec -it kata-mysql mysql -u%s -p%s -e"SELECT User, Host FROM mysql.user;"`',
+            config('database.connections.mysql.username'),
+            config('database.connections.mysql.password')
+        );
     }
 
-    $data = collect($reflectionClass->getMethods())
-        ->filter(fn (ReflectionMethod $method) => $method->class === $class)
-        ->filter(fn (ReflectionMethod $method) => $method->isPublic())
-        ->filter(fn (ReflectionMethod $method) => $method->name !== 'baseline')
-        ->map(fn ($method) => $method->name)
-        ->toArray();
+    try {
+        Redis::connection()->ping();
+        $data['cache'] = true;
+    } catch (Exception $exception) {
+        $errors[] = sprintf(
+            'Unable to connect to Redis: %s',
+            $exception->getMessage()
+        );
+        $suggestions[] = 'Run the following command `sail down && sail up -d && npm run reset`';
+    }
 
     return JsonResource::make([
-        'success' => true,
+        'success' => true, // empty($errors), // Not ready for this yet...
         'data' => $data,
+        'errors' => $errors,
+        'suggestions' => $suggestions,
     ]);
 });
 
-/**
- * Hit the challenge's method
- */
-Route::get('/kata/{challenge}/{method}', function (Request $request, string $challenge, string $method) {
-    $data = [
+Route::group([
+    'prefix' => 'kata',
+    'namespace' => 'Api',
+], function (Router $router) {
+    $router->get('/', [KataController::class, 'index']);
+    $router->get('/{challenge}', fn (Request $request, string $challenge) => app(KataController::class, [
+        'request' => $request,
+        'challenge' => $challenge,
+    ])->index()
+    );
+    $router->get('/{challenge}/{method}', fn (Request $request, string $challenge, string $method) => app(KataController::class, [
+        'request' => $request,
         'challenge' => $challenge,
         'method' => $method,
-    ];
-
-    $className = sprintf(
-        'App\\Kata\\Challenges\\%s',
-        $challenge
+    ])->index()
     );
+});
 
-    $instance = app($className, [
+/**
+ * Get the latest gains report data
+ *
+ * Note: This is only a workaround for the CORS issue when
+ *       fetching http://localhost/storage/gains/KataChallengeSample-calculatePi.json
+ */
+Route::group([
+    'prefix' => 'gains',
+    'namespace' => 'Api',
+], function (Router $router) {
+    $router->get('/', [GainsController::class, 'index']);
+    $router->get('/{challenge}', fn (Request $request, string $challenge) => app(GainsController::class, [
         'request' => $request,
-    ]);
-
-    $data = [];
-    $iterations = $request->get('iterations', 1);
-    foreach (range(1, $iterations) as $iteration) {
-        $data[] = $instance->{$method}($iteration);
-    }
-
-    return JsonResource::make([
-        'success' => true,
-        'data' => $data,
-    ]);
+        'challenge' => $challenge,
+    ])->index()
+    );
+    $router->get('/{challenge}/{method}', fn (Request $request, string $challenge, string $method) => app(GainsController::class, [
+        'request' => $request,
+        'challenge' => $challenge,
+        'method' => $method,
+    ])->index()
+    );
 });

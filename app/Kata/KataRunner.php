@@ -273,18 +273,20 @@ class KataRunner
 
         if (config('laravel-kata.save-outputs')) {
             $filePath = sprintf(
-                'laravel-kata/%s/result-%s.json',
-                $this->createdAt->format('Ymd-His'),
-                Str::slug(implode(' ', [$className, $methodName])),
+                'public/gains/%s-%s.json',
+                $className,
+                $methodName
             );
 
             Storage::disk('local')->put($filePath, json_encode($result));
-            $this->command?->warn(sprintf('Saved output to %s', $filePath));
+            $this->command?->info(sprintf('Saved output to %s', $filePath));
         }
 
         if (config('laravel-kata.debug-mode')) {
-            $this->addExitHintsFromViolations($statsBaseline['violations']);
-            $this->addExitHintsFromViolations($statsBefore['violations']);
+            $this->addExitHintsFromViolations(array_merge(
+                $statsBaseline['violations'],
+                $statsBefore['violations']
+            ));
         }
 
         $this->addExitHintsFromViolations($statsRecord['violations']);

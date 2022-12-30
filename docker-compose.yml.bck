@@ -1,13 +1,8 @@
 # For more information: https://laravel.com/docs/sail
-# - https://medium.com/@nairgirish100/k6-with-docker-compose-influxdb-grafana-344ded339540
 version: '3'
 
 networks:
     laravel-kata:
-        driver: bridge
-    laravel-kata-k6:
-        driver: bridge
-    laravel-kata-grafana:
         driver: bridge
 
 services:
@@ -75,35 +70,8 @@ services:
             retries: 3
             timeout: 5s
 
-    influxdb:
-        container_name: kata-influxdb
-        image: influxdb:1.8
-        networks:
-            - laravel-kata-k6
-            - laravel-kata-grafana
-        ports:
-            - "8086:8086"
-        environment:
-            - INFLUXDB_DB=k6
-
-    grafana:
-        container_name: kata-grafana
-        image: grafana/grafana:latest
-        networks:
-            - laravel-kata-grafana
-        ports:
-            - "3001:3000"
-        environment:
-            - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-            - GF_AUTH_ANONYMOUS_ENABLED=true
-            - GF_AUTH_BASIC_ENABLED=false
-        volumes:
-            - 'laravel-kata-grafana:/etc/grafana/provisioning/'
-
 volumes:
     laravel-kata-mysql:
         driver: local
     laravel-kata-redis:
-        driver: local
-    laravel-kata-grafana:
         driver: local
