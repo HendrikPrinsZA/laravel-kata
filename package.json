@@ -24,7 +24,7 @@
     "dependencies": {
         "@astrojs/svelte": "^1.0.2",
         "@astrojs/vue": "^1.2.1",
-        "astro": "^1.6.14",
+        "astro": "^2.0.2",
         "dotenv": "^16.0.3",
         "svelte": "^3.54.0",
         "vue": "^3.2.45"
