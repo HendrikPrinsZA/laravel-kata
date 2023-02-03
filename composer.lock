@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2996b3d8c2c307817c697fede6bf1771",
+    "content-hash": "a75b825d141988269127d5d3d8e97492",
     "packages": [
         {
             "name": "brick/math",
@@ -7000,16 +7000,16 @@
         },
         {
             "name": "tightenco/tlint",
-            "version": "v7.0.1",
+            "version": "v8.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tighten/tlint.git",
-                "reference": "f3c1856955e1535cada2030b78a84ee7693f82d0"
+                "reference": "be2a686cf08c938c2013458f79e161cf80a25946"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tighten/tlint/zipball/f3c1856955e1535cada2030b78a84ee7693f82d0",
-                "reference": "f3c1856955e1535cada2030b78a84ee7693f82d0",
+                "url": "https://api.github.com/repos/tighten/tlint/zipball/be2a686cf08c938c2013458f79e161cf80a25946",
+                "reference": "be2a686cf08c938c2013458f79e161cf80a25946",
                 "shasum": ""
             },
             "require": {
@@ -7020,8 +7020,8 @@
                 "symfony/process": "^4.4.20 || ^5.0.9 || ^6.0"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.1",
                 "phpunit/phpunit": "^9.0",
+                "spatie/ray": "^1.36",
                 "symfony/var-dumper": "^5.0"
             },
             "bin": [
@@ -7048,9 +7048,9 @@
             "homepage": "https://github.com/tighten/tlint",
             "support": {
                 "issues": "https://github.com/tighten/tlint/issues",
-                "source": "https://github.com/tighten/tlint/tree/v7.0.1"
+                "source": "https://github.com/tighten/tlint/tree/v8.0.2"
             },
-            "time": "2022-11-04T19:45:13+00:00"
+            "time": "2023-01-12T23:11:12+00:00"
         },
         {
             "name": "tijsverkoyen/css-to-inline-styles",
