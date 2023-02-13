@@ -24,7 +24,7 @@
         "laravel/pint": "^1.2",
         "laravel/sail": "^1.16",
         "mockery/mockery": "^1.4.4",
-        "nunomaduro/collision": "^6.1",
+        "nunomaduro/collision": "^7.0",
         "php-coveralls/php-coveralls": "^2.5",
         "phpunit/phpcov": "^8.2",
         "phpunit/phpunit": "^9.5.10",
