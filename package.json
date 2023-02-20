@@ -19,7 +19,7 @@
         "husky": "^8.0.2",
         "laravel-vite-plugin": "^0.7.0",
         "lint-staged": "^13.0.3",
-        "vite": "^4.0.3"
+        "vite": "^4.1.3"
     },
     "dependencies": {
         "@astrojs/svelte": "^1.0.2",
