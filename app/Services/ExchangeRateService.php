@@ -9,6 +9,7 @@ use App\Models\Currency;
 use App\Models\ExchangeRate;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 class ExchangeRateService
@@ -77,24 +78,19 @@ class ExchangeRateService
             $codes->join(',')
         );
 
-        $currencyLookup = [
-            CurrencyCode::AED->value => Currency::firstWhere('code', CurrencyCode::AED),
-            CurrencyCode::EUR->value => Currency::firstWhere('code', CurrencyCode::EUR),
-            CurrencyCode::GBP->value => Currency::firstWhere('code', CurrencyCode::GBP),
-            CurrencyCode::USD->value => Currency::firstWhere('code', CurrencyCode::USD),
-            CurrencyCode::ZAR->value => Currency::firstWhere('code', CurrencyCode::ZAR),
-        ];
+        $currencyLookup = Currency::whereIn('code', CurrencyCode::cases())->get()
+            ->keyBy(fn (Currency $currency) => $currency->code->value)
+            ->toArray();
 
+        $rates = $this->getRates($url);
         $exchangeRates = ExchangeRateCollection::make();
-        $rates = Http::get($url)->json('rates');
-
         foreach ($rates as $rawDate => $rawRates) {
             $date = Carbon::createFromFormat('Y-m-d', $rawDate);
             foreach ($rawRates as $currencyCode => $rate) {
                 $exchangeRates->push(ExchangeRate::factory()->makeOne([
-                    'base_currency_id' => $currencyLookup[CurrencyCode::EUR->value]->id,
-                    'target_currency_id' => $currencyLookup[$currencyCode]->id,
-                    'target_currency_code' => $currencyLookup[$currencyCode]->code,
+                    'base_currency_id' => $currencyLookup[CurrencyCode::EUR->value]['id'],
+                    'target_currency_id' => $currencyLookup[$currencyCode]['id'],
+                    'target_currency_code' => $currencyLookup[$currencyCode]['code'],
                     'date' => $date->toDateString(),
                     'rate' => $rate,
                 ]));
@@ -102,5 +98,18 @@ class ExchangeRateService
         }
 
         $exchangeRates->upsert();
+    }
+
+    public function getRates(string $url): array
+    {
+        $cacheKey = sprintf('fx:%s', md5($url));
+        if (Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+
+        $rates = Http::get($url)->json('rates');
+        Cache::set($cacheKey, $rates);
+
+        return $rates;
     }
 }

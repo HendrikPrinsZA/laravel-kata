@@ -7,6 +7,7 @@ use App\Collections\UserCollection;
 use App\Models\Blog;
 use App\Models\User;
 use Exception;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
@@ -135,12 +136,17 @@ class BlogsSeeder extends BaseSeeder
     protected function benchmarkAttempt3(): void
     {
         $maxUserBlogs = config('laravel-kata.dummy-data.max-user-blogs');
-        $this->command->withProgressBar(User::all()->chunk(100), function (UserCollection $users) use ($maxUserBlogs) {
+
+        /** @var \Symfony\Component\Console\Helper\ProgressBar $bar */
+        $bar = $this->command->getOutput()->createProgressBar(User::count());
+        User::all()->chunk(100)->each(function (Collection $users) use ($maxUserBlogs, $bar) {
             $blogs = BlogCollection::make();
 
             foreach ($users as $user) {
+                $bar->advance();
+
                 if ($user->blogs()->count() >= $maxUserBlogs) {
-                    return;
+                    continue;
                 }
 
                 $fakeBlogs = Blog::factory($maxUserBlogs, [
@@ -152,6 +158,7 @@ class BlogsSeeder extends BaseSeeder
 
             $blogs->upsert();
         });
+
         $this->command->newLine();
     }
 
