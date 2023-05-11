@@ -19,3 +19,6 @@ yarn-error.log
 
 # Apache Jmeter
 jmeter.log
+
+# K6
+k6

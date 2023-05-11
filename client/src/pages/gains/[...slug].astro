@@ -1,0 +1,13 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import GainsCard from '../../components/GainsCard.svelte';
+const { slug } = Astro.params;
+
+const slugParts = slug.split('/');
+---
+
+<Layout title="Laravel Kata">
+	<main>
+		<GainsCard client:load theClass={slugParts[0]} theMethod={slugParts[1]}/>
+	</main>
+</Layout>
