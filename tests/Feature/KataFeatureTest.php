@@ -25,6 +25,8 @@ final class KataFeatureTest extends TestCase
     {
         $this->get('/')
             ->assertStatus(200);
+
+        $this->assertTrue(true);
     }
 
     /**
@@ -36,6 +38,7 @@ final class KataFeatureTest extends TestCase
             ->assertStatus(200);
 
         $this->assertJsonResponseFormat($response, self::RESPONSE_STRUCTURES['challenges']);
+        $this->assertTrue(true);
 
         return array_values($response->json('data'));
     }
