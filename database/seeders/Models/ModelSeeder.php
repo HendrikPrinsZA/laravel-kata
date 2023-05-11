@@ -1,10 +1,10 @@
 <?php
 
-namespace Database\Seeders;
+namespace Database\Seeders\Models;
 
 use Illuminate\Database\Seeder;
 
-abstract class BaseSeeder extends Seeder
+abstract class ModelSeeder extends Seeder
 {
     public function run()
     {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders;
+namespace Database\Seeders\Models;
 
 use App\Collections\BlogCollection;
 use App\Collections\UserCollection;
@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
-class BlogsSeeder extends BaseSeeder
+class BlogsSeeder extends ModelSeeder
 {
     public function seed(): void
     {
