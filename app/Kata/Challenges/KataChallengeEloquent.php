@@ -14,7 +14,7 @@ class KataChallengeEloquent extends KataChallenge
     /**
      * Eloquent collections / Average
      */
-    public function getCollectionAverage(int $limit): float
+    public function getCollectionAverage(int $limit): ?float
     {
         return User::all()
             ->where('id', '<=', $limit)
@@ -55,7 +55,6 @@ class KataChallengeEloquent extends KataChallenge
         return User::all()
             ->where('id', '<=', $limit)
             ->last()
-            ->blogs
-            ->count();
+            ?->blogs->count() ?? 0;
     }
 }
