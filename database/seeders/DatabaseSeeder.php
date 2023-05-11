@@ -18,7 +18,9 @@ class DatabaseSeeder extends Seeder
     {
         // We expect the base `users` table
         if (! Schema::hasTable('users')) {
-            Artisan::call('migrate:fresh');
+            Artisan::call('migrate:fresh', [
+                '--database' => config('database.connections.laravel.database'),
+            ]);
 
             return;
         }
