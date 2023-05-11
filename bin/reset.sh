@@ -46,11 +46,15 @@ if [ "${CI_MODE}" == "circleci" ]; then
     source $PATH_TO_REPO/.env
 
     composer install
-    mysql -h127.0.0.1 -uroot -p$DB_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS $DB_TEST_DATABASE; CREATE DATABASE $DB_TEST_DATABASE;"
-    mysql -h127.0.0.1 -uroot -p$DB_ROOT_PASSWORD -e "GRANT ALL PRIVILEGES ON *.* TO '$DB_USERNAME'@'%'; FLUSH PRIVILEGES;"
+    docker exec -it kata-mysql mysql -uroot -p$DB_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS $DB_DATABASE; CREATE DATABASE $DB_DATABASE;"
+    docker exec -it kata-mysql mysql -uroot -p$DB_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS $DB_TEST_DATABASE; CREATE DATABASE $DB_TEST_DATABASE;"
+    docker exec -it kata-mysql mysql -uroot -p$DB_ROOT_PASSWORD -e "GRANT ALL PRIVILEGES ON *.* TO '$DB_USERNAME'@'%'; FLUSH PRIVILEGES;"
 
-    php artisan migrate:fresh --seed --no-interaction --force
-    php artisan migrate:fresh --env=testing --seed --force --no-interaction
+    ./vendor/bin/sail artisan migrate:fresh --database=$DB_DATABASE --env=$APP_ENV --seed --force --no-interaction
+
+    export DB_TEST_DATABASE=testing
+    export DB_DATABASE=$DB_TEST_DATABASE
+    ./vendor/bin/sail artisan migrate:fresh --database=$DB_TEST_DATABASE --env=testing --seed --force --no-interaction
 fi
 
 if [ "${CI_MODE}" == "local" ]; then
