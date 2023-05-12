@@ -19,9 +19,6 @@ Convenient script to ensure environment is ready to go
 PATH_TO_SCRIPT_DIR="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
 PATH_TO_REPO="$PATH_TO_SCRIPT_DIR/../"
 
-echo "PATH_TO_REPO is '${PATH_TO_REPO}'"
-echo "Listing files..."
-ls -la $PATH_TO_REPO
 source $PATH_TO_REPO/.env
 
 # Always load the example env
@@ -44,26 +41,37 @@ fi
 
 if [ "${CI_MODE}" == "circleci" ]; then
     echo "Running in CircliCI"
-    echo $'\n# CircliCI\n' >> $PATH_TO_REPO/.env
     echo "DB_HOST_OVERRIDE=127.0.0.1" >> "$PATH_TO_REPO/.env"
     source $PATH_TO_REPO/.env
 
     composer install
-    mysql -h127.0.0.1 -uroot -proot_password -e "DROP DATABASE IF EXISTS testing; CREATE DATABASE testing;"
-    mysql -h127.0.0.1 -uroot -proot_password -e "GRANT ALL PRIVILEGES ON *.* TO 'sail'@'%'; FLUSH PRIVILEGES;"
+    mysql -h127.0.0.1 -uroot -p$DB_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS $DB_DATABASE; CREATE DATABASE $DB_DATABASE;"
+    mysql -h127.0.0.1 -uroot -p$DB_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS $DB_TEST_DATABASE; CREATE DATABASE $DB_TEST_DATABASE;"
+    mysql -h127.0.0.1 -uroot -p$DB_ROOT_PASSWORD -e "GRANT ALL PRIVILEGES ON *.* TO 'sail'@'%'; FLUSH PRIVILEGES;"
 
-    php artisan migrate:refresh --seed --no-interaction --force
-    php artisan migrate:refresh --database=testing --seed --force --no-interaction
+    php artisan migrate:fresh --seed --no-interaction --force
+    php artisan migrate:fresh --database=$DB_TEST_DATABASE --seed --force --no-interaction
 fi
 
 if [ "${CI_MODE}" == "local" ]; then
+    echo "Running in local"
     source $PATH_TO_REPO/.env
-    composer install
-    docker exec -it kata-mysql mysql -uroot -proot_password -e "DROP DATABASE IF EXISTS laravel; CREATE DATABASE laravel;"
-    docker exec -it kata-mysql mysql -uroot -proot_password -e "DROP DATABASE IF EXISTS testing; CREATE DATABASE testing;"
-    docker exec -it kata-mysql mysql -uroot -proot_password -e "GRANT ALL PRIVILEGES ON *.* TO 'sail'@'%'; FLUSH PRIVILEGES;"
-    ./vendor/bin/sail artisan migrate:refresh --seed --force --no-interaction
-    ./vendor/bin/sail artisan migrate:refresh --database=testing --seed --force --no-interaction
+
+    # Launch sail environment
+    ./vendor/bin/sail down && ./vendor/bin/sail up -d --build
+
+    # Install dependencies
+    ./vendor/bin/sail composer install
+
+    docker exec -it kata-mysql mysql -uroot -p$DB_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS $DB_DATABASE; CREATE DATABASE $DB_DATABASE;"
+    docker exec -it kata-mysql mysql -uroot -p$DB_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS $DB_TEST_DATABASE; CREATE DATABASE $DB_TEST_DATABASE;"
+    docker exec -it kata-mysql mysql -uroot -p$DB_ROOT_PASSWORD -e "GRANT ALL PRIVILEGES ON *.* TO '$DB_USERNAME'@'%'; FLUSH PRIVILEGES;"
+
+    ./vendor/bin/sail artisan migrate:fresh --database=$DB_DATABASE --env=$APP_ENV --seed --force --no-interaction
+
+    export DB_TEST_DATABASE=testing
+    export DB_DATABASE=$DB_TEST_DATABASE
+    ./vendor/bin/sail artisan migrate:fresh --database=$DB_TEST_DATABASE --env=testing --seed --force --no-interaction
 fi
 
 # TODO: Figure out how to best link storage os agnostic

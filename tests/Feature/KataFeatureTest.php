@@ -3,14 +3,11 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use Database\Seeders\UsersSeeder;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
+use Database\Seeders\Models\UsersSeeder;
 use Tests\TestCase;
 
 final class KataFeatureTest extends TestCase
 {
-    use DatabaseMigrations;
-
     const RESPONSE_STRUCTURES = [
         'challenges' => [
             'success' => 'boolean',
@@ -26,8 +23,10 @@ final class KataFeatureTest extends TestCase
 
     public function test_api()
     {
-        $response = $this->get('/');
-        $response->assertStatus(200);
+        $this->get('/')
+            ->assertStatus(200);
+
+        $this->assertTrue(true);
     }
 
     /**
@@ -35,9 +34,11 @@ final class KataFeatureTest extends TestCase
      */
     public function test_api_kata_challenges(): array
     {
-        $response = $this->get('/api/kata');
-        $response->assertStatus(200);
+        $response = $this->get('/api/kata')
+            ->assertStatus(200);
+
         $this->assertJsonResponseFormat($response, self::RESPONSE_STRUCTURES['challenges']);
+        $this->assertTrue(true);
 
         return array_values($response->json('data'));
     }
@@ -52,9 +53,9 @@ final class KataFeatureTest extends TestCase
         $challengeMethods = [];
 
         foreach ($challenges as $challenge) {
-            $response = $this->get(sprintf('/api/kata/%s', $challenge));
+            $response = $this->get(sprintf('/api/kata/%s', $challenge))
+                ->assertStatus(200);
 
-            $response->assertStatus(200);
             $this->assertJsonResponseFormat($response, self::RESPONSE_STRUCTURES['challenge']);
 
             $challengeMethods[$challenge] = $response->json('data');

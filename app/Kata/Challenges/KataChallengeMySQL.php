@@ -5,6 +5,7 @@ namespace App\Kata\Challenges;
 use App\Enums\CurrencyCode;
 use App\Kata\KataChallenge;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class KataChallengeMySQL extends KataChallenge
 {
@@ -71,15 +72,19 @@ class KataChallengeMySQL extends KataChallenge
 
     protected function selectOne(string $sql, array $params = []): mixed
     {
-        $sql = str_replace('SELECT', 'SELECT SQL_NO_CACHE', $sql);
+        $sql = Str::replaceFirst('SELECT', 'SELECT SQL_NO_CACHE', $sql);
+        $expression = DB::raw($sql);
+        $parsedSql = $expression->getValue(DB::connection()->getQueryGrammar());
 
-        return DB::selectOne(DB::raw($sql), $params);
+        return DB::selectOne($parsedSql, $params);
     }
 
     protected function select(string $sql, array $params = []): array
     {
-        $sql = str_replace('SELECT', 'SELECT SQL_NO_CACHE', $sql);
+        $sql = Str::replaceFirst('SELECT', 'SELECT SQL_NO_CACHE', $sql);
+        $expression = DB::raw($sql);
+        $parsedSql = $expression->getValue(DB::connection()->getQueryGrammar());
 
-        return DB::select(DB::raw($sql), $params);
+        return DB::select($parsedSql, $params);
     }
 }

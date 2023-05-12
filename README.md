@@ -19,6 +19,14 @@
 # Laravel Kata
 The greatest collection of the worst code.
 
+## Getting started
+```
+npm i
+npm run reset
+
+./vendor/bin/sail kata:run
+```
+
 #### Concepts
 - Learn the fundamentals
 - Expose common mistakes

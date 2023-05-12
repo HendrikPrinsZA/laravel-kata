@@ -1,10 +1,10 @@
 <?php
 
-namespace Database\Seeders;
+namespace Database\Seeders\Models;
 
 use App\Services\ExchangeRateService;
 
-class ExchangeRatesSeeder extends BaseSeeder
+class ExchangeRatesSeeder extends ModelSeeder
 {
     public function __construct(
         protected ExchangeRateService $exchangeRateService

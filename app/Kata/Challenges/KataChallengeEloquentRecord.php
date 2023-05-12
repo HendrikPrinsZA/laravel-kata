@@ -6,7 +6,7 @@ use App\Models\User;
 
 class KataChallengeEloquentRecord extends KataChallengeEloquent
 {
-    public function getCollectionAverage(int $limit): float
+    public function getCollectionAverage(int $limit): ?float
     {
         return User::where('id', '<=', $limit)->avg('id');
     }
@@ -30,7 +30,6 @@ class KataChallengeEloquentRecord extends KataChallengeEloquent
         return User::where('id', '<=', $limit)
             ->orderByDesc('id')
             ->first()
-            ->blogs()
-            ->count();
+            ?->blogs()->count() ?? 0;
     }
 }

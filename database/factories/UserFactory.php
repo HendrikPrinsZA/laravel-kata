@@ -13,6 +13,8 @@ class UserFactory extends Factory
 {
     public function definition()
     {
+        $safeEmail = fake()->unique()->safeEmail();
+
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
