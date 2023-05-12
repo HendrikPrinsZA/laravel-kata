@@ -45,17 +45,12 @@ if [ "${CI_MODE}" == "circleci" ]; then
     source $PATH_TO_REPO/.env
 
     composer install
-    docker exec -it kata-mysql mysql -uroot -p$DB_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS $DB_DATABASE; CREATE DATABASE $DB_DATABASE;"
-    docker exec -it kata-mysql mysql -uroot -p$DB_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS $DB_TEST_DATABASE; CREATE DATABASE $DB_TEST_DATABASE;"
-    docker exec -it kata-mysql mysql -uroot -p$DB_ROOT_PASSWORD -e "GRANT ALL PRIVILEGES ON *.* TO '$DB_USERNAME'@'%'; FLUSH PRIVILEGES;"
+    mysql -h127.0.0.1 -uroot -proot_password -e "DROP DATABASE IF EXISTS $DB_DATABASE; CREATE DATABASE $DB_DATABASE;"
+    mysql -h127.0.0.1 -uroot -proot_password -e "DROP DATABASE IF EXISTS $DB_TEST_DATABASE; CREATE DATABASE $DB_TEST_DATABASE;"
+    mysql -h127.0.0.1 -uroot -proot_password -e "GRANT ALL PRIVILEGES ON *.* TO 'sail'@'%'; FLUSH PRIVILEGES;"
 
-    ./vendor/bin/sail artisan key:generate --no-interaction
-    ./vendor/bin/sail artisan migrate:fresh --database=$DB_TEST_DATABASE --seed --force --no-interaction
-    ./vendor/bin/sail artisan migrate:fresh --database=$DB_DATABASE --env=testing --seed --force --no-interaction
-
-    # export DB_TEST_DATABASE=testing
-    # export DB_DATABASE=$DB_TEST_DATABASE
-    # ./vendor/bin/sail artisan migrate:fresh --database=$DB_TEST_DATABASE --env=testing --seed --force --no-interaction
+    php artisan migrate:refresh --seed --no-interaction --force
+    php artisan migrate:refresh --database=$DB_TEST_DATABASE --seed --force --no-interaction
 fi
 
 if [ "${CI_MODE}" == "local" ]; then
