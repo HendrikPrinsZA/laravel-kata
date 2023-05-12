@@ -100,13 +100,15 @@ jobs:
       - run:
           name: Run tests
           command: |
-            php -d pcov.enabled=1 vendor/bin/paratest \
-              --passthru-php="'-d' 'pcov.enabled=1'" \
-              -p 8 \
-              --runner=WrapperRunner \
-              --coverage-clover=clover.xml \
-              --log-junit ~/phpunit/junit.xml \
-              --stop-on-failure
+            php artisan test
+          # command: |
+          #   php -d pcov.enabled=1 vendor/bin/paratest \
+          #     --passthru-php="'-d' 'pcov.enabled=1'" \
+          #     -p 8 \
+          #     --runner=WrapperRunner \
+          #     --coverage-clover=clover.xml \
+          #     --log-junit ~/phpunit/junit.xml \
+          #     --stop-on-failure
       - run:
           name: Upload coverage results
           command: |
