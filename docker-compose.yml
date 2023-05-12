@@ -4,12 +4,11 @@ services:
     laravel.test:
         container_name: kata-laravel
         build:
-            context: ./docker/8.1
+            context: ./docker/8.2
             dockerfile: Dockerfile
             args:
                 CI_MODE: '${CI_MODE}'
                 WWWGROUP: '${WWWGROUP}'
-        image: sail-8.1/app
         extra_hosts:
             - 'host.docker.internal:host-gateway'
         ports:
@@ -24,7 +23,7 @@ services:
         volumes:
             - '.:/var/www/html'
         networks:
-            - laravel-kata
+            - sail
         depends_on:
             - mysql
             - redis
@@ -43,7 +42,7 @@ services:
         volumes:
             - 'laravel-kata-mysql:/var/lib/mysql'
         networks:
-            - laravel-kata
+            - sail
         healthcheck:
             test: ["CMD", "mysqladmin", "ping", "-p${DB_PASSWORD}"]
             retries: 3
@@ -56,13 +55,13 @@ services:
         volumes:
             - 'laravel-kata-redis:/data'
         networks:
-            - laravel-kata
+            - sail
         healthcheck:
             test: ["CMD", "redis-cli", "ping"]
             retries: 3
             timeout: 5s
 networks:
-    laravel-kata:
+    sail:
         driver: bridge
 volumes:
     laravel-kata-mysql:

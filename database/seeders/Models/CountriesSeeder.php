@@ -1,12 +1,12 @@
 <?php
 
-namespace Database\Seeders;
+namespace Database\Seeders\Models;
 
 use App\Collections\CountryCollection;
 use App\Enums\CountryCode;
 use App\Models\Country;
 
-class CountriesSeeder extends BaseSeeder
+class CountriesSeeder extends ModelSeeder
 {
     public function seed(): void
     {

@@ -15,5 +15,7 @@ final class KataCommandTest extends TestCase
             ->expectsOutputToContain('Database: laravel')
             ->expectsOutputToContain('Database: testing')
             ->assertExitCode(0);
+
+        $this->assertTrue(true);
     }
 }

@@ -1,12 +1,12 @@
 <?php
 
-namespace Database\Seeders;
+namespace Database\Seeders\Models;
 
 use App\Enums\CurrencyCode;
 use App\Models\Currency;
 use App\Services\ExchangeRateService;
 
-class CurrenciesSeeder extends BaseSeeder
+class CurrenciesSeeder extends ModelSeeder
 {
     public function __construct(
         protected ExchangeRateService $exchangeRateService
