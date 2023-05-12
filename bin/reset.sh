@@ -45,12 +45,12 @@ if [ "${CI_MODE}" == "circleci" ]; then
     source $PATH_TO_REPO/.env
 
     composer install
-    mysql -h127.0.0.1 -uroot -proot_password -e "DROP DATABASE IF EXISTS $DB_DATABASE; CREATE DATABASE $DB_DATABASE;"
-    mysql -h127.0.0.1 -uroot -proot_password -e "DROP DATABASE IF EXISTS $DB_TEST_DATABASE; CREATE DATABASE $DB_TEST_DATABASE;"
-    mysql -h127.0.0.1 -uroot -proot_password -e "GRANT ALL PRIVILEGES ON *.* TO 'sail'@'%'; FLUSH PRIVILEGES;"
+    mysql -h127.0.0.1 -uroot -p$DB_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS $DB_DATABASE; CREATE DATABASE $DB_DATABASE;"
+    mysql -h127.0.0.1 -uroot -p$DB_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS $DB_TEST_DATABASE; CREATE DATABASE $DB_TEST_DATABASE;"
+    mysql -h127.0.0.1 -uroot -p$DB_ROOT_PASSWORD -e "GRANT ALL PRIVILEGES ON *.* TO 'sail'@'%'; FLUSH PRIVILEGES;"
 
-    php artisan migrate:refresh --seed --no-interaction --force
-    php artisan migrate:refresh --database=$DB_TEST_DATABASE --seed --force --no-interaction
+    php artisan migrate:fresh --seed --no-interaction --force
+    php artisan migrate:fresh --database=$DB_TEST_DATABASE --seed --force --no-interaction
 fi
 
 if [ "${CI_MODE}" == "local" ]; then

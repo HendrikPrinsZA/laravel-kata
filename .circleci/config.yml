@@ -10,7 +10,7 @@ defaults: &defaults
         MYSQL_DATABASE: "laravel"
         MYSQL_ALLOW_EMPTY_PASSWORD: 1
         MYSQL_ROOT_HOST: "%"
-        MYSQL_ROOT_PASSWORD: "root_password"
+        MYSQL_ROOT_PASSWORD: "password"
         MYSQL_HOST: "%"
         MYSQL_USER: "sail"
         MYSQL_PASSWORD: "password"
@@ -75,7 +75,7 @@ commands:
           command: |
             sudo apt-get update
             sudo apt-get install mysql-client
-            mysql -h127.0.0.1 -uroot -proot_password --execute="SET GLOBAL max_connections = 10000; SET GLOBAL mysqlx_max_connections = 10000;"
+            mysql -h127.0.0.1 -uroot -ppassword --execute="SET GLOBAL max_connections = 10000; SET GLOBAL mysqlx_max_connections = 10000;"
 
 jobs:
   lint:
