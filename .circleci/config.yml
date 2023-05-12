@@ -103,8 +103,6 @@ jobs:
           #   php artisan test --coverage
           command: |
             php -d pcov.enabled=1 vendor/bin/phpunit \
-              --passthru-php="'-d' 'pcov.enabled=1'" \
-              --runner=WrapperRunner \
               --coverage-clover=clover.xml \
               --log-junit ~/phpunit/junit.xml \
               --stop-on-failure
