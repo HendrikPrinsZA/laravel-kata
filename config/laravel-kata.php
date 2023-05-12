@@ -17,8 +17,6 @@ if (is_null($runMode)) {
 
 $defaults = match ($runMode) {
     KataRunMode::DEBUG => [
-        'APP_DEBUG' => true,
-
         'LK_MAX_SECONDS' => 1,
         'LK_MAX_ITERATIONS' => 1,
 
@@ -56,7 +54,8 @@ return [
     'show-hints-extended' => false,
     'save-outputs' => $getValue('APP_DEBUG', false),
     'show-code-snippets' => $getValue('APP_DEBUG', false),
-    'debug-mode' => $getValue('APP_DEBUG', false),
+    'debug-mode' => false,
+    'min-success-perc' => 0.5,
 
     // Configuration of the dummy data
     // - Will allow to separate between benchmark & tests
