@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 if [ "${CI_MODE}" == "circleci" ]; then
-    php artisan kata:run
+    php artisan kata:run --all
 
     exitCode=$?
     if [ $exitCode -ne 0 ]; then
@@ -12,7 +12,7 @@ if [ "${CI_MODE}" == "circleci" ]; then
     exit 0
 fi
 
-./vendor/bin/sail artisan kata:run
+./vendor/bin/sail artisan kata:run --all
 
 exitCode=$?
 if [ $exitCode -ne 0 ]; then

@@ -5,10 +5,13 @@ namespace App\Console\Commands;
 use App\Kata\Exceptions\KataChallengeScoreException;
 use App\Kata\KataRunner;
 use Illuminate\Console\Command;
+use Vendors\SmartCommand\Traits\SmartChoice;
 
 class KataRunCommand extends Command
 {
-    protected $signature = 'kata:run {--mode=all}';
+    use SmartChoice;
+
+    protected $signature = 'kata:run {--all}';
 
     protected $description = 'Kata command POC';
 
@@ -16,19 +19,36 @@ class KataRunCommand extends Command
 
     public function handle(): int
     {
-        $this->kataRunner = app(KataRunner::class, [
+        if ($this->option('all')) {
+            return $this->handleRun();
+        }
+
+        $challenges = $this->smartChoice('Challenges', config('laravel-kata.challenges'));
+
+        return $this->handleRun($challenges);
+    }
+
+    protected function handleRun(array $challenges = []): int
+    {
+        $configChallenges = config('laravel-kata.challenges');
+
+        $challenges = ! empty($challenges) ? $challenges : $configChallenges;
+
+        $this->kataRunner = app()->makeWith(KataRunner::class, [
             'command' => $this,
             'failOnScore' => true,
+            'challenges' => $challenges,
         ]);
 
         try {
             $this->kataRunner->run();
         } catch (KataChallengeScoreException $exception) {
-            $this->error($exception->getMessage());
+            $this->warn($exception->getMessage());
+            $this->error('Score failed!');
 
-            return 1;
+            return self::FAILURE;
         }
 
-        return 0;
+        return self::SUCCESS;
     }
 }

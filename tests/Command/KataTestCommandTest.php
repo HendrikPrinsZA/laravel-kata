@@ -5,7 +5,7 @@ namespace Tests\Command;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
-final class KataCommandTest extends TestCase
+final class KataTestCommandTest extends TestCase
 {
     use DatabaseTransactions;
 
@@ -15,7 +15,5 @@ final class KataCommandTest extends TestCase
             ->expectsOutputToContain('Database: laravel')
             ->expectsOutputToContain('Database: testing')
             ->assertExitCode(0);
-
-        $this->assertTrue(true);
     }
 }

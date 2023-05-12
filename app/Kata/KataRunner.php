@@ -2,7 +2,6 @@
 
 namespace App\Kata;
 
-use App\Kata\Challenges\KataChallengeSample;
 use App\Kata\Enums\KataRunnerIterationMode;
 use App\Kata\Enums\KataRunnerMode;
 use App\Kata\Exceptions\KataChallengeScoreException;
@@ -45,23 +44,36 @@ class KataRunner
 
     public function __construct(
         protected ?Command $command = null,
-        protected bool $failOnScore = false
+        protected bool $failOnScore = false,
+        protected array $challenges = []
     ) {
         $this->createdAt = now();
         $this->command = $command;
-        $this->kataChallenges = config('laravel-kata.challenges', [
-            KataChallengeSample::class,
-        ]);
 
-        $mode = $this->command?->option('mode') ?? null;
+        $configChallenges = config('laravel-kata.challenges');
 
-        if ($mode === 'all') {
-            $mode = null;
+        if (! empty($challenges)) {
+            foreach ($challenges as $challengeClass) {
+                if (! in_array($challengeClass, $configChallenges)) {
+                    throw new Exception(sprintf(
+                        'Challenge not found in config "laravel-kata.challenges", expected: %s, available %s',
+                        $challengeClass,
+                        implode(', ', $configChallenges)
+                    ));
+                }
+
+                if (! class_exists($challengeClass)) {
+                    throw new Exception(sprintf(
+                        'Challenge not found: %s',
+                        $challengeClass
+                    ));
+                }
+            }
         }
 
-        $this->modes = $mode === null
-            ? self::DEFAULT_MODES
-            : [KataRunnerMode::from($mode)];
+        $this->kataChallenges = ! empty($challenges) ? $challenges : config('laravel-kata.challenges');
+
+        $this->modes = self::DEFAULT_MODES;
 
         $this->iterationModes = self::DEFAULT_ITERATION_MODES;
 
@@ -75,11 +87,22 @@ class KataRunner
         foreach ($this->kataChallenges as $kataChallenge) {
             $result = $this->handleChallenge($kataChallenge);
 
-            $this->report($result);
+            // $this->report($result);
             $results->push($result);
         }
 
         return $results;
+    }
+
+    protected function reportSingle(array $result): void
+    {
+        /** @var KataChallengeResultObject $resultBefore */
+        $resultBefore = $result[KataRunnerMode::BEFORE->value];
+
+        /** @var KataChallengeResultObject $resultRecord */
+        $resultRecord = $result[KataRunnerMode::RECORD->value];
+
+        $this->printScoresTable($resultBefore, $resultRecord);
     }
 
     protected function report(array $results): void
@@ -155,20 +178,31 @@ class KataRunner
             'Gains',
         ], $scoreRows);
 
-        if (! data_get($reportData, 'stats.record.gains_success')) {
-            $exception = sprintf(
-                '%s::%s is completely wrong!',
-                $resultRecord->getClassName(),
-                $resultRecord->getMethodName()
-            );
+        // (can't trust this?)
+        // Hard rules failed
+        // $gainsSuccess = data_get($reportData, 'stats.record.gains_success');
+        // if (!$gainsSuccess) {
+        //     throw new KataChallengeScoreException('Gains failed');
+        // }
 
-            if (config('laravel-kata.debug-mode')) {
-                $this->command->warn($exception);
+        // Minimum percentage
+        $minSuccessPerc = config('laravel-kata.min-success-perc');
+        $successPerc = data_get($reportData, 'stats.record.success_perc');
+        if ($successPerc < $minSuccessPerc) {
+            throw new KataChallengeScoreException(sprintf(
+                'Success percentage is below the minimum, %s%% < %s%%',
+                round($successPerc * 100, 2),
+                round($minSuccessPerc * 100, 2),
+            ));
+        }
 
-                return;
-            }
-
-            throw new KataChallengeScoreException();
+        // outputs should always match
+        if (! data_get($reportData, 'stats.record.outputs_md5_gains_success')) {
+            throw new KataChallengeScoreException(sprintf(
+                'Outputs does not match (expected: %s, actual: %s)',
+                data_get($reportData, 'stats.before.outputs_md5'),
+                data_get($reportData, 'stats.record.outputs_md5'),
+            ));
         }
     }
 
@@ -234,6 +268,13 @@ class KataRunner
                 $value === false
         )->count() === 0;
 
+        $successFields = collect($statsRecord)->filter(
+            fn ($_, $key) => str_ends_with($key, '_success')
+        );
+        $statsRecord['success_max'] = $successFields->count();
+        $statsRecord['success_count'] = $successFields->filter()->count();
+        $statsRecord['success_perc'] = $statsRecord['success_count'] / $statsRecord['success_max'];
+
         ksort($statsRecord);
 
         return $statsRecord;
@@ -279,7 +320,7 @@ class KataRunner
             );
 
             Storage::disk('local')->put($filePath, json_encode($result));
-            $this->command?->warn(sprintf('Saved output to %s', $filePath));
+            $this->command?->line(sprintf('Report saved to: %s', $filePath));
         }
 
         if (config('laravel-kata.debug-mode')) {
@@ -294,7 +335,7 @@ class KataRunner
 
     protected function handleChallenge(string $kataChallenge): array
     {
-        $result = [];
+        $results = [];
         $kataChallengeReflection = new ReflectionClass($kataChallenge);
 
         $skipFunctions = [
@@ -314,10 +355,15 @@ class KataRunner
                 continue;
             }
 
-            $result[$reflectionMethod->name] = $this->handleChallengeMethod($reflectionMethod);
+            $result = $this->handleChallengeMethod($reflectionMethod);
+
+            if (! is_null($result)) {
+                $this->reportSingle($result);
+                $results[$reflectionMethod->name] = $result;
+            }
         }
 
-        return $result;
+        return $results;
     }
 
     /**
@@ -327,16 +373,12 @@ class KataRunner
      * changed to instantiate for each method instead.
      *
      * This will give us some hooks, similar to unit tests like setUp(), and tearDown()
-     *
-     * Returns true when
-     *  1. Results match
-     *  2. Is faster
      */
-    protected function handleChallengeMethod(ReflectionMethod $reflectionMethod): array|bool
+    protected function handleChallengeMethod(ReflectionMethod $reflectionMethod): ?array
     {
         // We don't want to handle the base class
         if ($reflectionMethod->class === KataChallenge::class) {
-            return false;
+            return null;
         }
 
         $outputs = [];
