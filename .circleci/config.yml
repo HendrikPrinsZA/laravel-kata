@@ -100,7 +100,7 @@ jobs:
       - run:
           name: Run tests
           command: |
-            php artisan test
+            php artisan test --coverage
           # command: |
           #   php -d pcov.enabled=1 vendor/bin/paratest \
           #     --passthru-php="'-d' 'pcov.enabled=1'" \
