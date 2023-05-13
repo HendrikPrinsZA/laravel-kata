@@ -50,11 +50,14 @@ return [
     ],
     'max-seconds' => $getValue('LK_MAX_SECONDS', 3),
     'max-iterations' => $getValue('LK_MAX_ITERATIONS', 1000),
+
+    // To be converted to env variables
+    'outputs-save' => true,
+    'outputs-show' => false,
+    'debug-mode' => false,
     'show-hints' => false,
     'show-hints-extended' => false,
-    'save-outputs' => $getValue('APP_DEBUG', false),
-    'show-code-snippets' => $getValue('APP_DEBUG', false),
-    'debug-mode' => false,
+    'show-code-snippets' => true,
     'min-success-perc' => 0.5,
 
     // Configuration of the dummy data

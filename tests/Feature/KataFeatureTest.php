@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\User;
-use Database\Seeders\Models\UsersSeeder;
+use Database\Seeders\DatabaseSeeder;
 use Tests\TestCase;
 
 final class KataFeatureTest extends TestCase
@@ -75,7 +75,7 @@ final class KataFeatureTest extends TestCase
      */
     public function test_api_kata_challenges_challenge_method(array $challengeMethods): void
     {
-        $this->seed(UsersSeeder::class);
+        $this->seed(DatabaseSeeder::class);
         $this->assertNotNull(User::first(), 'Expected users, but none found');
 
         foreach ($challengeMethods as $challenge => $methods) {

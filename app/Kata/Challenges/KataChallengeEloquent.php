@@ -3,6 +3,7 @@
 namespace App\Kata\Challenges;
 
 use App\Kata\KataChallenge;
+use App\Models\ExchangeRate;
 use App\Models\User;
 
 class KataChallengeEloquent extends KataChallenge
@@ -56,5 +57,14 @@ class KataChallengeEloquent extends KataChallenge
             ->where('id', '<=', $limit)
             ->last()
             ?->blogs->count() ?? 0;
+    }
+
+    public function getMaxVersusOrder(int $limit): float
+    {
+        return ExchangeRate::query()
+            ->where('id', '<=', $limit)
+            ->orderByDesc('rate')
+            ->first()
+            ?->rate;
     }
 }

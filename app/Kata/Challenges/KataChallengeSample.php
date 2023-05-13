@@ -30,4 +30,38 @@ class KataChallengeSample extends KataChallenge
 
         return round($sum, 2);
     }
+
+    public function fizzBuzz(int $limit): string
+    {
+        $isDivisible = function ($number, $divisor) {
+            for ($i = 1; $i <= $number; $i++) {
+                if ($i * $divisor == $number) {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+
+        $result = '';
+        for ($i = 1; $i <= $limit; $i++) {
+            $output = '';
+
+            if ($isDivisible($i, 3)) {
+                $output .= 'Fizz';
+            }
+
+            if ($isDivisible($i, 5)) {
+                $output .= 'Buzz';
+            }
+
+            if ($output == '') {
+                $output = $i;
+            }
+
+            $result .= $output.'|';
+        }
+
+        return $result;
+    }
 }
