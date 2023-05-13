@@ -69,7 +69,7 @@ class KataChallengeSampleRecord
 ```
 
 <p align="center">
-  <img src="./public/images/sample-report.png" width="100%" alt="Sample report">
+  <img src="./public/images/sample-report-min.jpg" width="100%" alt="Sample report">
 </p>
 
 ## [What are katas?](https://www.youtube.com/watch?v=r_8Rw16uscg)
