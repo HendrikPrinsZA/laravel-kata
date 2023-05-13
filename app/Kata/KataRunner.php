@@ -155,6 +155,15 @@ class KataRunner
             config('laravel-kata.max-iterations')
         ));
 
+        if (config('laravel-kata.outputs-show-last')) {
+            $this->command->newLine();
+            $this->command->info('Outputs of last iteration');
+            $this->command->info('Output from A');
+            $this->command->line(sprintf("```\n%s\n```", $resultBefore->getOutputsJsonLast()));
+            $this->command->info('Output from B');
+            $this->command->line(sprintf("```\n%s\n```", $resultRecord->getOutputsJsonLast()));
+        }
+
         // Minimum percentage
         $minSuccessPerc = config('laravel-kata.min-success-perc');
         $successPerc = data_get($reportData, 'stats.record.success_perc');
@@ -282,7 +291,7 @@ class KataRunner
             ],
         ];
 
-        if (config('laravel-kata.save-outputs')) {
+        if (config('laravel-kata.outputs-save')) {
             $filePath = sprintf(
                 'laravel-kata/%s/result-%s.json',
                 $this->createdAt->format('Ymd-His'),

@@ -30,4 +30,32 @@ class KataChallengeSample extends KataChallenge
 
         return round($sum, 2);
     }
+
+    public function fizzBuzz(): string
+    {
+        $result = '';
+        for ($i = 1; $i <= 100; $i++) {
+            if ($i % 3 == 0 && $i % 5 == 0) {
+                $result .= 'FizzBuzz|';
+
+                continue;
+            }
+
+            if ($i % 3 == 0) {
+                $result .= 'Fizz|';
+
+                continue;
+            }
+
+            if ($i % 5 == 0) {
+                $result .= 'Buzz|';
+
+                continue;
+            }
+
+            $result .= $i.'|';
+        }
+
+        return $result;
+    }
 }
