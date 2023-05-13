@@ -4,6 +4,7 @@ namespace App\Kata\Objects;
 
 use App\Kata\Enums\KataRunnerIterationMode;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Str;
 use ReflectionClass;
 use ReflectionMethod;
 use Symfony\Component\Process\Exception\ProcessFailedException;
@@ -26,9 +27,13 @@ class KataChallengeResultObject extends JsonResource
         $length = $endLine - $startLine;
         $lines = file($fileName);
 
-        return collect(array_slice($lines, $startLine, $length))
+        $code = collect(array_slice($lines, $startLine, $length))
             ->map(fn ($line) => substr($line, 4))
+            ->map(fn ($line) => str_replace('  ', ' ', $line))
+            ->map(fn ($line) => Str::limit($line, 80))
             ->join('');
+
+        return sprintf("```\n%s\n```", $code);
     }
 
     public function getReflectionMethod(): ReflectionMethod

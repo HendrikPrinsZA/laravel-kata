@@ -86,15 +86,13 @@ class KataRunner
 
         foreach ($this->kataChallenges as $kataChallenge) {
             $result = $this->handleChallenge($kataChallenge);
-
-            // $this->report($result);
             $results->push($result);
         }
 
         return $results;
     }
 
-    protected function reportSingle(array $result): void
+    protected function reportResult(array $result): void
     {
         /** @var KataChallengeResultObject $resultBefore */
         $resultBefore = $result[KataRunnerMode::BEFORE->value];
@@ -105,85 +103,57 @@ class KataRunner
         $this->printScoresTable($resultBefore, $resultRecord);
     }
 
-    protected function report(array $results): void
-    {
-        foreach ($results as $methodResult) {
-            if (! $methodResult) {
-                continue;
-            }
-
-            /** @var KataChallengeResultObject $resultBefore */
-            $resultBefore = $methodResult[KataRunnerMode::BEFORE->value];
-
-            /** @var KataChallengeResultObject $resultRecord */
-            $resultRecord = $methodResult[KataRunnerMode::RECORD->value];
-
-            $this->printScoresTable($resultBefore, $resultRecord);
-        }
-    }
-
     protected function printScoresTable(
         KataChallengeResultObject $resultBefore,
         KataChallengeResultObject $resultRecord
     ): void {
         $reportData = $this->getReportData($resultBefore, $resultRecord);
-        $this->command->info(sprintf(
-            '# %s::%s',
-            $resultRecord->getClassName(),
-            $resultRecord->getMethodName(),
-        ));
 
-        if (config('laravel-kata.show-code-snippets')) {
-            $resultBeforeOutputMd5 = $resultBefore->getOutputsMd5();
-            $resultRecordOutputMd5 = $resultRecord->getOutputsMd5();
-
-            $this->command->table(
-                [
-                    help_me_code($resultBefore->getReflectionMethod()),
-                    help_me_code($resultRecord->getReflectionMethod()),
-                ],
-                [[
-                    $resultBefore->getCodeSnippet(),
-                    $resultRecord->getCodeSnippet(),
-                ],
-                    [
-                        $resultBeforeOutputMd5,
-                        wrap_in_format($resultRecordOutputMd5, $resultRecordOutputMd5 === $resultBeforeOutputMd5),
-                    ], ]
-            );
-        }
-
-        $getScore = fn (string $field): array => [
-            $field,
+        $getScoreRow = fn (string $field, ?string $title = null): array => [
+            $title ?: $field,
             data_get($reportData, sprintf('stats.before.%s', $field)),
-            data_get($reportData, sprintf('stats.record.%s', $field)),
-            wrap_in_format(
-                sprintf('%s%%', data_get($reportData, sprintf('stats.record.%s_gains_perc', $field))),
-                data_get($reportData, sprintf('stats.record.%s_gains_success', $field)),
+            sprintf(
+                '%s %s',
+                data_get($reportData, sprintf('stats.record.%s', $field)),
+                wrap_in_format(
+                    sprintf('(%s%%)', data_get($reportData, sprintf('stats.record.%s_gains_perc', $field))),
+                    data_get($reportData, sprintf('stats.record.%s_gains_success', $field)),
+                ),
             ),
         ];
 
-        $scoreRows = collect([
-            'outputs_md5',
-            'line_count',
-            'violations_count',
-            'iterations',
-            'duration',
-        ])->map(fn (string $field) => $getScore($field));
-
-        $this->command->table([
-            '',
-            'Before',
-            'Record',
-            'Gains',
-        ], $scoreRows);
-
-        // (can't trust this?)
-        // Hard rules failed
-        // $gainsSuccess = data_get($reportData, 'stats.record.gains_success');
-        // if (!$gainsSuccess) {
-        //     throw new KataChallengeScoreException('Gains failed');
-        // }
+        $this->command->table(
+            [
+                '',
+                sprintf('A) %s::%s', $resultBefore->getClassName(), $resultBefore->getMethodName()),
+                sprintf('B) %s::%s', $resultRecord->getClassName(), $resultRecord->getMethodName()),
+            ],
+            [
+                [
+                    'File',
+                    help_me_code($resultBefore->getReflectionMethod()),
+                    help_me_code($resultRecord->getReflectionMethod()),
+                ],
+                config('laravel-kata.show-code-snippets') ? [
+                    'Code',
+                    $resultBefore->getCodeSnippet(),
+                    $resultRecord->getCodeSnippet(),
+                ] : [],
+                $getScoreRow('outputs_md5', 'Outputs'),
+                $getScoreRow('line_count', 'Lines'),
+                $getScoreRow('violations_count', 'Violations'),
+                $getScoreRow('iterations', 'Iterations'),
+                $getScoreRow('duration', 'Duration'),
+            ]
+        );
+        $this->command->line(sprintf(
+            '* Iterations: The amount of times this function executed in %d seconds',
+            config('laravel-kata.max-seconds')
+        ));
+        $this->command->line(sprintf(
+            '* Duration: The execution time (ms) it took to run the function %d times',
+            config('laravel-kata.max-iterations')
+        ));
 
         // Minimum percentage
         $minSuccessPerc = config('laravel-kata.min-success-perc');
@@ -196,7 +166,7 @@ class KataRunner
             ));
         }
 
-        // outputs should always match
+        // Outputs should always match
         if (! data_get($reportData, 'stats.record.outputs_md5_gains_success')) {
             throw new KataChallengeScoreException(sprintf(
                 'Outputs does not match (expected: %s, actual: %s)',
@@ -358,7 +328,7 @@ class KataRunner
             $result = $this->handleChallengeMethod($reflectionMethod);
 
             if (! is_null($result)) {
-                $this->reportSingle($result);
+                $this->reportResult($result);
                 $results[$reflectionMethod->name] = $result;
             }
         }
