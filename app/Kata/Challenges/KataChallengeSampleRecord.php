@@ -9,16 +9,20 @@ class KataChallengeSampleRecord extends KataChallengeSample
         return round(M_PI, 2);
     }
 
-    public function fizzBuzz(): string
+    public function fizzBuzz(int $limit): string
     {
         $result = '';
-        for ($i = 1; $i <= 100; $i++) {
-            if ($i % 3 == 0) {
-                $result .= $i % 5 === 0 ? 'FizzBuzz|' : 'Fizz|';
+        $fizzBuzz = [
+            '1|1' => 'FizzBuzz',
+            '|1' => 'Buzz',
+            '1|' => 'Fizz',
+        ];
+        for ($i = 1; $i <= $limit; $i++) {
+            $mod1 = $i % 3 == 0;
+            $mod2 = $i % 5 == 0;
 
-                continue;
-            }
-            $result .= $i % 5 === 0 ? 'Buzz|' : $i.'|';
+            $word = $fizzBuzz["$mod1|$mod2"] ?? $i;
+            $result .= $word.'|';
         }
 
         return $result;

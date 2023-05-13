@@ -53,11 +53,11 @@ return [
 
     // To be converted to env variables
     'outputs-save' => true,
-    'outputs-show-last' => false,
+    'outputs-show' => false,
     'debug-mode' => false,
     'show-hints' => false,
     'show-hints-extended' => false,
-    'show-code-snippets' => false,
+    'show-code-snippets' => true,
     'min-success-perc' => 0.5,
 
     // Configuration of the dummy data

@@ -14,8 +14,7 @@ class KataChallengeEloquentRecord extends KataChallengeEloquent
 
     public function getCollectionUnique(int $limit): iterable
     {
-        return User::query()
-            ->select('id')
+        return User::select('id')
             ->distinct()
             ->where('id', '<=', $limit)
             ->pluck('id');

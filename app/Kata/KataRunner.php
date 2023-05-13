@@ -146,6 +146,7 @@ class KataRunner
                 $getScoreRow('duration', 'Duration'),
             ]
         );
+        $this->command->line('* Outputs: An md5 sum is created based on all the outputs');
         $this->command->line(sprintf(
             '* Iterations: The amount of times this function executed in %d seconds',
             config('laravel-kata.max-seconds')
@@ -155,12 +156,17 @@ class KataRunner
             config('laravel-kata.max-iterations')
         ));
 
-        if (config('laravel-kata.outputs-show-last')) {
+        if (config('laravel-kata.outputs-show')) {
             $this->command->newLine();
-            $this->command->info('Outputs of last iteration');
-            $this->command->info('Output from A');
+            $this->command->info('Outputs');
+            $this->command->info('A->first()');
+            $this->command->line(sprintf("```\n%s\n```", $resultBefore->getOutputsJsonFirst()));
+            $this->command->info('B->first()');
+            $this->command->line(sprintf("```\n%s\n```", $resultRecord->getOutputsJsonFirst()));
+
+            $this->command->info('A->last()');
             $this->command->line(sprintf("```\n%s\n```", $resultBefore->getOutputsJsonLast()));
-            $this->command->info('Output from B');
+            $this->command->info('B->last()');
             $this->command->line(sprintf("```\n%s\n```", $resultRecord->getOutputsJsonLast()));
         }
 
