@@ -6,7 +6,7 @@ use App\Kata\KataChallenge;
 
 class KataChallengePhp extends KataChallenge
 {
-    protected int $maxIterations = 1000;
+    protected const MAX_RANGE = 1000;
 
     public function baseline(): void
     {
@@ -19,6 +19,8 @@ class KataChallengePhp extends KataChallenge
      */
     public function nativeRange(int $limit): array
     {
+        $limit = $this->getRangeLimit($limit);
+
         $range = [];
         for ($i = 0; $i <= $limit; $i++) {
             $range[] = $i;
@@ -66,21 +68,8 @@ class KataChallengePhp extends KataChallenge
         return floatval(md5($text));
     }
 
-    /**
-     * Never Use Count or Any Other Methods in The Condition Section of a Loop
-     *
-     * See https://www.codeclouds.com/blog/php-profiling-performance-optimization/
-     *
-     * Note: Deprecated, as it seems like later versions of PHP is smart enough!
-     */
-    protected function loopWithCondition(int $limit): float
+    protected function getRangeLimit(int $limit): int
     {
-        $output = $limit;
-        $items = range(1, $limit * 10);
-        for ($x = 0; $x < count($items); $x++) {
-            $output += $output / $items[$x];
-        }
-
-        return $output;
+        return $limit <= self::MAX_RANGE ? $limit : self::MAX_RANGE;
     }
 }

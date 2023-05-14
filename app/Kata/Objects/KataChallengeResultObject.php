@@ -3,8 +3,8 @@
 namespace App\Kata\Objects;
 
 use App\Kata\Enums\KataRunnerIterationMode;
+use App\Kata\Utilities\CodeUtility;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Str;
 use ReflectionClass;
 use ReflectionMethod;
 use Symfony\Component\Process\Exception\ProcessFailedException;
@@ -21,17 +21,7 @@ class KataChallengeResultObject extends JsonResource
 
     public function getCodeSnippet(): string
     {
-        $fileName = $this->reflectionMethod->getFileName();
-        $startLine = $this->reflectionMethod->getStartLine() - 1;
-        $endLine = $this->reflectionMethod->getEndLine();
-        $length = $endLine - $startLine;
-        $lines = file($fileName);
-
-        $code = collect(array_slice($lines, $startLine, $length))
-            ->map(fn ($line) => substr($line, 4))
-            ->map(fn ($line) => str_replace('  ', ' ', $line))
-            ->map(fn ($line) => Str::limit($line, 80))
-            ->join('');
+        $code = CodeUtility::getCodeSnippet($this->reflectionMethod, 80);
 
         return sprintf("```\n%s\n```", $code);
     }

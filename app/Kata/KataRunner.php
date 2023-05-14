@@ -7,14 +7,17 @@ use App\Kata\Enums\KataRunnerMode;
 use App\Kata\Exceptions\KataChallengeScoreException;
 use App\Kata\Objects\KataChallengeResultObject;
 use App\Kata\Traits\HasExitHintsTrait;
+use App\Kata\Utilities\CodeUtility;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use ReflectionClass;
 use ReflectionMethod;
+use Symfony\Component\Console\Helper\ProgressBar;
 
 class KataRunner
 {
@@ -41,6 +44,8 @@ class KataRunner
     protected Carbon $createdAt;
 
     protected array $kataChallenges;
+
+    protected ProgressBar $progressBar;
 
     public function __construct(
         protected ?Command $command = null,
@@ -76,6 +81,11 @@ class KataRunner
         $this->modes = self::DEFAULT_MODES;
 
         $this->iterationModes = self::DEFAULT_ITERATION_MODES;
+
+        if (! is_null($this->command)) {
+            $this->progressBar = $this->command?->getOutput()->createProgressBar(0);
+            $this->progressBar->setFormat("%message%\n %current%/%max% [%bar%] %percent:3s%%");
+        }
 
         defined('KATA_BASE_MEM_USED') or define('KATA_BASE_MEM_USED', memory_get_usage(true));
     }
@@ -305,7 +315,8 @@ class KataRunner
             );
 
             Storage::disk('local')->put($filePath, json_encode($result));
-            $this->command?->line(sprintf('Report saved to: %s', $filePath));
+            $this->progressBar?->clear();
+            $this->command?->line(sprintf('Report saved: %s', $filePath));
         }
 
         if (config('laravel-kata.debug-mode')) {
@@ -457,6 +468,24 @@ class KataRunner
             sprintf('%s->%s() (%s)', $reflectionMethod->class, $reflectionMethod->name, $kataRunnerIterationMode->value)
         )->color('green')->begin();
 
+        $cacheKey = sprintf(
+            '%s:%s-%ds-%dx-%s',
+            $kataRunnerIterationMode->value,
+            $reflectionMethod->name,
+            $maxSeconds,
+            $maxIterations,
+            md5(sprintf(
+                '%s-%s-%s',
+                $reflectionMethod->class,
+                $reflectionMethod->name,
+                CodeUtility::getCodeMd5($reflectionMethod)
+            ))
+        );
+
+        if (config('laravel-kata.experimental.cache-results') && Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
+
         $outputs = null;
         switch ($kataRunnerIterationMode) {
             case KataRunnerIterationMode::MAX_ITERATIONS:
@@ -480,10 +509,16 @@ class KataRunner
 
         $event->end();
 
-        return [
+        $response = [
             'event' => $event,
             'outputs' => $outputs,
         ];
+
+        if (config('laravel-kata.experimental.cache-results')) {
+            Cache::set($cacheKey, $response);
+        }
+
+        return $response;
     }
 
     protected function runChallengeMethodMaxIterations(
@@ -492,27 +527,27 @@ class KataRunner
     ): array {
         $outputs = [];
 
-        $bar = $this->command?->getOutput()->createProgressBar($maxIterations);
-        $bar?->setFormat("%message%\n %current%/%max% [%bar%] %percent:3s%%");
-        foreach (range(1, $maxIterations) as $iteration) {
+        $this->progressBar?->clear();
+        $this->progressBar?->setMaxSteps($maxIterations);
+        $this->progressBar?->setProgress(0);
+        for ($iteration = 0; $iteration < $maxIterations; $iteration++) {
             $className = $reflectionMethod->class;
             $instance = app($className);
             $methodName = $reflectionMethod->name;
-            $bar?->setMessage(sprintf(
+            $this->progressBar?->setMessage(sprintf(
                 '%s->%s(%d) [interations]',
                 $className,
                 $methodName,
-                $iteration
+                $iteration + 1
             ));
 
             $outputs[] = $instance->{$methodName}($iteration);
 
-            $bar?->advance();
+            $this->progressBar?->advance();
             $instance = null;
         }
 
-        $bar?->finish();
-        $this->command?->newLine();
+        $this->progressBar?->finish();
 
         return $outputs;
     }
@@ -525,9 +560,9 @@ class KataRunner
         $dateTimeEnd = now()->addMilliseconds($msMax);
         $outputs = [];
 
-        /** @var ProgressBar $bar */
-        $bar = $this->command?->getOutput()->createProgressBar($msMax);
-        $bar?->setFormat("%message%\n %current%/%max% [%bar%] %percent:3s%%");
+        $this->progressBar?->clear();
+        $this->progressBar?->setMaxSteps($msMax);
+        $this->progressBar?->setProgress(0);
 
         $iteration = 0;
         do {
@@ -540,8 +575,8 @@ class KataRunner
             $outputs[] = $instance->{$methodName}($iteration);
             $instance = null;
 
-            $bar?->setProgress($msMax - $msLeft);
-            $bar?->setMessage(sprintf(
+            $this->progressBar?->setProgress($msMax - $msLeft);
+            $this->progressBar?->setMessage(sprintf(
                 '%s->%s(%d) [duration]',
                 $className,
                 $methodName,
@@ -549,8 +584,7 @@ class KataRunner
             ));
         } while ($msLeft > 0);
 
-        $bar?->finish();
-        $this->command?->newLine();
+        $this->progressBar?->finish();
 
         return $outputs;
     }
