@@ -25,4 +25,12 @@ class Country extends Model
     {
         return $this->belongsTo(Currency::class);
     }
+
+    /**
+     * Get the average exchange rates based on this country's currency
+     */
+    // public function getAverageExchangeRates(): array
+    // {
+
+    // }
 }
