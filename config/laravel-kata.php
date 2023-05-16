@@ -60,6 +60,11 @@ return [
     'show-code-snippets' => true,
     'min-success-perc' => 0.5,
 
+    // Experimental (not stable)
+    'experimental' => [
+        'cache-results' => false,
+    ],
+
     // Configuration of the dummy data
     // - Will allow to separate between benchmark & tests
     'dummy-data' => [

@@ -6,9 +6,7 @@ class KataChallengePhpRecord extends KataChallengePhp
 {
     public function nativeRange(int $limit): array
     {
-        $range = range(0, $limit);
-
-        return $range;
+        return range(0, $this->getRangeLimit($limit));
     }
 
     public function nativeSum(int $limit): int
