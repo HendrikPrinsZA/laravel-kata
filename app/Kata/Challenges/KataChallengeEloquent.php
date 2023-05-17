@@ -61,10 +61,11 @@ class KataChallengeEloquent extends KataChallenge
 
     public function getMaxVersusOrder(int $limit): float
     {
+        $minId = ExchangeRate::min('id');
+
         return ExchangeRate::query()
-            ->where('id', '<=', $limit + 1)
+            ->where('id', '<=', $minId + 1)
             ->orderByDesc('rate')
-            ->first()
-            ?->rate;
+            ->first()?->rate;
     }
 }
