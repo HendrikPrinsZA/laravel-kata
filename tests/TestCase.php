@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
@@ -19,6 +20,8 @@ abstract class TestCase extends BaseTestCase
         $this->withoutMiddleware(
             ThrottleRequests::class
         );
+
+        $this->seed(DatabaseSeeder::class);
     }
 
     protected function assertJsonResponseFormat(TestResponse $response, array $responseFormat): void

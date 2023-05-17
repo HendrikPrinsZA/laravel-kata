@@ -36,14 +36,38 @@ if (! function_exists('wrap_in_format')) {
      */
     function wrap_in_format(string $string, bool $success): string
     {
-        return $success
-            ? sprintf('<fg=green>%s</>', $string)
-            : sprintf('<fg=red>%s</>', $string);
+        return $success ? sprintf('<fg=green>%s</>', $string) : sprintf('<fg=red>%s</>', $string);
+    }
+}
 
-        $el = $success
-            ? 'info'
-            : 'warn';
+if (! function_exists('bytes_to_human')) {
+    function bytes_to_human(int $bytes): string
+    {
+        if ($bytes == 0) {
+            return '0 B';
+        }
 
-        return sprintf('<%s>%s</%s>', $el, $string, $el);
+        $units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+        $i = floor(log($bytes, 1024));
+        $power = pow(1024, $i);
+        $size = round($bytes / $power, 2);
+
+        return sprintf('%d %s', $size, $units[$i]);
+    }
+}
+
+if (! function_exists('time_to_human')) {
+    function time_to_human(float $seconds): string
+    {
+        $millisecs = floor(($seconds - floor($seconds)) * 10000000000);
+
+        return sprintf('%d ms', $millisecs);
+
+        $hours = floor($seconds / 3600);
+        $mins = floor($seconds / 60 % 60);
+        $secs = floor($seconds % 60);
+        $millisecs = floor(($seconds - floor($seconds)) * 10000000000);
+
+        return sprintf('%02d:%02d:%02d.%010d', $hours, $mins, $secs, $millisecs);
     }
 }

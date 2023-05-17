@@ -4,14 +4,16 @@ namespace App\Kata\Challenges;
 
 class KataChallengePhpRecord extends KataChallengePhp
 {
-    public function nativeRange(int $limit): array
+    public function nativeRange(int $limit): int
     {
-        return range(0, $this->getRangeLimit($limit));
+        return count(range(0, $this->getRangeLimit($limit)));
     }
 
     public function nativeSum(int $limit): int
     {
-        return array_sum($this->nativeRange($limit));
+        $numbers = range(0, $this->getRangeLimit($limit));
+
+        return array_sum($numbers);
     }
 
     public function replaceString(int $limit): float

@@ -8,6 +8,7 @@ use App\Kata\Exceptions\KataChallengeScoreException;
 use App\Kata\Objects\KataChallengeResultObject;
 use App\Kata\Traits\HasExitHintsTrait;
 use App\Kata\Utilities\CodeUtility;
+use App\Kata\Utilities\PerformanceUtility;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Console\Command;
@@ -47,6 +48,8 @@ class KataRunner
 
     protected ProgressBar $progressBar;
 
+    protected PerformanceUtility $performance;
+
     public function __construct(
         protected ?Command $command = null,
         protected bool $failOnScore = false,
@@ -54,6 +57,8 @@ class KataRunner
     ) {
         $this->createdAt = now();
         $this->command = $command;
+
+        $this->performance = PerformanceUtility::make();
 
         $configChallenges = config('laravel-kata.challenges');
 
@@ -119,41 +124,68 @@ class KataRunner
     ): void {
         $reportData = $this->getReportData($resultBefore, $resultRecord);
 
-        $getScoreRow = fn (string $field, ?string $title = null): array => [
-            $title ?: $field,
-            data_get($reportData, sprintf('stats.before.%s', $field)),
-            sprintf(
-                '%s %s',
-                data_get($reportData, sprintf('stats.record.%s', $field)),
-                wrap_in_format(
-                    sprintf('(%s%%)', data_get($reportData, sprintf('stats.record.%s_gains_perc', $field))),
-                    data_get($reportData, sprintf('stats.record.%s_gains_success', $field)),
-                ),
-            ),
-        ];
+        // TODO: Move into getReportData
+        $getScoreRow = function (string $field, ?string $title = null) use ($reportData): array {
+            $valueBefore = data_get($reportData, sprintf('stats.before.%s', $field));
+            $valueAfter = data_get($reportData, sprintf('stats.record.%s', $field));
+
+            $displayValueBefore = match ($field) {
+                'execution_time_avg' => time_to_human($valueBefore),
+                'memory_usage_avg' => bytes_to_human($valueBefore),
+                default => $valueBefore,
+            };
+
+            $displayValueAfter = match ($field) {
+                'execution_time_avg' => time_to_human($valueAfter),
+                'memory_usage_avg' => bytes_to_human($valueAfter),
+                default => $valueAfter,
+            };
+
+            $success = data_get($reportData, sprintf('stats.record.%s_gains_success', $field));
+            $gainsPerc = data_get($reportData, sprintf('stats.record.%s_gains_perc', $field));
+
+            $performance = match ($field) {
+                'outputs_md5' => wrap_in_format($success ? '100%' : '0%', $success),
+                default => wrap_in_format(sprintf('%s%%', $gainsPerc), $success),
+            };
+
+            return [
+                $title ?: $field,
+                $displayValueBefore,
+                $displayValueAfter,
+                $performance,
+            ];
+        };
+
+        $this->command->newLine();
+        $this->command->info(sprintf('# %s::%s', $resultBefore->getClassName(), $resultBefore->getMethodName()));
+        $this->command->info(sprintf(
+            '## A: %s', help_me_code($resultBefore->getReflectionMethod()),
+        ));
+        if (config('laravel-kata.show-code-snippets')) {
+            $this->command->comment($resultBefore->getCodeSnippet());
+        }
+        $this->command->info(sprintf(
+            '## B: %s', help_me_code($resultRecord->getReflectionMethod()),
+        ));
+        if (config('laravel-kata.show-code-snippets')) {
+            $this->command->comment($resultRecord->getCodeSnippet());
+        }
 
         $this->command->table(
             [
                 '',
-                sprintf('A) %s::%s', $resultBefore->getClassName(), $resultBefore->getMethodName()),
-                sprintf('B) %s::%s', $resultRecord->getClassName(), $resultRecord->getMethodName()),
+                'A',
+                'B',
+                'Performance',
             ],
             [
-                [
-                    'File',
-                    help_me_code($resultBefore->getReflectionMethod()),
-                    help_me_code($resultRecord->getReflectionMethod()),
-                ],
-                config('laravel-kata.show-code-snippets') ? [
-                    'Code',
-                    $resultBefore->getCodeSnippet(),
-                    $resultRecord->getCodeSnippet(),
-                ] : [],
                 $getScoreRow('outputs_md5', 'Outputs'),
                 $getScoreRow('line_count', 'Lines'),
                 $getScoreRow('violations_count', 'Violations'),
                 $getScoreRow('iterations', 'Iterations'),
-                $getScoreRow('duration', 'Duration'),
+                $getScoreRow('execution_time_avg', 'Execution time (avg)'),
+                $getScoreRow('memory_usage_avg', 'Memory usage (avg)'),
             ]
         );
         $this->command->line('* Outputs: An md5 sum is created based on all the outputs');
@@ -219,6 +251,8 @@ class KataRunner
             'violations_count' => 'lt',
             'duration' => 'lt',
             'iterations' => 'gt',
+            'memory_usage_avg' => 'lt',
+            'execution_time_avg' => 'lt',
         ];
 
         foreach ($fields as $field => $mode) {
@@ -234,9 +268,13 @@ class KataRunner
 
                 $gains = $value1 - $value2;
 
-                $percDiff = $value1 !== 0
-                    ? round(abs(($value1 - $value2) / $value1) * 100, 2)
-                    : 0;
+                if ($value2 > 0 && $value1 == 0) {
+                    $percDiff = 100;
+                } else {
+                    $percDiff = $value1 != 0
+                        ? round(abs(($value1 - $value2) / $value1) * 100, 2)
+                        : 0;
+                }
 
                 $success = $value1 <= $value2;
             }
@@ -279,7 +317,6 @@ class KataRunner
         KataChallengeResultObject $resultBefore,
         KataChallengeResultObject $resultRecord,
     ): array {
-        // Get the baseline stats once only
         $baselineMethod = $resultBefore->getBaselineReflectionMethod();
         $cacheKey = sprintf('%s.%s', Str::slug($baselineMethod->class), $baselineMethod->name);
         if (! isset($this->resultBaselineCache[$cacheKey])) {
@@ -316,7 +353,6 @@ class KataRunner
 
             Storage::disk('local')->put($filePath, json_encode($result));
             $this->progressBar?->clear();
-            $this->command?->line(sprintf('Report saved: %s', $filePath));
         }
 
         if (config('laravel-kata.debug-mode')) {
@@ -415,16 +451,12 @@ class KataRunner
 
         $result = [];
         foreach ($this->iterationModes as $iterationMode) {
-            $memoryUsedBase = memory_get_usage(true);
             $challengeOutputs = $this->runChallengeMethodMaxMode(
                 $reflectionMethod,
                 $iterationMode,
                 $maxIterations,
                 $maxSeconds,
             );
-
-            $memoryUsed = $memoryUsedBase - memory_get_usage(true);
-            $memoryUsedPeak = memory_get_peak_usage(true);
 
             // Exception: If zero, should fail!
             if (empty($challengeOutputs['outputs'])) {
@@ -435,12 +467,8 @@ class KataRunner
                 ));
             }
 
-            $result[$iterationMode->value] = [
-                'outputs' => $challengeOutputs['outputs'],
-                'event' => $challengeOutputs['event'],
-                'memoryUsed' => $memoryUsed,
-                'memoryUsedPeak' => $memoryUsedPeak,
-            ];
+            $challengeOutputs['memory_usage_peak'] = memory_get_peak_usage(false);
+            $result[$iterationMode->value] = $challengeOutputs;
         }
 
         // Loop again to separate the concerns
@@ -486,16 +514,16 @@ class KataRunner
             return Cache::get($cacheKey);
         }
 
-        $outputs = null;
+        $response = null;
         switch ($kataRunnerIterationMode) {
             case KataRunnerIterationMode::MAX_ITERATIONS:
-                $outputs = $this->runChallengeMethodMaxIterations(
+                $response = $this->runChallengeMethodMaxIterations(
                     $reflectionMethod,
                     $maxIterations
                 );
                 break;
             case KataRunnerIterationMode::MAX_SECONDS:
-                $outputs = $this->runChallengeMethodMaxSeconds(
+                $response = $this->runChallengeMethodMaxSeconds(
                     $reflectionMethod,
                     $maxSeconds
                 );
@@ -509,10 +537,7 @@ class KataRunner
 
         $event->end();
 
-        $response = [
-            'event' => $event,
-            'outputs' => $outputs,
-        ];
+        $response['event'] = $event;
 
         if (config('laravel-kata.experimental.cache-results')) {
             Cache::set($cacheKey, $response);
@@ -525,6 +550,8 @@ class KataRunner
         ReflectionMethod $reflectionMethod,
         int $maxIterations
     ): array {
+        $startTime = microtime(true);
+        $this->performance->reset();
         $outputs = [];
 
         $this->progressBar?->clear();
@@ -541,21 +568,33 @@ class KataRunner
                 $iteration + 1
             ));
 
-            $outputs[] = $instance->{$methodName}($iteration);
+            $outputs[] = $this->performance->run(
+                fn () => $instance->{$methodName}($iteration)
+            );
 
-            $this->progressBar?->advance();
             $instance = null;
+            $this->progressBar?->advance();
         }
 
         $this->progressBar?->finish();
 
-        return $outputs;
+        return [
+            'outputs' => $outputs,
+            'performance_count' => $this->performance->getCount(),
+            'memory_usage_sum' => $this->performance->getMemoryUsageSum(),
+            'memory_usage_avg' => $this->performance->getMemoryUsageAvg(),
+            'execution_time' => microtime(true) - $startTime,
+            'execution_time_sum' => $this->performance->getExecutionTimeSum(),
+            'execution_time_avg' => $this->performance->getExecutionTimeAvg(),
+        ];
     }
 
     protected function runChallengeMethodMaxSeconds(
         ReflectionMethod $reflectionMethod,
         int $maxSeconds
     ): array {
+        $startTime = microtime(true);
+        $this->performance->reset();
         $msMax = $maxSeconds * 1000;
         $dateTimeEnd = now()->addMilliseconds($msMax);
         $outputs = [];
@@ -572,9 +611,12 @@ class KataRunner
             $className = $reflectionMethod->class;
             $instance = app($className);
             $methodName = $reflectionMethod->name;
-            $outputs[] = $instance->{$methodName}($iteration);
-            $instance = null;
 
+            $outputs[] = $this->performance->run(
+                fn () => $instance->{$methodName}($iteration)
+            );
+
+            $instance = null;
             $this->progressBar?->setProgress($msMax - $msLeft);
             $this->progressBar?->setMessage(sprintf(
                 '%s->%s(%d) [duration]',
@@ -586,6 +628,14 @@ class KataRunner
 
         $this->progressBar?->finish();
 
-        return $outputs;
+        return [
+            'outputs' => $outputs,
+            'performance_count' => $this->performance->getCount(),
+            'memory_usage_sum' => $this->performance->getMemoryUsageSum(),
+            'memory_usage_avg' => $this->performance->getMemoryUsageAvg(),
+            'execution_time' => (microtime(true) - $startTime),
+            'execution_time_sum' => $this->performance->getExecutionTimeSum(),
+            'execution_time_avg' => $this->performance->getExecutionTimeAvg(),
+        ];
     }
 }

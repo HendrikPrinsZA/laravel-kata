@@ -17,7 +17,7 @@ class KataChallengeEloquent extends KataChallenge
      */
     public function getCollectionAverage(int $limit): ?float
     {
-        return User::all()
+        return ExchangeRate::all()
             ->where('id', '<=', $limit)
             ->sortBy('id')
             ->average('id');
@@ -28,7 +28,7 @@ class KataChallengeEloquent extends KataChallenge
      */
     public function getCollectionUnique(int $limit): iterable
     {
-        return User::all()
+        return ExchangeRate::all()
             ->where('id', '<=', $limit)
             ->pluck('id')
             ->unique();
@@ -39,7 +39,7 @@ class KataChallengeEloquent extends KataChallenge
      */
     public function getCollectionCount(int $limit): int
     {
-        return User::all()
+        return ExchangeRate::all()
             ->where('id', '<=', $limit)
             ->count();
     }

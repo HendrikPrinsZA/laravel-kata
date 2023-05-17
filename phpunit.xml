@@ -10,6 +10,12 @@
     <testsuite name="Feature">
       <directory suffix="Test.php">./tests/Feature</directory>
     </testsuite>
+    <testsuite name="FeaturePest">
+      <directory suffix="Test.php">./tests/FeaturePest</directory>
+    </testsuite>
+    <testsuite name="UnitPest">
+      <directory suffix="Test.php">./tests/UnitPest</directory>
+    </testsuite>
   </testsuites>
   <coverage/>
   <php>
