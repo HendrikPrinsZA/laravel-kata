@@ -3,6 +3,7 @@
 version: 2.1
 
 defaults: &defaults
+  resource_class: large
   docker:
     - image: cimg/php:8.2-node
     - image: cimg/mysql:8.0
