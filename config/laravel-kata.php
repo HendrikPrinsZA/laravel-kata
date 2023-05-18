@@ -1,6 +1,7 @@
 <?php
 
 use App\Kata\Challenges\KataChallengeEloquent;
+use App\Kata\Challenges\KataChallengeLaravel;
 use App\Kata\Challenges\KataChallengeMySQL;
 use App\Kata\Challenges\KataChallengePhp;
 use App\Kata\Challenges\KataChallengeSample;
@@ -17,8 +18,8 @@ if (is_null($runMode)) {
 
 $defaults = match ($runMode) {
     KataRunMode::DEBUG => [
-        'LK_MAX_SECONDS' => 1,
-        'LK_MAX_ITERATIONS' => 1,
+        'LK_MAX_SECONDS' => 3,
+        'LK_MAX_ITERATIONS' => 1000,
 
         'LK_DD_MAX_USERS' => 100,
         'LK_DD_MAX_USER_BLOGS' => 3,
@@ -47,6 +48,7 @@ return [
         KataChallengePhp::class,
         KataChallengeEloquent::class,
         KataChallengeMySQL::class,
+        KataChallengeLaravel::class,
     ],
     'max-seconds' => $getValue('LK_MAX_SECONDS', 3),
     'max-iterations' => $getValue('LK_MAX_ITERATIONS', 1000),
@@ -57,12 +59,12 @@ return [
     'debug-mode' => false,
     'show-hints' => false,
     'show-hints-extended' => false,
-    'show-code-snippets' => true,
+    'show-code-snippets' => false,
     'min-success-perc' => 0.5,
 
     // Experimental (not stable)
     'experimental' => [
-        'cache-results' => false,
+        'cache-results' => true,
     ],
 
     // Configuration of the dummy data

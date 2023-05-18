@@ -19,7 +19,7 @@ class DatabaseSeeder extends Seeder
         // We expect the base `users` table
         if (! Schema::hasTable('users')) {
             Artisan::call('migrate:fresh', [
-                '--database' => config('database.connections.laravel.database'),
+                '--database' => config('database.connections.testing.database'),
             ]);
 
             return;
@@ -27,17 +27,11 @@ class DatabaseSeeder extends Seeder
 
         $this->call(DefaultSeeder::class);
 
-        switch (app()->environment()) {
-            case 'local':
-                $this->call(LocalSeeder::class);
-                break;
-            case 'testing':
-                $this->call(TestingSeeder::class);
-                break;
-            case 'staging':
-            case 'production':
-                $this->call(ProductionSeeder::class);
-                break;
-        }
+        match (app()->environment()) {
+            'local' => $this->call(LocalSeeder::class),
+            'testing' => $this->call(TestingSeeder::class),
+            'staging',
+            'production' => $this->call(ProductionSeeder::class),
+        };
     }
 }

@@ -30,4 +30,12 @@ class Currency extends Model
     {
         return $this->hasMany(Country::class);
     }
+
+    public function exchangeRates(): HasMany
+    {
+        return $this->hasMany(
+            ExchangeRate::class,
+            $this->code === CurrencyCode::EUR ? 'base_currency_id' : 'target_currency_id'
+        );
+    }
 }

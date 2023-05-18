@@ -17,7 +17,7 @@ class KataChallengePhp extends KataChallenge
      *
      * See https://www.thegeekstuff.com/2014/04/optimize-php-code/
      */
-    public function nativeRange(int $limit): array
+    public function nativeRange(int $limit): int
     {
         $limit = $this->getRangeLimit($limit);
 
@@ -26,7 +26,7 @@ class KataChallengePhp extends KataChallenge
             $range[] = $i;
         }
 
-        return $range;
+        return count($range);
     }
 
     /**
@@ -36,10 +36,10 @@ class KataChallengePhp extends KataChallenge
      */
     public function nativeSum(int $limit): int
     {
-        $range = $this->nativeRange($limit);
+        $numbers = range(0, $this->getRangeLimit($limit));
 
         $total = 0;
-        foreach ($range as $number) {
+        foreach ($numbers as $number) {
             $total += $number;
         }
 

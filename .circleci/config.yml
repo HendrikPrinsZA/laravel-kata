@@ -3,6 +3,7 @@
 version: 2.1
 
 defaults: &defaults
+  resource_class: large
   docker:
     - image: cimg/php:8.2-node
     - image: cimg/mysql:8.0
@@ -102,7 +103,7 @@ jobs:
           # command: |
           #   php artisan test --coverage
           command: |
-            php -d pcov.enabled=1 vendor/bin/phpunit \
+            php -d pcov.enabled=1 vendor/bin/pest \
               --coverage-clover=clover.xml \
               --log-junit ~/phpunit/junit.xml \
               --stop-on-failure

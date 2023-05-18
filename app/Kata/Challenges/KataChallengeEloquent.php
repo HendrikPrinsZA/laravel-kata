@@ -8,6 +8,13 @@ use App\Models\User;
 
 class KataChallengeEloquent extends KataChallenge
 {
+    protected const MAX_INTERATIONS = 100;
+
+    protected const EXPECTED_MODELS = [
+        User::class,
+        ExchangeRate::class,
+    ];
+
     public function baseline(): void
     {
     }
@@ -17,7 +24,7 @@ class KataChallengeEloquent extends KataChallenge
      */
     public function getCollectionAverage(int $limit): ?float
     {
-        return User::all()
+        return ExchangeRate::all()
             ->where('id', '<=', $limit)
             ->sortBy('id')
             ->average('id');
@@ -28,7 +35,7 @@ class KataChallengeEloquent extends KataChallenge
      */
     public function getCollectionUnique(int $limit): iterable
     {
-        return User::all()
+        return ExchangeRate::all()
             ->where('id', '<=', $limit)
             ->pluck('id')
             ->unique();
@@ -39,7 +46,7 @@ class KataChallengeEloquent extends KataChallenge
      */
     public function getCollectionCount(int $limit): int
     {
-        return User::all()
+        return ExchangeRate::all()
             ->where('id', '<=', $limit)
             ->count();
     }
@@ -61,10 +68,11 @@ class KataChallengeEloquent extends KataChallenge
 
     public function getMaxVersusOrder(int $limit): float
     {
+        $minId = ExchangeRate::min('id');
+
         return ExchangeRate::query()
-            ->where('id', '<=', $limit + 1)
+            ->where('id', '<=', $minId + 1)
             ->orderByDesc('rate')
-            ->first()
-            ?->rate;
+            ->first()?->rate;
     }
 }

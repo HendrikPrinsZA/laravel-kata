@@ -19,11 +19,21 @@ class KataChallengeResultObject extends JsonResource
         parent::__construct($result);
     }
 
+    public function getClassName(): string
+    {
+        $classParts = explode('\\', $this->reflectionMethod->class);
+
+        return array_pop($classParts);
+    }
+
+    public function getMethodName(): string
+    {
+        return $this->reflectionMethod->name;
+    }
+
     public function getCodeSnippet(): string
     {
-        $code = CodeUtility::getCodeSnippet($this->reflectionMethod, 80);
-
-        return sprintf("```\n%s\n```", $code);
+        return CodeUtility::getCodeSnippet($this->reflectionMethod, 80);
     }
 
     public function getReflectionMethod(): ReflectionMethod
@@ -62,31 +72,50 @@ class KataChallengeResultObject extends JsonResource
         $violations = $this->getViolations();
 
         return [
-            'duration' => $this->getDuration(),
-            'iterations' => $this->getIterations(),
-            'outputs_md5' => $this->getOutputsMd5(),
             'violations' => $violations,
             'violations_count' => count($violations),
+
+            'duration' => $this->getStat('duration'),
+            'iterations' => $this->getStat('outputs_count'),
+            'outputs_md5' => $this->getStat('outputs_md5', KataRunnerIterationMode::MAX_ITERATIONS),
+
+            'execution_time_avg' => $this->getExecutionTimeAvg(),
+            'memory_usage_avg' => $this->getMemoryUsageAvg(),
+
             'line_count' => $this->reflectionMethod->getEndLine() - $this->reflectionMethod->getStartLine(),
         ];
     }
 
-    public function getDuration(
-        KataRunnerIterationMode $kataRunnerIterationMode = KataRunnerIterationMode::MAX_ITERATIONS,
-    ): float {
-        return $this->result[$kataRunnerIterationMode->value]['duration'];
+    public function getStat(
+        string $key,
+        KataRunnerIterationMode $kataRunnerIterationMode = null
+    ): mixed {
+        if (! is_null($kataRunnerIterationMode)) {
+            return $this->result[$kataRunnerIterationMode->value][$key];
+        }
+
+        $values = [];
+        foreach (KataRunnerIterationMode::cases() as $iterationMode) {
+            $values[] = $this->result[$iterationMode->value][$key];
+        }
+
+        return array_sum($values);
     }
 
-    public function getIterations(
-        KataRunnerIterationMode $kataRunnerIterationMode = KataRunnerIterationMode::MAX_SECONDS,
-    ): int {
-        return $this->result[$kataRunnerIterationMode->value]['outputs_count'];
+    public function getExecutionTimeAvg(): float
+    {
+        $count = $this->getStat('performance_count', KataRunnerIterationMode::MAX_ITERATIONS);
+        $sum = $this->getStat('execution_time_sum', KataRunnerIterationMode::MAX_ITERATIONS);
+
+        return $sum / $count;
     }
 
-    public function getOutputsMd5(
-        KataRunnerIterationMode $kataRunnerIterationMode = KataRunnerIterationMode::MAX_ITERATIONS,
-    ): string {
-        return $this->result[$kataRunnerIterationMode->value]['outputs_md5'];
+    public function getMemoryUsageAvg(): float
+    {
+        $count = $this->getStat('performance_count', KataRunnerIterationMode::MAX_ITERATIONS);
+        $sum = $this->getStat('memory_usage_sum', KataRunnerIterationMode::MAX_ITERATIONS);
+
+        return $sum / $count;
     }
 
     public function getOutputsJson(
@@ -119,18 +148,6 @@ class KataChallengeResultObject extends JsonResource
             : json_encode($output);
 
         return $output[0] ?? 'N/A';
-    }
-
-    public function getClassName(): string
-    {
-        $classParts = explode('\\', $this->reflectionMethod->class);
-
-        return array_pop($classParts);
-    }
-
-    public function getMethodName(): string
-    {
-        return $this->reflectionMethod->name;
     }
 
     private function getViolations(): array

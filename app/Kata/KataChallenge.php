@@ -2,10 +2,15 @@
 
 namespace App\Kata;
 
+use App\Exceptions\KataChallengeException;
 use Illuminate\Http\Request;
 
 class KataChallenge
 {
+    protected const MAX_INTERATIONS = null;
+
+    protected const EXPECTED_MODELS = [];
+
     protected int $maxSeconds = 0;
 
     protected int $maxIterations = 1;
@@ -17,10 +22,12 @@ class KataChallenge
             $this->maxSeconds
         );
 
-        $this->maxIterations = $this->request?->get('max-iterations') ?? config(
-            'laravel-kata.max-iterations',
-            $this->maxIterations
-        );
+        $this->maxIterations = $this->request?->get('max-iterations')
+            ?? static::MAX_INTERATIONS
+            ?? config(
+                'laravel-kata.max-iterations',
+                $this->maxIterations
+            );
 
         $this->setUp();
     }
@@ -42,5 +49,13 @@ class KataChallenge
 
     protected function setUp(): void
     {
+        foreach (static::EXPECTED_MODELS as $expectedModelClass) {
+            if ($expectedModelClass::count() === 0) {
+                throw new KataChallengeException(sprintf(
+                    'Expected records in %s, but found none',
+                    $expectedModelClass)
+                );
+            }
+        }
     }
 }

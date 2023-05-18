@@ -9,7 +9,8 @@ class UserTest extends TestCase
 {
     public function test_factory()
     {
+        $userCount = User::count();
         User::factory()->count(10)->create();
-        $this->assertCount(10, User::all());
+        $this->assertCount($userCount + 10, User::all());
     }
 }

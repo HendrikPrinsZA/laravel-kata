@@ -11,6 +11,7 @@ enum CountryCode: string
 {
     use EnumTrait;
 
+    case AE = 'AE';
     case NL = 'NL';
     case UK = 'UK';
     case US = 'US';
@@ -34,6 +35,11 @@ enum CountryCode: string
         }
 
         return match ($this) {
+            self::AE => [
+                'code' => $this->value,
+                'name' => 'Dubai',
+                'currency_id' => $currencies->firstWhere('code', CurrencyCode::AED)->id,
+            ],
             self::NL => [
                 'code' => $this->value,
                 'name' => 'The Netherlands',
