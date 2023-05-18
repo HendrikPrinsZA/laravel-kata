@@ -444,6 +444,8 @@ class KataRunner
         // Instantiate for the following reasons
         // - Warm up the reference/op caching
         // - Get the max iterations & seconds
+
+        /** @var KataChallenge $instance */
         $instance = new $targetClass();
         $maxIterations = $instance->getMaxIterations();
         $maxSeconds = $instance->getMaxSeconds();

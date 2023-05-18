@@ -8,6 +8,13 @@ use App\Models\User;
 
 class KataChallengeEloquent extends KataChallenge
 {
+    protected const MAX_INTERATIONS = 100;
+
+    protected const EXPECTED_MODELS = [
+        User::class,
+        ExchangeRate::class,
+    ];
+
     public function baseline(): void
     {
     }
