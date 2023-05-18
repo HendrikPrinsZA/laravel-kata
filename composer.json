@@ -15,7 +15,7 @@
         "laravel/tinker": "^2.7",
         "phpmd/phpmd": "^2.13",
         "predis/predis": "^2.0",
-        "spiral/roadrunner": "^2.11",
+        "spiral/roadrunner": "^2023.1",
         "tightenco/tlint": "^8.0"
     },
     "require-dev": {
