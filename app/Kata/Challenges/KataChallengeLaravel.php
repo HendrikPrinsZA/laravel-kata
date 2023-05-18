@@ -8,6 +8,8 @@ use App\Models\Country;
 
 class KataChallengeLaravel extends KataChallenge
 {
+    protected const MAX_INTERATIONS = 100;
+
     public function modelMutationVersusServiceSingle(int $limit): float
     {
         $country = $this->getCountryByIndex($limit);
