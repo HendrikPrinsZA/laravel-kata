@@ -18,7 +18,7 @@ if (is_null($runMode)) {
 
 $defaults = match ($runMode) {
     KataRunMode::DEBUG => [
-        'LK_MAX_SECONDS' => 3,
+        'LK_MAX_SECONDS' => 1,
         'LK_MAX_ITERATIONS' => 100,
 
         'LK_DD_MAX_USERS' => 100,

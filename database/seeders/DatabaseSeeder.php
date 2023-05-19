@@ -16,11 +16,8 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
-        // We expect the base `users` table
         if (! Schema::hasTable('users')) {
-            Artisan::call('migrate:fresh', [
-                '--database' => config('database.connections.testing.database'),
-            ]);
+            Artisan::call('migrate:fresh');
 
             return;
         }
