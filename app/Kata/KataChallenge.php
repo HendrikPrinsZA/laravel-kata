@@ -48,7 +48,10 @@ class KataChallenge
     public function getMemoryUsage(): int
     {
         if (isset($this->memoryUsageEnd, $this->memoryUsageStart)) {
-            return $this->memoryUsageEnd - $this->memoryUsageStart;
+            // not sure how end > start, but it happens (thanks php)
+            return $this->memoryUsageEnd > $this->memoryUsageStart
+                ? $this->memoryUsageEnd - $this->memoryUsageStart
+                : 0;
         }
 
         return 0;

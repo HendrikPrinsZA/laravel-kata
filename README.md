@@ -19,6 +19,11 @@
 # Laravel Kata
 The greatest collection of the worst code.
 
+### Concepts
+- Practice the fundamentals
+- Expose common mistakes
+- Lab to theorycraft mechanics
+
 ## Getting started
 ```
 npm i
@@ -27,25 +32,16 @@ npm run reset
 ./vendor/bin/sail kata:run
 ```
 
-#### Concepts
-- Learn the fundamentals
-- Expose common mistakes
-- Lab to theorycraft mechanics
-
-#### Scope 
-- Sample (done)
-- Native PHP (incomplete)
-- Laravel Eloquent (incomplete)
-- Native MySQL (incomplete)
-- Native Redis (pending 1)
-
 ## Sample challenge
-Calculate the value of `pi`.
+Calculate the value of pi.
 
+### Solution A
 ```php
-class KataChallengeSample
+namespace App\Kata\Challenges\A;
+
+class Sample
 {
-  public function calculatePi(int $limit): float
+  public function calculatePi(): float
   {
     $denominator = 1;
     $sum = 0;
@@ -55,19 +51,25 @@ class KataChallengeSample
         : $sum - (4 / $denominator);
       $denominator += 2;
     }
-    return round($sum, 2);
+    return $this->return(round($sum, 2));
   }
 }
+```
 
-class KataChallengeSampleRecord
+### Solution B
+```php
+namespace App\Kata\Challenges\B;
+
+class Sample
 {
-  public function calculatePi(int $limit): float
+  public function calculatePi(): float
   {
     return round(M_PI, 2);
   }
 }
 ```
 
+### Report
 <p align="center">
   <img src="./public/images/sample-report-min.jpg" width="100%" alt="Sample report">
 </p>
