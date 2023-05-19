@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Kata\Challenges;
+namespace App\Kata\Challenges\A;
 
 use App\Kata\KataChallenge;
 use App\Models\ExchangeRate;
 use App\Models\User;
 
-class KataChallengeEloquent extends KataChallenge
+class Eloquent extends KataChallenge
 {
     protected const MAX_INTERATIONS = 100;
 
@@ -24,10 +24,12 @@ class KataChallengeEloquent extends KataChallenge
      */
     public function getCollectionAverage(int $limit): ?float
     {
-        return ExchangeRate::all()
+        $value = ExchangeRate::all()
             ->where('id', '<=', $limit)
             ->sortBy('id')
             ->average('id');
+
+        return $this->return($value);
     }
 
     /**
@@ -35,10 +37,12 @@ class KataChallengeEloquent extends KataChallenge
      */
     public function getCollectionUnique(int $limit): iterable
     {
-        return ExchangeRate::all()
+        $value = ExchangeRate::all()
             ->where('id', '<=', $limit)
             ->pluck('id')
             ->unique();
+
+        return $this->return($value);
     }
 
     /**
@@ -46,9 +50,12 @@ class KataChallengeEloquent extends KataChallenge
      */
     public function getCollectionCount(int $limit): int
     {
-        return ExchangeRate::all()
+        $value = ExchangeRate::query()
             ->where('id', '<=', $limit)
+            ->get()
             ->count();
+
+        return $this->return($value);
     }
 
     /**
@@ -60,19 +67,23 @@ class KataChallengeEloquent extends KataChallenge
      */
     public function getCollectionRelatedCount(int $limit): int
     {
-        return User::all()
+        $value = User::all()
             ->where('id', '<=', $limit)
             ->last()
             ?->blogs->count() ?? 0;
+
+        return $this->return($value);
     }
 
-    public function getMaxVersusOrder(int $limit): float
+    public function getMaxVersusOrder(): float
     {
         $minId = ExchangeRate::min('id');
 
-        return ExchangeRate::query()
+        $value = ExchangeRate::query()
             ->where('id', '<=', $minId + 1)
             ->orderByDesc('rate')
             ->first()?->rate;
+
+        return $this->return($value);
     }
 }

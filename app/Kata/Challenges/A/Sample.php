@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Kata\Challenges;
+namespace App\Kata\Challenges\A;
 
 use App\Kata\KataChallenge;
 
-class KataChallengeSample extends KataChallenge
+class Sample extends KataChallenge
 {
     public function baseline(): void
     {
@@ -28,7 +28,7 @@ class KataChallengeSample extends KataChallenge
             $denominator += 2;
         }
 
-        return round($sum, 2);
+        return $this->return(round($sum, 2));
     }
 
     public function fizzBuzz(int $limit): string
@@ -62,6 +62,6 @@ class KataChallengeSample extends KataChallenge
             $result .= $output.'|';
         }
 
-        return $result;
+        return $this->return($result);
     }
 }

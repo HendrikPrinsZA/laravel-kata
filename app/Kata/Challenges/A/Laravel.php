@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Kata\Challenges;
+namespace App\Kata\Challenges\A;
 
 use App\Enums\CountryCode;
 use App\Kata\KataChallenge;
 use App\Models\Country;
 
-class KataChallengeLaravel extends KataChallenge
+class Laravel extends KataChallenge
 {
     protected const MAX_INTERATIONS = 100;
 
@@ -15,16 +15,18 @@ class KataChallengeLaravel extends KataChallenge
         $country = $this->getCountryByIndex($limit);
         $country->setExchangeRatesAggregates();
 
-        return array_sum([
+        $value = array_sum([
             $country->exchangeRatesAvg,
             $country->exchangeRatesSum,
             $country->exchangeRatesMin,
             $country->exchangeRatesMax,
             $country->exchangeRatesCount,
         ]);
+
+        return $this->return($value);
     }
 
-    public function modelMutationVersusServiceMultiple(int $limit): float
+    public function modelMutationVersusServiceMultiple(): float
     {
         $total = 0;
         foreach (Country::all() as $country) {
@@ -38,7 +40,7 @@ class KataChallengeLaravel extends KataChallenge
             ]);
         }
 
-        return $total;
+        return $this->return($total);
     }
 
     protected function getCountryByIndex(int $limit): Country

@@ -1,10 +1,10 @@
 <?php
 
-use App\Kata\Challenges\KataChallengeEloquent;
-use App\Kata\Challenges\KataChallengeLaravel;
-use App\Kata\Challenges\KataChallengeMySQL;
-use App\Kata\Challenges\KataChallengePhp;
-use App\Kata\Challenges\KataChallengeSample;
+use App\Kata\Challenges\A\Eloquent;
+use App\Kata\Challenges\A\Laravel;
+use App\Kata\Challenges\A\MySql;
+use App\Kata\Challenges\A\Php;
+use App\Kata\Challenges\A\Sample;
 use App\Kata\Enums\KataRunMode;
 use App\Kata\Exceptions\KataInvalidRunModeException;
 
@@ -44,11 +44,11 @@ $getValue = fn (string $key, mixed $dafault = null) => env($key, $defaults[$key]
 
 return [
     'challenges' => [
-        KataChallengeSample::class,
-        KataChallengePhp::class,
-        KataChallengeEloquent::class,
-        KataChallengeMySQL::class,
-        KataChallengeLaravel::class,
+        Sample::class,
+        Php::class,
+        Eloquent::class,
+        MySql::class,
+        Laravel::class,
     ],
     'max-seconds' => $getValue('LK_MAX_SECONDS', 3),
     'max-iterations' => $getValue('LK_MAX_ITERATIONS', 1000),
@@ -56,7 +56,6 @@ return [
 
     // To be converted to env variables
     'outputs-save' => true,
-    'outputs-show' => false,
     'debug-mode' => false,
     'show-hints' => false,
     'show-hints-extended' => false,

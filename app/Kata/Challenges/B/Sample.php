@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Kata\Challenges;
+namespace App\Kata\Challenges\B;
 
-class KataChallengeSampleRecord extends KataChallengeSample
+use App\Kata\Challenges\A\Sample as ASample;
+
+class Sample extends ASample
 {
     public function calculatePi(): float
     {
-        return round(M_PI, 2);
+        return $this->return(round(M_PI, 2));
     }
 
     public function fizzBuzz(int $limit): string
@@ -25,6 +27,6 @@ class KataChallengeSampleRecord extends KataChallengeSample
             $result .= $word.'|';
         }
 
-        return $result;
+        return $this->return($result);
     }
 }

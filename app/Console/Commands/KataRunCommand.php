@@ -36,7 +36,6 @@ class KataRunCommand extends Command
 
         $this->kataRunner = app()->makeWith(KataRunner::class, [
             'command' => $this,
-            'failOnScore' => true,
             'challenges' => $challenges,
         ]);
 

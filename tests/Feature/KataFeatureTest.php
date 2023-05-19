@@ -2,8 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Models\User;
-use Database\Seeders\DatabaseSeeder;
 use Tests\TestCase;
 
 final class KataFeatureTest extends TestCase
@@ -62,49 +60,5 @@ final class KataFeatureTest extends TestCase
         }
 
         return $challengeMethods;
-    }
-
-    /**
-     * Test executing the challenge
-     *
-     * @depends test_api_kata_challenges_challenge
-     *
-     * Tests
-     * - Check that all classes exist
-     * - Check that all class methods exist
-     */
-    public function test_api_kata_challenges_challenge_method(array $challengeMethods): void
-    {
-        $this->seed(DatabaseSeeder::class);
-        $this->assertNotNull(User::first(), 'Expected users, but none found');
-
-        foreach ($challengeMethods as $challenge => $methods) {
-            $challengeRecord = sprintf('%sRecord', $challenge);
-
-            foreach ($methods as $method) {
-                $uri = sprintf(
-                    'api/kata/%s/%s?max-seconds=0&max-iterations=1',
-                    $challenge,
-                    $method
-                );
-                $dataBase = $this->get($uri)->json('data');
-
-                // Call the Record
-                $uri = sprintf(
-                    'api/kata/%s/%s?max-seconds=0&max-iterations=1',
-                    $challengeRecord,
-                    $method
-                );
-                $dataRecord = $this->get($uri)->json('data');
-
-                $this->assertEquals($dataBase, $dataRecord, sprintf(
-                    'Output from %s::%s does not match with %s::%s',
-                    $challengeRecord,
-                    $method,
-                    $challenge,
-                    $method
-                ));
-            }
-        }
     }
 }

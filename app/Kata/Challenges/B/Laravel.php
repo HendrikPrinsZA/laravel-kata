@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Kata\Challenges;
+namespace App\Kata\Challenges\B;
 
+use App\Kata\Challenges\A\Laravel as ALaravel;
 use App\Models\Country;
 use App\Services\CountryService;
 
-class KataChallengeLaravelRecord extends KataChallengeLaravel
+class Laravel extends ALaravel
 {
     public function modelMutationVersusServiceSingle(int $limit): float
     {
@@ -13,10 +14,12 @@ class KataChallengeLaravelRecord extends KataChallengeLaravel
         $countryService = app()->make(CountryService::class);
         $country = $this->getCountryByIndex($limit);
 
-        return array_sum($countryService->getExchangeRatesAggregates($country));
+        $value = array_sum($countryService->getExchangeRatesAggregates($country));
+
+        return $this->return($value);
     }
 
-    public function modelMutationVersusServiceMultiple(int $limit): float
+    public function modelMutationVersusServiceMultiple(): float
     {
         /** @var CountryService $countryService */
         $countryService = app()->make(CountryService::class);
@@ -26,6 +29,6 @@ class KataChallengeLaravelRecord extends KataChallengeLaravel
             $total += array_sum($countryService->getExchangeRatesAggregates($country));
         }
 
-        return $total;
+        return $this->return($total);
     }
 }

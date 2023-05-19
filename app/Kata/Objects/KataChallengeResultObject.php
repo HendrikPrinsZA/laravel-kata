@@ -152,6 +152,11 @@ class KataChallengeResultObject extends JsonResource
 
     private function getViolations(): array
     {
+        // Skip when not running from the cli
+        if (! app()->runningInConsole()) {
+            return [];
+        }
+
         $process = new Process([
             'bin/complexity.sh',
             $this->reflectionMethod->getFileName(),
@@ -171,6 +176,12 @@ class KataChallengeResultObject extends JsonResource
         $violations = collect();
         foreach ($output['files'] as $file) {
             foreach ($file['violations'] as $violation) {
+                // Ignore: Avoid using static access to class '\App\Models\ExchangeRate' in method 'getMaxVersusOrder'
+                // - Standard Laravel functionality
+                if (str_starts_with($violation['description'], 'Avoid using static access to class')) {
+                    continue;
+                }
+
                 $violations->push($violation);
             }
         }

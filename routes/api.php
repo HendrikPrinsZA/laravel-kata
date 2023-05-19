@@ -1,10 +1,8 @@
 <?php
 
-use Illuminate\Database\MySqlConnection;
+use App\Kata\KataRunner;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -35,29 +33,6 @@ Route::any('/', function (Request $request) {
  * Check the app health
  */
 Route::get('/health', function (Request $request) {
-    // try {
-    //     /** @var MySqlConnection $connection */
-    //     $connection = DB::connection();
-    //     $connection->getPDO();
-    //     $connection->getDatabaseName();
-    // } catch (Exception $exception) {
-    //     return JsonResource::make([
-    //         'success' => false,
-    //         'message' => 'Unable to connect to MySQL',
-    //         'error' => $exception->getMessage(),
-    //     ]);
-    // }
-
-    // try {
-    //     Redis::connection()->ping();
-    // } catch (Exception $exception) {
-    //     return JsonResource::make([
-    //         'success' => false,
-    //         'message' => 'Unable to connect to Redis',
-    //         'error' => $exception->getMessage(),
-    //     ]);
-    // }
-
     return JsonResource::make([
         'success' => true,
     ]);
@@ -84,7 +59,7 @@ Route::get('/kata', function (Request $request) {
  */
 Route::get('/kata/{challenge}', function (Request $request, string $challenge) {
     $class = sprintf(
-        'App\\Kata\\Challenges\\%s',
+        'App\\Kata\\Challenges\\A\\%s',
         $challenge
     );
 
@@ -111,28 +86,18 @@ Route::get('/kata/{challenge}', function (Request $request, string $challenge) {
 });
 
 /**
- * Hit the challenge's method
+ * Run the challenge
  */
-Route::get('/kata/{challenge}/{method}', function (Request $request, string $challenge, string $method) {
-    $data = [
-        'challenge' => $challenge,
-        'method' => $method,
-    ];
-
-    $className = sprintf(
-        'App\\Kata\\Challenges\\%s',
-        $challenge
-    );
-
-    $instance = app($className, [
-        'request' => $request,
+Route::get('/kata/{challenge}/run', function (Request $request, string $challenge) {
+    /** @var KataRunner $kataRunner */
+    $kataRunner = app()->makeWith(KataRunner::class, [
+        'command' => null,
+        'challenges' => [
+            sprintf('App\\Kata\\Challenges\\A\\%s', $challenge),
+        ],
     ]);
 
-    $data = [];
-    $iterations = $request->get('iterations', 1);
-    foreach (range(1, $iterations) as $iteration) {
-        $data[] = $instance->{$method}($iteration);
-    }
+    $data = $kataRunner->run();
 
     return JsonResource::make([
         'success' => true,
