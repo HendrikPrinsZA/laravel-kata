@@ -56,7 +56,6 @@ return [
 
     // To be converted to env variables
     'outputs-save' => true,
-    'outputs-show' => false,
     'debug-mode' => false,
     'show-hints' => false,
     'show-hints-extended' => false,

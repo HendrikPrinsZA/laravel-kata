@@ -28,7 +28,7 @@ class KataChallengeSample extends KataChallenge
             $denominator += 2;
         }
 
-        return round($sum, 2);
+        return $this->return(round($sum, 2));
     }
 
     public function fizzBuzz(int $limit): string
@@ -62,6 +62,6 @@ class KataChallengeSample extends KataChallenge
             $result .= $output.'|';
         }
 
-        return $result;
+        return $this->return($result);
     }
 }

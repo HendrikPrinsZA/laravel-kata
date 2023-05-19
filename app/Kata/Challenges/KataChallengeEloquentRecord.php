@@ -9,34 +9,43 @@ class KataChallengeEloquentRecord extends KataChallengeEloquent
 {
     public function getCollectionAverage(int $limit): ?float
     {
-        return ExchangeRate::where('id', '<=', $limit)->avg('id');
+        $value = ExchangeRate::where('id', '<=', $limit)->avg('id');
+
+        return $this->return($value);
     }
 
     public function getCollectionUnique(int $limit): iterable
     {
-        return ExchangeRate::select('id')
+        $value = ExchangeRate::select('id')
             ->distinct()
             ->where('id', '<=', $limit)
             ->pluck('id');
+
+        return $this->return($value);
     }
 
     public function getCollectionCount(int $limit): int
     {
-        return ExchangeRate::where('id', '<=', $limit)->count();
+        $value = ExchangeRate::where('id', '<=', $limit)->count();
+
+        return $this->return($value);
     }
 
     public function getCollectionRelatedCount(int $limit): int
     {
-        return User::where('id', '<=', $limit)
+        $value = User::where('id', '<=', $limit)
             ->orderByDesc('id')
             ->first()
             ?->blogs()->count() ?? 0;
+
+        return $this->return($value);
     }
 
     public function getMaxVersusOrder(int $limit): float
     {
         $minId = ExchangeRate::min('id');
+        $value = ExchangeRate::where('id', '<=', $minId + 1)->max('rate');
 
-        return ExchangeRate::where('id', '<=', $minId + 1)->max('rate');
+        return $this->return($value);
     }
 }

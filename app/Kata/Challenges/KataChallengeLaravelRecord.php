@@ -13,7 +13,9 @@ class KataChallengeLaravelRecord extends KataChallengeLaravel
         $countryService = app()->make(CountryService::class);
         $country = $this->getCountryByIndex($limit);
 
-        return array_sum($countryService->getExchangeRatesAggregates($country));
+        $value = array_sum($countryService->getExchangeRatesAggregates($country));
+
+        return $this->return($value);
     }
 
     public function modelMutationVersusServiceMultiple(int $limit): float
@@ -26,6 +28,6 @@ class KataChallengeLaravelRecord extends KataChallengeLaravel
             $total += array_sum($countryService->getExchangeRatesAggregates($country));
         }
 
-        return $total;
+        return $this->return($total);
     }
 }

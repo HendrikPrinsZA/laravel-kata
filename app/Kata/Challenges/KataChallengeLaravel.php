@@ -15,13 +15,15 @@ class KataChallengeLaravel extends KataChallenge
         $country = $this->getCountryByIndex($limit);
         $country->setExchangeRatesAggregates();
 
-        return array_sum([
+        $value = array_sum([
             $country->exchangeRatesAvg,
             $country->exchangeRatesSum,
             $country->exchangeRatesMin,
             $country->exchangeRatesMax,
             $country->exchangeRatesCount,
         ]);
+
+        return $this->return($value);
     }
 
     public function modelMutationVersusServiceMultiple(int $limit): float
@@ -38,7 +40,7 @@ class KataChallengeLaravel extends KataChallenge
             ]);
         }
 
-        return $total;
+        return $this->return($total);
     }
 
     protected function getCountryByIndex(int $limit): Country

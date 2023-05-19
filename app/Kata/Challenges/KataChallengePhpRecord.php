@@ -6,25 +6,15 @@ class KataChallengePhpRecord extends KataChallengePhp
 {
     public function nativeRange(int $limit): int
     {
-        return count(range(0, $this->getRangeLimit($limit)));
+        $value = count(range(0, $this->getRangeLimit($limit)));
+
+        return $this->return($value);
     }
 
     public function nativeSum(int $limit): int
     {
         $numbers = range(0, $this->getRangeLimit($limit));
 
-        return array_sum($numbers);
-    }
-
-    public function replaceString(int $limit): float
-    {
-        $text = str_repeat('abc', $limit);
-        $text = str_replace(
-            str_repeat('abc', $limit),
-            str_repeat('def', $limit),
-            $text
-        );
-
-        return floatval(md5($text));
+        return $this->return(array_sum($numbers));
     }
 }

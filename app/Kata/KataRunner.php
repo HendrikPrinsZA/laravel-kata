@@ -158,15 +158,15 @@ class KataRunner
         };
 
         $this->command->newLine();
-        $this->command->info(sprintf('# %s::%s', $resultBefore->getClassName(), $resultBefore->getMethodName()));
+        $this->command->info(sprintf('%s::%s', $resultBefore->getClassName(), $resultBefore->getMethodName()));
         $this->command->info(sprintf(
-            '## A: %s', help_me_code($resultBefore->getReflectionMethod()),
+            '- A: %s', help_me_code($resultBefore->getReflectionMethod()),
         ));
         if (config('laravel-kata.show-code-snippets')) {
             $this->command->comment($resultBefore->getCodeSnippet());
         }
         $this->command->info(sprintf(
-            '## B: %s', help_me_code($resultRecord->getReflectionMethod()),
+            '- B: %s', help_me_code($resultRecord->getReflectionMethod()),
         ));
         if (config('laravel-kata.show-code-snippets')) {
             $this->command->comment($resultRecord->getCodeSnippet());
@@ -198,7 +198,7 @@ class KataRunner
             config('laravel-kata.max-iterations')
         ));
 
-        if (config('laravel-kata.outputs-show')) {
+        if (! data_get($reportData, 'stats.record.outputs_md5_gains_success')) {
             $this->command->newLine();
             $this->command->info('Outputs');
             $this->command->info('A->first()');
@@ -552,6 +552,7 @@ class KataRunner
         ReflectionMethod $reflectionMethod,
         int $maxIterations
     ): array {
+        $memoryUsageSum = 0;
         $startTime = microtime(true);
         $this->performance->reset();
         $outputs = [];
@@ -574,6 +575,7 @@ class KataRunner
                 fn () => $instance->{$methodName}($iteration)
             );
 
+            $memoryUsageSum += $instance->getMemoryUsage();
             $instance = null;
             $this->progressBar?->advance();
         }
@@ -583,8 +585,8 @@ class KataRunner
         return [
             'outputs' => $outputs,
             'performance_count' => $this->performance->getCount(),
-            'memory_usage_sum' => $this->performance->getMemoryUsageSum(),
-            'memory_usage_avg' => $this->performance->getMemoryUsageAvg(),
+            'memory_usage_sum' => $memoryUsageSum,
+            'memory_usage_avg' => $memoryUsageSum / $this->performance->getCount(),
             'execution_time' => microtime(true) - $startTime,
             'execution_time_sum' => $this->performance->getExecutionTimeSum(),
             'execution_time_avg' => $this->performance->getExecutionTimeAvg(),
@@ -595,6 +597,7 @@ class KataRunner
         ReflectionMethod $reflectionMethod,
         int $maxSeconds
     ): array {
+        $memoryUsageSum = 0;
         $startTime = microtime(true);
         $this->performance->reset();
         $msMax = $maxSeconds * 1000;
@@ -618,6 +621,7 @@ class KataRunner
                 fn () => $instance->{$methodName}($iteration)
             );
 
+            $memoryUsageSum += $instance->getMemoryUsage();
             $instance = null;
             $this->progressBar?->setProgress($msMax - $msLeft);
             $this->progressBar?->setMessage(sprintf(
@@ -633,8 +637,8 @@ class KataRunner
         return [
             'outputs' => $outputs,
             'performance_count' => $this->performance->getCount(),
-            'memory_usage_sum' => $this->performance->getMemoryUsageSum(),
-            'memory_usage_avg' => $this->performance->getMemoryUsageAvg(),
+            'memory_usage_sum' => $memoryUsageSum,
+            'memory_usage_avg' => $memoryUsageSum / $this->performance->getCount(),
             'execution_time' => (microtime(true) - $startTime),
             'execution_time_sum' => $this->performance->getExecutionTimeSum(),
             'execution_time_avg' => $this->performance->getExecutionTimeAvg(),

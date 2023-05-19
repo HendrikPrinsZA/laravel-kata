@@ -6,7 +6,7 @@ class KataChallengeSampleRecord extends KataChallengeSample
 {
     public function calculatePi(): float
     {
-        return round(M_PI, 2);
+        return $this->return(round(M_PI, 2));
     }
 
     public function fizzBuzz(int $limit): string
@@ -25,6 +25,6 @@ class KataChallengeSampleRecord extends KataChallengeSample
             $result .= $word.'|';
         }
 
-        return $result;
+        return $this->return($result);
     }
 }

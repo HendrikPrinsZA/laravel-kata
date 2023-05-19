@@ -26,7 +26,7 @@ class KataChallengePhp extends KataChallenge
             $range[] = $i;
         }
 
-        return count($range);
+        return $this->return(count($range));
     }
 
     /**
@@ -43,29 +43,7 @@ class KataChallengePhp extends KataChallenge
             $total += $number;
         }
 
-        return $total;
-    }
-
-    /**
-     * Don't use preg_replace unless you really need to
-     *
-     * See https://www.site24x7.com/blog/a-developers-guide-to-optimizing-php-performance
-     */
-    protected function replaceString(int $limit): float
-    {
-        $text = str_repeat('abc', $limit);
-
-        $text = preg_replace([
-            '/a/',
-            '/b/',
-            '/c/',
-        ], [
-            'd',
-            'e',
-            'f',
-        ], $text);
-
-        return floatval(md5($text));
+        return $this->return($total);
     }
 
     protected function getRangeLimit(int $limit): int

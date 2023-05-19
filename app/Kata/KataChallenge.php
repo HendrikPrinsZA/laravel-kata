@@ -15,6 +15,10 @@ class KataChallenge
 
     protected int $maxIterations = 1;
 
+    protected int $memoryUsageStart;
+
+    protected int $memoryUsageEnd;
+
     public function __construct(protected ?Request $request = null)
     {
         $this->maxSeconds = $this->request?->get('max-seconds') ?? config(
@@ -30,6 +34,29 @@ class KataChallenge
             );
 
         $this->setUp();
+
+        $this->memoryUsageStart = memory_get_usage(false);
+    }
+
+    public function return(mixed $value): mixed
+    {
+        $this->captureMemoryUsage();
+
+        return $value;
+    }
+
+    public function getMemoryUsage(): int
+    {
+        if (isset($this->memoryUsageEnd, $this->memoryUsageStart)) {
+            return $this->memoryUsageEnd - $this->memoryUsageStart;
+        }
+
+        return 0;
+    }
+
+    public function captureMemoryUsage(): void
+    {
+        $this->memoryUsageEnd = memory_get_usage(false);
     }
 
     public function getMaxSeconds(): int
@@ -53,8 +80,8 @@ class KataChallenge
             if ($expectedModelClass::count() === 0) {
                 throw new KataChallengeException(sprintf(
                     'Expected records in %s, but found none',
-                    $expectedModelClass)
-                );
+                    $expectedModelClass
+                ));
             }
         }
     }
