@@ -46,7 +46,7 @@ class KataRunner
 
     protected array $kataChallenges;
 
-    protected ProgressBar $progressBar;
+    protected ?ProgressBar $progressBar = null;
 
     protected PerformanceUtility $performance;
 
@@ -87,7 +87,7 @@ class KataRunner
 
         $this->iterationModes = self::DEFAULT_ITERATION_MODES;
 
-        if (! is_null($this->command)) {
+        if (! is_null($this->command) && ! config('laravel-kata.progress-bar-disabled')) {
             $this->progressBar = $this->command?->getOutput()->createProgressBar(0);
             $this->progressBar->setFormat("%message%\n %current%/%max% [%bar%] %percent:3s%%");
         }

@@ -18,8 +18,8 @@ if (is_null($runMode)) {
 
 $defaults = match ($runMode) {
     KataRunMode::DEBUG => [
-        'LK_MAX_SECONDS' => 3,
-        'LK_MAX_ITERATIONS' => 1000,
+        'LK_MAX_SECONDS' => 1,
+        'LK_MAX_ITERATIONS' => 100,
 
         'LK_DD_MAX_USERS' => 100,
         'LK_DD_MAX_USER_BLOGS' => 3,
@@ -52,6 +52,7 @@ return [
     ],
     'max-seconds' => $getValue('LK_MAX_SECONDS', 3),
     'max-iterations' => $getValue('LK_MAX_ITERATIONS', 1000),
+    'progress-bar-disabled' => env('LK_PROGRESS_BAR_DISABLED', false),
 
     // To be converted to env variables
     'outputs-save' => true,
@@ -64,7 +65,7 @@ return [
 
     // Experimental (not stable)
     'experimental' => [
-        'cache-results' => true,
+        'cache-results' => false,
     ],
 
     // Configuration of the dummy data
