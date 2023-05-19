@@ -23,7 +23,15 @@ class KataRunCommand extends Command
             return $this->handleRun();
         }
 
-        $challenges = $this->smartChoice('Challenges', config('laravel-kata.challenges'));
+        $classNames = collect(config('laravel-kata.challenges'))->map(
+            fn ($namespace) => str_replace('App\\Kata\\Challenges\\A\\', '', $namespace)
+        )->toArray();
+
+        $classNames = $this->smartChoice('Challenges', $classNames);
+
+        $challenges = collect($classNames)->map(
+            fn ($className) => sprintf('App\\Kata\\Challenges\\A\\%s', $className)
+        )->toArray();
 
         return $this->handleRun($challenges);
     }

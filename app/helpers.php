@@ -41,18 +41,17 @@ if (! function_exists('wrap_in_format')) {
 }
 
 if (! function_exists('bytes_to_human')) {
-    function bytes_to_human(int $bytes): string
+    function bytes_to_human(float $bytes): string
     {
-        if ($bytes == 0) {
-            return '0 B';
-        }
+        $precision = 5;
+        $units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+        $factor = floor((strlen($bytes) - 1) / 3);
 
-        $units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
-        $i = floor(log($bytes, 1024));
-        $power = pow(1024, $i);
-        $size = round($bytes / $power, 2);
-
-        return sprintf('%d %s', $size, $units[$i]);
+        return sprintf(
+            "%.{$precision}f %s",
+            $bytes / (1024 ** $factor),
+            $units[$factor]
+        );
     }
 }
 

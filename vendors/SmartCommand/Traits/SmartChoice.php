@@ -9,7 +9,7 @@ trait SmartChoice
     public function smartChoice(
         string $question,
         array $choices,
-        array $default = []
+        array $default = [],
     ): array {
         $key = sprintf('smart-command:%s', md5(json_encode(func_get_args())));
         if (Cache::has($key)) {

@@ -18,8 +18,6 @@ class DatabaseSeeder extends Seeder
     {
         if (! Schema::hasTable('users')) {
             Artisan::call('migrate:fresh');
-
-            return;
         }
 
         $this->call(DefaultSeeder::class);
