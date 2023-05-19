@@ -50,8 +50,7 @@ class KataRunCommand extends Command
         try {
             $this->kataRunner->run();
         } catch (KataChallengeScoreException $exception) {
-            $this->warn($exception->getMessage());
-            $this->error('Score failed!');
+            $this->line(wrap_in_format(sprintf('%s', $exception->getMessage()), false));
 
             return self::FAILURE;
         }

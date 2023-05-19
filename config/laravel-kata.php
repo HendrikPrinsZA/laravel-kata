@@ -60,7 +60,7 @@ return [
     'show-hints' => false,
     'show-hints-extended' => false,
     'show-code-snippets' => false,
-    'min-success-perc' => 0.5,
+    'gains-perc-minimum' => 0.1,
 
     // Experimental (not stable)
     'experimental' => [

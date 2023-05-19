@@ -108,10 +108,10 @@ class KataRunner
         /** @var KataChallengeResultObject $resultRecord */
         $resultRecord = $result[KataRunnerMode::B->value];
 
-        $this->printScoresTable($resultBefore, $resultRecord);
+        $this->printReport($resultBefore, $resultRecord);
     }
 
-    protected function printScoresTable(
+    protected function printReport(
         KataChallengeResultObject $resultBefore,
         KataChallengeResultObject $resultRecord
     ): void {
@@ -138,7 +138,7 @@ class KataRunner
 
             $performance = match ($field) {
                 'outputs_md5' => wrap_in_format($success ? '100%' : '0%', $success),
-                default => wrap_in_format(sprintf('%s%%', $gainsPerc), $success),
+                default => wrap_in_format(sprintf('%s%%', $gainsPerc), $success, warn: true),
             };
 
             return [
@@ -149,18 +149,44 @@ class KataRunner
             ];
         };
 
+        $gainsPerc = data_get($reportData, 'stats.record.gains_perc');
+
+        $title = sprintf(
+            '%s::%s (%s%%)',
+            $resultBefore->getClassName(),
+            $resultBefore->getMethodName(),
+            $gainsPerc
+        );
+
         $this->report('newLine');
-        $this->report('info', sprintf('%s::%s', $resultBefore->getClassName(), $resultBefore->getMethodName()));
+        $this->report(
+            'line',
+            wrap_in_format($title, $gainsPerc >= config('laravel-kata.gains-perc-minimum'), warn: true)
+        );
+
+        // Show where it comes from
+        $this->report('line', sprintf(
+            'A: %s', help_me_code($resultBefore->getReflectionMethod()),
+        ));
+        if (config('laravel-kata.show-code-snippets')) {
+            $this->report('comment', $resultBefore->getCodeSnippet());
+        }
+        $this->report('line', sprintf(
+            'B: %s', help_me_code($resultRecord->getReflectionMethod()),
+        ));
+        if (config('laravel-kata.show-code-snippets')) {
+            $this->report('comment', $resultRecord->getCodeSnippet());
+        }
+
         $this->report('table',
             [
                 '',
-                'A',
-                'B',
-                'Performance',
+                'A               ',
+                'B               ',
+                'Gains           ',
             ],
             [
                 $getScoreRow('line_count', 'Lines'),
-                $getScoreRow('violations_count', 'Violations'),
                 $getScoreRow('iterations', 'Iterations'),
                 $getScoreRow('execution_time_avg', 'Execution time'),
                 $getScoreRow('memory_usage_avg', 'Memory usage'),
@@ -183,36 +209,21 @@ class KataRunner
             $this->report('line', sprintf("```\n%s\n```", $resultRecord->getOutputsJsonLast()));
         }
 
-        $this->report('line', sprintf(
-            'A: %s', help_me_code($resultBefore->getReflectionMethod()),
-        ));
-        if (config('laravel-kata.show-code-snippets')) {
-            $this->report('comment', $resultBefore->getCodeSnippet());
-        }
-        $this->report('line', sprintf(
-            'B: %s', help_me_code($resultRecord->getReflectionMethod()),
-        ));
-        if (config('laravel-kata.show-code-snippets')) {
-            $this->report('comment', $resultRecord->getCodeSnippet());
-        }
-
-        // Minimum percentage
-        $minSuccessPerc = config('laravel-kata.min-success-perc');
-        $successPerc = data_get($reportData, 'stats.record.success_perc');
-        if ($successPerc < $minSuccessPerc) {
-            throw new KataChallengeScoreException(sprintf(
-                'Success percentage is below the minimum, %s%% < %s%%',
-                round($successPerc * 100, 2),
-                round($minSuccessPerc * 100, 2),
-            ));
-        }
-
         // Outputs should always match
         if (! data_get($reportData, 'stats.record.outputs_md5_gains_success')) {
             throw new KataChallengeScoreException(sprintf(
                 'Outputs does not match (expected: %s, actual: %s)',
                 data_get($reportData, 'stats.before.outputs_md5'),
                 data_get($reportData, 'stats.record.outputs_md5'),
+            ));
+        }
+
+        // Fail when lower than expected score
+        if ($gainsPerc < config('laravel-kata.gains-perc-minimum')) {
+            throw new KataChallengeScoreException(sprintf(
+                'Score is lower than expected (%s%% < %s%%)',
+                round($gainsPerc, 2),
+                round(config('laravel-kata.gains-perc-minimum'), 2),
             ));
         }
     }
@@ -270,7 +281,6 @@ class KataRunner
             'outputs_md5' => 'string',
             'line_count' => 'lt',
             'violations_count' => 'lt',
-            'duration' => 'lt',
             'iterations' => 'gt',
             'memory_usage_avg' => 'lt',
             'execution_time_avg' => 'lt',
@@ -311,23 +321,16 @@ class KataRunner
             $statsRecord[sprintf('%s_gains_success', $field)] = $success;
         }
 
-        $statsRecord['gains_perc'] = collect($statsRecord)->map(
-            fn ($value, $key) => str_ends_with($key, 'gains_perc') ? $value : null
-        )->filter()->average();
+        $gainsWeights = [
+            'line_count_gains_perc' => 0.1,
+            'memory_usage_avg_gains_perc' => 0.2,
+            'iterations_gains_perc' => 0.35,
+            'execution_time_avg_gains_perc' => 0.35,
+        ];
 
-        $statsRecord['gains_success'] = collect($statsRecord)->filter(
-            fn ($value, $key) => str_ends_with($key, 'gains_success') &&
-                ! str_starts_with($key, 'line_count') &&
-                ! str_starts_with($key, 'violations_count') &&
-                $value === false
-        )->count() === 0;
-
-        $successFields = collect($statsRecord)->filter(
-            fn ($_, $key) => str_ends_with($key, '_success')
-        );
-        $statsRecord['success_max'] = $successFields->count();
-        $statsRecord['success_count'] = $successFields->filter()->count();
-        $statsRecord['success_perc'] = $statsRecord['success_count'] / $statsRecord['success_max'];
+        $statsRecord['gains_perc'] = collect($gainsWeights)->map(
+            fn ($weight, $key) => $statsRecord[$key] * $weight
+        )->sum();
 
         ksort($statsRecord);
 
@@ -373,7 +376,6 @@ class KataRunner
             );
 
             Storage::disk('local')->put($filePath, json_encode($result));
-            $this->progressBar?->clear();
         }
 
         if (config('laravel-kata.debug-mode')) {
@@ -489,7 +491,6 @@ class KataRunner
 
             $result[$iterationMode->value]['outputs_json'] = json_encode($result[$iterationMode->value]['outputs']);
             $result[$iterationMode->value]['outputs_md5'] = md5($result[$iterationMode->value]['outputs_json']);
-            $result[$iterationMode->value]['duration'] = $result[$iterationMode->value]['event']->duration();
 
             // Unset expensive keys
             unset($result[$iterationMode->value]['outputs']);
@@ -504,10 +505,6 @@ class KataRunner
         int $maxIterations,
         int $maxSeconds,
     ): array {
-        $event = clock()->event(
-            sprintf('%s->%s() (%s)', $reflectionMethod->class, $reflectionMethod->name, $kataRunnerIterationMode->value)
-        )->color('green')->begin();
-
         $cacheKey = sprintf(
             '%s:%s-%ds-%dx-%s',
             $kataRunnerIterationMode->value,
@@ -547,10 +544,6 @@ class KataRunner
                 ));
         }
 
-        $event->end();
-
-        $response['event'] = $event;
-
         if (config('laravel-kata.experimental.cache-results')) {
             Cache::set($cacheKey, $response);
         }
@@ -567,7 +560,6 @@ class KataRunner
         $this->performance->reset();
         $outputs = [];
 
-        $this->progressBar?->clear();
         $this->progressBar?->setMaxSteps($maxIterations);
         $this->progressBar?->setProgress(0);
         for ($iteration = 0; $iteration < $maxIterations; $iteration++) {
@@ -591,6 +583,7 @@ class KataRunner
         }
 
         $this->progressBar?->finish();
+        $this->progressBar?->clear();
 
         return [
             'outputs' => $outputs,
@@ -614,7 +607,6 @@ class KataRunner
         $dateTimeEnd = now()->addMilliseconds($msMax);
         $outputs = [];
 
-        $this->progressBar?->clear();
         $this->progressBar?->setMaxSteps($msMax);
         $this->progressBar?->setProgress(0);
 
@@ -643,13 +635,14 @@ class KataRunner
         } while ($msLeft > 0);
 
         $this->progressBar?->finish();
+        $this->progressBar?->clear();
 
         return [
             'outputs' => $outputs,
             'performance_count' => $this->performance->getCount(),
             'memory_usage_sum' => $memoryUsageSum,
             'memory_usage_avg' => $memoryUsageSum / $this->performance->getCount(),
-            'execution_time' => (microtime(true) - $startTime),
+            'execution_time' => microtime(true) - $startTime,
             'execution_time_sum' => $this->performance->getExecutionTimeSum(),
             'execution_time_avg' => $this->performance->getExecutionTimeAvg(),
         ];

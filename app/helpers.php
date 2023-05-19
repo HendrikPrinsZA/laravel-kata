@@ -34,9 +34,11 @@ if (! function_exists('wrap_in_format')) {
     /**
      * Wrap in format for CLI
      */
-    function wrap_in_format(string $string, bool $success): string
+    function wrap_in_format(string $string, bool $success, bool $warn = false): string
     {
-        return $success ? sprintf('<fg=green>%s</>', $string) : sprintf('<fg=red>%s</>', $string);
+        return $success
+            ? sprintf('<fg=green>%s</>', $string)
+            : sprintf('<fg=%s>%s</>', $warn ? 'yellow' : 'red', $string);
     }
 }
 
