@@ -1,8 +1,10 @@
 <?php
 
-namespace App\Kata\Challenges;
+namespace App\Kata\Challenges\B;
 
-class KataChallengeMySQLRecord extends KataChallengeMySQL
+use App\Kata\Challenges\A\MySql as AMySql;
+
+class MySql extends AMySql
 {
     public function orVersusIn(int $limit): array
     {

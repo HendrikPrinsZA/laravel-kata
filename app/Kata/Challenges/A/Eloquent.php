@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Kata\Challenges;
+namespace App\Kata\Challenges\A;
 
 use App\Kata\KataChallenge;
 use App\Models\ExchangeRate;
 use App\Models\User;
 
-class KataChallengeEloquent extends KataChallenge
+class Eloquent extends KataChallenge
 {
     protected const MAX_INTERATIONS = 100;
 

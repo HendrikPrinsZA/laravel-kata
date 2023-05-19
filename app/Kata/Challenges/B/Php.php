@@ -1,8 +1,10 @@
 <?php
 
-namespace App\Kata\Challenges;
+namespace App\Kata\Challenges\B;
 
-class KataChallengePhpRecord extends KataChallengePhp
+use App\Kata\Challenges\A\Php as APhp;
+
+class Php extends APhp
 {
     public function nativeRange(int $limit): int
     {

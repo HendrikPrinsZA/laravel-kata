@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Kata\Challenges;
+namespace App\Kata\Challenges\A;
 
 use App\Kata\KataChallenge;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-class KataChallengeMySQL extends KataChallenge
+class MySql extends KataChallenge
 {
     public function baseline(): void
     {

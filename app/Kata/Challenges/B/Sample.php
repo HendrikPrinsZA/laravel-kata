@@ -1,8 +1,10 @@
 <?php
 
-namespace App\Kata\Challenges;
+namespace App\Kata\Challenges\B;
 
-class KataChallengeSampleRecord extends KataChallengeSample
+use App\Kata\Challenges\A\Sample as ASample;
+
+class Sample extends ASample
 {
     public function calculatePi(): float
     {

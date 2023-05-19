@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Kata\Challenges;
+namespace App\Kata\Challenges\B;
 
+use App\Kata\Challenges\A\Eloquent as AEloquent;
 use App\Models\ExchangeRate;
 use App\Models\User;
 
-class KataChallengeEloquentRecord extends KataChallengeEloquent
+class Eloquent extends AEloquent
 {
     public function getCollectionAverage(int $limit): ?float
     {

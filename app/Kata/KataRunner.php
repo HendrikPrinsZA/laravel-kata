@@ -24,8 +24,6 @@ class KataRunner
 {
     use HasExitHintsTrait;
 
-    protected const CHALLENGE_SUFFIX = 'Record';
-
     protected const DEFAULT_MODES = [
         KataRunnerMode::BEFORE,
         KataRunnerMode::RECORD,
@@ -180,25 +178,18 @@ class KataRunner
                 'Performance',
             ],
             [
-                $getScoreRow('outputs_md5', 'Outputs'),
+                // $getScoreRow('outputs_md5', 'Outputs'),
                 $getScoreRow('line_count', 'Lines'),
                 $getScoreRow('violations_count', 'Violations'),
                 $getScoreRow('iterations', 'Iterations'),
-                $getScoreRow('execution_time_avg', 'Execution time (avg)'),
-                $getScoreRow('memory_usage_avg', 'Memory usage (avg)'),
+                $getScoreRow('execution_time_avg', 'Execution time'),
+                $getScoreRow('memory_usage_avg', 'Memory usage'),
             ]
         );
-        $this->command->line('* Outputs: An md5 sum is created based on all the outputs');
-        $this->command->line(sprintf(
-            '* Iterations: The amount of times this function executed in %d seconds',
-            config('laravel-kata.max-seconds')
-        ));
-        $this->command->line(sprintf(
-            '* Duration: The execution time (ms) it took to run the function %d times',
-            config('laravel-kata.max-iterations')
-        ));
 
         if (! data_get($reportData, 'stats.record.outputs_md5_gains_success')) {
+            $this->command->newLine();
+            $this->command->warn('The outputs did not match!');
             $this->command->newLine();
             $this->command->info('Outputs');
             $this->command->info('A->first()');
@@ -427,10 +418,7 @@ class KataRunner
     ): KataChallengeResultObject {
         $targetClass = $reflectionMethod->class;
         if ($mode === KataRunnerMode::RECORD) {
-            $classParts = explode('\\', $reflectionMethod->class);
-            $className = sprintf('%s%s', array_pop($classParts), self::CHALLENGE_SUFFIX);
-            array_push($classParts, $className);
-            $targetClass = implode('\\', $classParts);
+            $targetClass = str_replace('\\A\\', '\\B\\', $reflectionMethod->class);
 
             // Change reflection method based on the mode
             $reflectionClass = new ReflectionClass($targetClass);
@@ -440,10 +428,6 @@ class KataRunner
         if (! class_exists($targetClass)) {
             throw new Exception(sprintf('Class not found %s', $targetClass));
         }
-
-        // Instantiate for the following reasons
-        // - Warm up the reference/op caching
-        // - Get the max iterations & seconds
 
         /** @var KataChallenge $instance */
         $instance = new $targetClass();

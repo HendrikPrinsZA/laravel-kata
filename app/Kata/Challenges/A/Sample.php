@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Kata\Challenges;
+namespace App\Kata\Challenges\A;
 
 use App\Kata\KataChallenge;
 
-class KataChallengeSample extends KataChallenge
+class Sample extends KataChallenge
 {
     public function baseline(): void
     {

@@ -1,11 +1,12 @@
 <?php
 
-namespace App\Kata\Challenges;
+namespace App\Kata\Challenges\B;
 
+use App\Kata\Challenges\A\Laravel as ALaravel;
 use App\Models\Country;
 use App\Services\CountryService;
 
-class KataChallengeLaravelRecord extends KataChallengeLaravel
+class Laravel extends ALaravel
 {
     public function modelMutationVersusServiceSingle(int $limit): float
     {

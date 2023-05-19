@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Kata\Challenges;
+namespace App\Kata\Challenges\A;
 
 use App\Enums\CountryCode;
 use App\Kata\KataChallenge;
 use App\Models\Country;
 
-class KataChallengeLaravel extends KataChallenge
+class Laravel extends KataChallenge
 {
     protected const MAX_INTERATIONS = 100;
 

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Kata\Challenges;
+namespace App\Kata\Challenges\A;
 
 use App\Kata\KataChallenge;
 
-class KataChallengePhp extends KataChallenge
+class Php extends KataChallenge
 {
     protected const MAX_RANGE = 1000;
 
