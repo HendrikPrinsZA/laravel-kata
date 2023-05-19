@@ -52,6 +52,7 @@ return [
     ],
     'max-seconds' => $getValue('LK_MAX_SECONDS', 3),
     'max-iterations' => $getValue('LK_MAX_ITERATIONS', 1000),
+    'progress-bar-disabled' => env('LK_PROGRESS_BAR_DISABLED', false),
 
     // To be converted to env variables
     'outputs-save' => true,
@@ -64,7 +65,7 @@ return [
 
     // Experimental (not stable)
     'experimental' => [
-        'cache-results' => true,
+        'cache-results' => false,
     ],
 
     // Configuration of the dummy data
