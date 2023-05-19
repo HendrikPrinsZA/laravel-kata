@@ -42,7 +42,7 @@ class Eloquent extends AEloquent
         return $this->return($value);
     }
 
-    public function getMaxVersusOrder(int $limit): float
+    public function getMaxVersusOrder(): float
     {
         $minId = ExchangeRate::min('id');
         $value = ExchangeRate::where('id', '<=', $minId + 1)->max('rate');

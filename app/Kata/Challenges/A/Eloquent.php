@@ -75,7 +75,7 @@ class Eloquent extends KataChallenge
         return $this->return($value);
     }
 
-    public function getMaxVersusOrder(int $limit): float
+    public function getMaxVersusOrder(): float
     {
         $minId = ExchangeRate::min('id');
 

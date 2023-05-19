@@ -26,7 +26,7 @@ class Laravel extends KataChallenge
         return $this->return($value);
     }
 
-    public function modelMutationVersusServiceMultiple(int $limit): float
+    public function modelMutationVersusServiceMultiple(): float
     {
         $total = 0;
         foreach (Country::all() as $country) {

@@ -12,7 +12,6 @@ use App\Kata\Utilities\PerformanceUtility;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Console\Command;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -25,8 +24,8 @@ class KataRunner
     use HasExitHintsTrait;
 
     protected const DEFAULT_MODES = [
-        KataRunnerMode::BEFORE,
-        KataRunnerMode::RECORD,
+        KataRunnerMode::A,
+        KataRunnerMode::B,
     ];
 
     protected const DEFAULT_ITERATION_MODES = [
@@ -48,14 +47,13 @@ class KataRunner
 
     protected PerformanceUtility $performance;
 
+    protected array $report = [];
+
     public function __construct(
         protected ?Command $command = null,
-        protected bool $failOnScore = false,
         protected array $challenges = []
     ) {
         $this->createdAt = now();
-        $this->command = $command;
-
         $this->performance = PerformanceUtility::make();
 
         $configChallenges = config('laravel-kata.challenges');
@@ -89,29 +87,26 @@ class KataRunner
             $this->progressBar = $this->command?->getOutput()->createProgressBar(0);
             $this->progressBar->setFormat("%message%\n %current%/%max% [%bar%] %percent:3s%%");
         }
-
-        defined('KATA_BASE_MEM_USED') or define('KATA_BASE_MEM_USED', memory_get_usage(true));
     }
 
-    public function run(): Collection
+    public function run(): array
     {
-        $results = collect();
-
         foreach ($this->kataChallenges as $kataChallenge) {
-            $result = $this->handleChallenge($kataChallenge);
-            $results->push($result);
+            $this->handleChallenge($kataChallenge);
         }
 
-        return $results;
+        return [
+            'report' => $this->report,
+        ];
     }
 
     protected function reportResult(array $result): void
     {
         /** @var KataChallengeResultObject $resultBefore */
-        $resultBefore = $result[KataRunnerMode::BEFORE->value];
+        $resultBefore = $result[KataRunnerMode::A->value];
 
         /** @var KataChallengeResultObject $resultRecord */
-        $resultRecord = $result[KataRunnerMode::RECORD->value];
+        $resultRecord = $result[KataRunnerMode::B->value];
 
         $this->printScoresTable($resultBefore, $resultRecord);
     }
@@ -122,7 +117,6 @@ class KataRunner
     ): void {
         $reportData = $this->getReportData($resultBefore, $resultRecord);
 
-        // TODO: Move into getReportData
         $getScoreRow = function (string $field, ?string $title = null) use ($reportData): array {
             $valueBefore = data_get($reportData, sprintf('stats.before.%s', $field));
             $valueAfter = data_get($reportData, sprintf('stats.record.%s', $field));
@@ -155,22 +149,9 @@ class KataRunner
             ];
         };
 
-        $this->command->newLine();
-        $this->command->info(sprintf('%s::%s', $resultBefore->getClassName(), $resultBefore->getMethodName()));
-        $this->command->info(sprintf(
-            '- A: %s', help_me_code($resultBefore->getReflectionMethod()),
-        ));
-        if (config('laravel-kata.show-code-snippets')) {
-            $this->command->comment($resultBefore->getCodeSnippet());
-        }
-        $this->command->info(sprintf(
-            '- B: %s', help_me_code($resultRecord->getReflectionMethod()),
-        ));
-        if (config('laravel-kata.show-code-snippets')) {
-            $this->command->comment($resultRecord->getCodeSnippet());
-        }
-
-        $this->command->table(
+        $this->report('newLine');
+        $this->report('info', sprintf('%s::%s', $resultBefore->getClassName(), $resultBefore->getMethodName()));
+        $this->report('table',
             [
                 '',
                 'A',
@@ -178,7 +159,6 @@ class KataRunner
                 'Performance',
             ],
             [
-                // $getScoreRow('outputs_md5', 'Outputs'),
                 $getScoreRow('line_count', 'Lines'),
                 $getScoreRow('violations_count', 'Violations'),
                 $getScoreRow('iterations', 'Iterations'),
@@ -188,19 +168,32 @@ class KataRunner
         );
 
         if (! data_get($reportData, 'stats.record.outputs_md5_gains_success')) {
-            $this->command->newLine();
-            $this->command->warn('The outputs did not match!');
-            $this->command->newLine();
-            $this->command->info('Outputs');
-            $this->command->info('A->first()');
-            $this->command->line(sprintf("```\n%s\n```", $resultBefore->getOutputsJsonFirst()));
-            $this->command->info('B->first()');
-            $this->command->line(sprintf("```\n%s\n```", $resultRecord->getOutputsJsonFirst()));
+            $this->report('newLine');
+            $this->report('warn', 'The outputs did not match!');
+            $this->report('newLine');
+            $this->report('info', 'Outputs');
+            $this->report('info', 'A->first()');
+            $this->report('line', sprintf("```\n%s\n```", $resultBefore->getOutputsJsonFirst()));
+            $this->report('info', 'B->first()');
+            $this->report('line', sprintf("```\n%s\n```", $resultRecord->getOutputsJsonFirst()));
 
-            $this->command->info('A->last()');
-            $this->command->line(sprintf("```\n%s\n```", $resultBefore->getOutputsJsonLast()));
-            $this->command->info('B->last()');
-            $this->command->line(sprintf("```\n%s\n```", $resultRecord->getOutputsJsonLast()));
+            $this->report('info', 'A->last()');
+            $this->report('line', sprintf("```\n%s\n```", $resultBefore->getOutputsJsonLast()));
+            $this->report('info', 'B->last()');
+            $this->report('line', sprintf("```\n%s\n```", $resultRecord->getOutputsJsonLast()));
+        }
+
+        $this->report('line', sprintf(
+            'A: %s', help_me_code($resultBefore->getReflectionMethod()),
+        ));
+        if (config('laravel-kata.show-code-snippets')) {
+            $this->report('comment', $resultBefore->getCodeSnippet());
+        }
+        $this->report('line', sprintf(
+            'B: %s', help_me_code($resultRecord->getReflectionMethod()),
+        ));
+        if (config('laravel-kata.show-code-snippets')) {
+            $this->report('comment', $resultRecord->getCodeSnippet());
         }
 
         // Minimum percentage
@@ -222,6 +215,43 @@ class KataRunner
                 data_get($reportData, 'stats.record.outputs_md5'),
             ));
         }
+    }
+
+    protected function report(...$args): void
+    {
+        if (app()->runningInConsole()) {
+            $this->reportConsole(...$args);
+
+            return;
+        }
+
+        if ($args[0] === 'newLine') {
+            return;
+        }
+
+        if ($args[0] === 'table') {
+            $this->report[] = [
+                'type' => 'table',
+                'headers' => $args[1],
+                'rows' => $args[2],
+            ];
+
+            return;
+        }
+
+        $this->report[] = [
+            'type' => $args[0],
+            'value' => $args[1],
+        ];
+    }
+
+    protected function reportConsole(...$args): void
+    {
+        match (count($args)) {
+            1 => $this->command->{$args[0]}(),
+            2 => $this->command->{$args[0]}($args[1]),
+            3 => $this->command->{$args[0]}($args[1], $args[2])
+        };
     }
 
     /**
@@ -356,9 +386,8 @@ class KataRunner
         return $result;
     }
 
-    protected function handleChallenge(string $kataChallenge): array
+    protected function handleChallenge(string $kataChallenge): void
     {
-        $results = [];
         $kataChallengeReflection = new ReflectionClass($kataChallenge);
 
         $skipFunctions = [
@@ -382,11 +411,8 @@ class KataRunner
 
             if (! is_null($result)) {
                 $this->reportResult($result);
-                $results[$reflectionMethod->name] = $result;
             }
         }
-
-        return $results;
     }
 
     /**
@@ -414,10 +440,10 @@ class KataRunner
 
     protected function runChallengeMethod(
         ReflectionMethod $reflectionMethod,
-        KataRunnerMode $mode = KataRunnerMode::BEFORE
+        KataRunnerMode $mode = KataRunnerMode::A
     ): KataChallengeResultObject {
         $targetClass = $reflectionMethod->class;
-        if ($mode === KataRunnerMode::RECORD) {
+        if ($mode === KataRunnerMode::B) {
             $targetClass = str_replace('\\A\\', '\\B\\', $reflectionMethod->class);
 
             // Change reflection method based on the mode

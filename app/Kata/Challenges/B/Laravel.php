@@ -19,7 +19,7 @@ class Laravel extends ALaravel
         return $this->return($value);
     }
 
-    public function modelMutationVersusServiceMultiple(int $limit): float
+    public function modelMutationVersusServiceMultiple(): float
     {
         /** @var CountryService $countryService */
         $countryService = app()->make(CountryService::class);
