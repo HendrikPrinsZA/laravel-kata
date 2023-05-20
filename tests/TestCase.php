@@ -3,6 +3,7 @@
 namespace Tests;
 
 use Database\Seeders\DatabaseSeeder;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Routing\Middleware\ThrottleRequests;
 use Illuminate\Testing\Fluent\AssertableJson;
@@ -10,7 +11,7 @@ use Illuminate\Testing\TestResponse;
 
 abstract class TestCase extends BaseTestCase
 {
-    use CreatesApplication;
+    use CreatesApplication, RefreshDatabase;
 
     protected function setUp(): void
     {
