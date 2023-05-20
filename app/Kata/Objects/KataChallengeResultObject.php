@@ -48,7 +48,7 @@ class KataChallengeResultObject extends JsonResource
             'violations' => $violations,
             'violations_count' => count($violations),
 
-            'iterations' => $this->getStat('outputs_count'),
+            'iteration_count' => $this->getStat('iteration_count', KataRunnerIterationMode::MAX_SECONDS),
             'outputs_md5' => $this->getStat('outputs_md5', KataRunnerIterationMode::MAX_ITERATIONS),
 
             'execution_time_avg' => $this->getExecutionTimeAvg(),
@@ -76,7 +76,7 @@ class KataChallengeResultObject extends JsonResource
 
     public function getExecutionTimeAvg(): float
     {
-        $count = $this->getStat('performance_count', KataRunnerIterationMode::MAX_ITERATIONS);
+        $count = $this->getStat('iteration_count', KataRunnerIterationMode::MAX_ITERATIONS);
         $sum = $this->getStat('execution_time_sum', KataRunnerIterationMode::MAX_ITERATIONS);
 
         return $sum / $count;
@@ -84,7 +84,7 @@ class KataChallengeResultObject extends JsonResource
 
     public function getMemoryUsageAvg(): float
     {
-        $count = $this->getStat('performance_count', KataRunnerIterationMode::MAX_ITERATIONS);
+        $count = $this->getStat('iteration_count', KataRunnerIterationMode::MAX_ITERATIONS);
         $sum = $this->getStat('memory_usage_sum', KataRunnerIterationMode::MAX_ITERATIONS);
 
         return $sum / $count;

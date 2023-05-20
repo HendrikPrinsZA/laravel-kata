@@ -171,7 +171,7 @@ class KataRunner
             ],
             [
                 $getScoreRow('line_count', 'Lines'),
-                $getScoreRow('iterations', 'Iterations'),
+                $getScoreRow('iteration_count', 'Iterations'),
                 $getScoreRow('execution_time_avg', 'Execution time'),
                 $getScoreRow('memory_usage_avg', 'Memory usage'),
             ]
@@ -262,7 +262,7 @@ class KataRunner
             'outputs_md5' => 'string',
             'line_count' => 'lt',
             'violations_count' => 'lt',
-            'iterations' => 'gt',
+            'iteration_count' => 'gt',
             'memory_usage_avg' => 'lt',
             'execution_time_avg' => 'lt',
         ];
@@ -305,7 +305,7 @@ class KataRunner
         $gainsWeights = [
             'line_count_gains_perc' => 0.1,
             'memory_usage_avg_gains_perc' => 0.2,
-            'iterations_gains_perc' => 0.35,
+            'iteration_count_gains_perc' => 0.35,
             'execution_time_avg_gains_perc' => 0.35,
         ];
 
@@ -341,7 +341,7 @@ class KataRunner
             ],
         ];
 
-        if (config('laravel-kata.outputs-save')) {
+        if (config('laravel-kata.save-results-to-storage')) {
             $filePath = sprintf(
                 'laravel-kata/%s/result-%s.json',
                 $this->createdAt->format('Ymd-His'),
@@ -364,10 +364,6 @@ class KataRunner
     {
         $kataChallengeReflection = new ReflectionClass($kataChallenge);
 
-        $skipFunctions = [
-            '__construct',
-        ];
-
         /** @var ReflectionMethod $reflectionMethod */
         foreach ($kataChallengeReflection->getMethods() as $reflectionMethod) {
             // We only run public methods
@@ -375,8 +371,8 @@ class KataRunner
                 continue;
             }
 
-            // Skip the core function
-            if (in_array($reflectionMethod->name, $skipFunctions)) {
+            // We don't want to handle the base class
+            if ($reflectionMethod->class === KataChallenge::class) {
                 continue;
             }
 
@@ -399,19 +395,14 @@ class KataRunner
      *
      * This will give us some hooks, similar to unit tests like setUp(), and tearDown()
      */
-    protected function handleChallengeMethod(ReflectionMethod $reflectionMethod): ?array
+    protected function handleChallengeMethod(ReflectionMethod $reflectionMethod): array
     {
-        // We don't want to handle the base class
-        if ($reflectionMethod->class === KataChallenge::class) {
-            return null;
-        }
-
-        $outputs = [];
+        $results = [];
         foreach ($this->modes as $mode) {
-            $outputs[$mode->value] = $this->runChallengeMethod($reflectionMethod, $mode);
+            $results[$mode->value] = $this->runChallengeMethod($reflectionMethod, $mode);
         }
 
-        return $outputs;
+        return $results;
     }
 
     protected function runChallengeMethod(
@@ -446,28 +437,8 @@ class KataRunner
                 $maxSeconds,
             );
 
-            // Exception: If zero, should fail!
-            if (empty($challengeOutputs['outputs'])) {
-                throw new Exception(sprintf(
-                    'Unexpected empty outputs from %s->%s()',
-                    $reflectionMethod->class,
-                    $reflectionMethod->name,
-                ));
-            }
-
             $challengeOutputs['memory_usage_peak'] = memory_get_peak_usage(false);
             $result[$iterationMode->value] = $challengeOutputs;
-        }
-
-        // Loop again to separate the concerns
-        foreach ($this->iterationModes as $iterationMode) {
-            $result[$iterationMode->value]['outputs_count'] = count($result[$iterationMode->value]['outputs']);
-
-            $result[$iterationMode->value]['outputs_json'] = json_encode($result[$iterationMode->value]['outputs']);
-            $result[$iterationMode->value]['outputs_md5'] = md5($result[$iterationMode->value]['outputs_json']);
-
-            // Unset expensive keys
-            unset($result[$iterationMode->value]['outputs']);
         }
 
         return new KataChallengeResultObject($reflectionMethod, $result);
@@ -527,16 +498,16 @@ class KataRunner
 
     protected function runChallengeMethodMaxIterations(
         ReflectionMethod $reflectionMethod,
-        int $maxIterations
+        int $iterationCount
     ): array {
         $memoryUsageSum = 0;
         $executionTimeSum = 0;
         $startTime = microtime(true);
         $outputs = [];
 
-        $this->progressBar?->setMaxSteps($maxIterations);
+        $this->progressBar?->setMaxSteps($iterationCount);
         $this->progressBar?->setProgress(0);
-        for ($iteration = 0; $iteration < $maxIterations; $iteration++) {
+        for ($iteration = 0; $iteration < $iterationCount; $iteration++) {
             $className = $reflectionMethod->class;
             $instance = app()->make($className);
             $methodName = $reflectionMethod->name;
@@ -559,14 +530,23 @@ class KataRunner
         $this->progressBar?->finish();
         $this->progressBar?->clear();
 
+        $outputsMd5 = md5(json_encode($outputs));
+        if ($iterationCount > 2) {
+            $outputs = [
+                $outputs[0],
+                $outputs[$iterationCount - 1],
+            ];
+        }
+
         return [
-            'outputs' => $outputs,
-            'performance_count' => $maxIterations,
+            'outputs_json' => json_encode($outputs),
+            'outputs_md5' => $outputsMd5,
+            'iteration_count' => $iterationCount,
             'memory_usage_sum' => $memoryUsageSum,
-            'memory_usage_avg' => $memoryUsageSum / $maxIterations,
+            'memory_usage_avg' => $memoryUsageSum / $iterationCount,
             'execution_time' => microtime(true) - $startTime,
             'execution_time_sum' => $executionTimeSum,
-            'execution_time_avg' => $executionTimeSum / $maxIterations,
+            'execution_time_avg' => $executionTimeSum / $iterationCount,
         ];
     }
 
@@ -584,17 +564,17 @@ class KataRunner
         $this->progressBar?->setMaxSteps($msMax);
         $this->progressBar?->setProgress(0);
 
-        $iteration = 0;
+        $iterationCount = 0;
         do {
             $msLeft = now()->diffInMilliseconds($dateTimeEnd, false);
 
-            $iteration++;
+            $iterationCount++;
             $className = $reflectionMethod->class;
             $instance = app()->make($className);
             $methodName = $reflectionMethod->name;
 
-            $executionTimeSum += Benchmark::measure(function () use ($instance, $methodName, $iteration, &$outputs) {
-                $outputs[] = $instance->{$methodName}($iteration);
+            $executionTimeSum += Benchmark::measure(function () use ($instance, $methodName, $iterationCount, &$outputs) {
+                $outputs[] = $instance->{$methodName}($iterationCount);
             });
 
             $memoryUsageSum += $instance->getMemoryUsage();
@@ -604,21 +584,31 @@ class KataRunner
                 '%s->%s(%d) [duration]',
                 $className,
                 $methodName,
-                $iteration
+                $iterationCount
             ));
         } while ($msLeft > 0);
 
         $this->progressBar?->finish();
         $this->progressBar?->clear();
 
+        $outputsMd5 = md5(json_encode($outputs));
+        if ($iterationCount > 2) {
+            $outputs = [
+                $outputs[0],
+                $outputs[$iterationCount - 1],
+            ];
+        }
+
         return [
+            'outputs_json' => json_encode($outputs),
+            'outputs_md5' => $outputsMd5,
             'outputs' => $outputs,
-            'performance_count' => $iteration,
+            'iteration_count' => $iterationCount,
             'memory_usage_sum' => $memoryUsageSum,
-            'memory_usage_avg' => $memoryUsageSum / $iteration,
+            'memory_usage_avg' => $memoryUsageSum / $iterationCount,
             'execution_time' => microtime(true) - $startTime,
             'execution_time_sum' => $executionTimeSum,
-            'execution_time_avg' => $executionTimeSum / $iteration,
+            'execution_time_avg' => $executionTimeSum / $iterationCount,
         ];
     }
 }

@@ -55,7 +55,7 @@ return [
     'progress-bar-disabled' => env('LK_PROGRESS_BAR_DISABLED', false),
 
     // To be converted to env variables
-    'outputs-save' => true,
+    'save-results-to-storage' => true,
     'debug-mode' => false,
     'show-hints' => false,
     'show-hints-extended' => false,
