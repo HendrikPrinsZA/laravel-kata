@@ -86,6 +86,27 @@ class KataRunner
 
     public function run(): array
     {
+        $this->command?->info('Laravel Kata Run');
+        $this->command?->table([
+            'Variable',
+            'Value',
+        ], [
+            [
+                'Seconds',
+                config('laravel-kata.max-seconds'),
+            ],
+            [
+                'Iterations',
+                config('laravel-kata.max-iterations'),
+            ],
+            [
+                'Challenges',
+                collect($this->kataChallenges)->map(
+                    fn ($challenge) => str_replace('App\\Kata\\Challenges\\A\\', '', $challenge)
+                )->join(', '),
+            ],
+        ]);
+
         foreach ($this->kataChallenges as $kataChallenge) {
             $this->handleChallenge($kataChallenge);
         }
