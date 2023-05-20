@@ -5,7 +5,6 @@ namespace App\Kata\Objects;
 use App\Kata\Enums\KataRunnerIterationMode;
 use App\Kata\Utilities\CodeUtility;
 use Illuminate\Http\Resources\Json\JsonResource;
-use ReflectionClass;
 use ReflectionMethod;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
@@ -39,13 +38,6 @@ class KataChallengeResultObject extends JsonResource
     public function getReflectionMethod(): ReflectionMethod
     {
         return $this->reflectionMethod;
-    }
-
-    public function getBaselineReflectionMethod(): ReflectionMethod
-    {
-        $reflectionClass = new ReflectionClass($this->reflectionMethod->class);
-
-        return $reflectionClass->getMethod('baseline');
     }
 
     public function getStats(): array

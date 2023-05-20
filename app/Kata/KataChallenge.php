@@ -72,11 +72,6 @@ class KataChallenge
         return $this->maxIterations;
     }
 
-    public function baseline(): void
-    {
-        // Want at least 1 line, even if it is just a comment
-    }
-
     protected function setUp(): void
     {
         foreach (static::EXPECTED_MODELS as $expectedModelClass) {

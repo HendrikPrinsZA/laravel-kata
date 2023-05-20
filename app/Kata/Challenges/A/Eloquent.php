@@ -15,10 +15,6 @@ class Eloquent extends KataChallenge
         ExchangeRate::class,
     ];
 
-    public function baseline(): void
-    {
-    }
-
     /**
      * Eloquent collections / Average
      */

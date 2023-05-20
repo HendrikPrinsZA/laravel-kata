@@ -8,10 +8,6 @@ use Illuminate\Support\Str;
 
 class MySql extends KataChallenge
 {
-    public function baseline(): void
-    {
-    }
-
     public function orVersusIn(int $limit): array
     {
         $sql = <<<'SQL'

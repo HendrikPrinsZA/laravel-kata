@@ -58,17 +58,8 @@ if (! function_exists('bytes_to_human')) {
 }
 
 if (! function_exists('time_to_human')) {
-    function time_to_human(float $seconds): string
+    function time_to_human(float $milliseconds): string
     {
-        $millisecs = floor(($seconds - floor($seconds)) * 10000000000);
-
-        return sprintf('%d ms', $millisecs);
-
-        $hours = floor($seconds / 3600);
-        $mins = floor($seconds / 60 % 60);
-        $secs = floor($seconds % 60);
-        $millisecs = floor(($seconds - floor($seconds)) * 10000000000);
-
-        return sprintf('%02d:%02d:%02d.%010d', $hours, $mins, $secs, $millisecs);
+        return sprintf('%s ms', number_format($milliseconds, 5));
     }
 }

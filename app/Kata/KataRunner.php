@@ -8,10 +8,10 @@ use App\Kata\Exceptions\KataChallengeScoreException;
 use App\Kata\Objects\KataChallengeResultObject;
 use App\Kata\Traits\HasExitHintsTrait;
 use App\Kata\Utilities\CodeUtility;
-use App\Kata\Utilities\PerformanceUtility;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Console\Command;
+use Illuminate\Support\Benchmark;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -37,15 +37,11 @@ class KataRunner
 
     protected array $iterationModes;
 
-    protected array $resultBaselineCache = [];
-
     protected Carbon $createdAt;
 
     protected array $kataChallenges;
 
     protected ?ProgressBar $progressBar = null;
-
-    protected PerformanceUtility $performance;
 
     protected array $report = [];
 
@@ -54,7 +50,6 @@ class KataRunner
         protected array $challenges = []
     ) {
         $this->createdAt = now();
-        $this->performance = PerformanceUtility::make();
 
         $configChallenges = config('laravel-kata.challenges');
 
@@ -257,8 +252,7 @@ class KataRunner
     /**
      * Calculate and append gains
      *
-     * Future:
-     * - Baseline stats in math
+     * Future ideas
      * - Benchmark with K6
      * - Resource usage Grafana
      */
@@ -328,13 +322,6 @@ class KataRunner
         KataChallengeResultObject $resultA,
         KataChallengeResultObject $resultB,
     ): array {
-        $baselineMethod = $resultA->getBaselineReflectionMethod();
-        $cacheKey = sprintf('%s.%s', Str::slug($baselineMethod->class), $baselineMethod->name);
-        if (! isset($this->resultBaselineCache[$cacheKey])) {
-            $resultBaseline = $this->runChallengeMethod($resultA->getBaselineReflectionMethod());
-            $this->resultBaselineCache[$cacheKey] = $resultBaseline->getStats();
-        }
-        $statsBaseline = $this->resultBaselineCache[$cacheKey];
         $statsA = $resultA->getStats();
         $statsB = $this->calculateGains(
             $statsA,
@@ -349,7 +336,6 @@ class KataRunner
             'class' => $className,
             'method' => $methodName,
             'stats' => [
-                'baseline' => $statsBaseline,
                 'a' => $statsA,
                 'b' => $statsB,
             ],
@@ -366,7 +352,6 @@ class KataRunner
         }
 
         if (config('laravel-kata.debug-mode')) {
-            $this->addExitHintsFromViolations($statsBaseline['violations']);
             $this->addExitHintsFromViolations($statsA['violations']);
         }
 
@@ -381,7 +366,6 @@ class KataRunner
 
         $skipFunctions = [
             '__construct',
-            'baseline',
         ];
 
         /** @var ReflectionMethod $reflectionMethod */
@@ -391,7 +375,7 @@ class KataRunner
                 continue;
             }
 
-            // Skip the baseline function
+            // Skip the core function
             if (in_array($reflectionMethod->name, $skipFunctions)) {
                 continue;
             }
@@ -546,8 +530,8 @@ class KataRunner
         int $maxIterations
     ): array {
         $memoryUsageSum = 0;
+        $executionTimeSum = 0;
         $startTime = microtime(true);
-        $this->performance->reset();
         $outputs = [];
 
         $this->progressBar?->setMaxSteps($maxIterations);
@@ -563,9 +547,9 @@ class KataRunner
                 $iteration + 1
             ));
 
-            $outputs[] = $this->performance->run(
-                fn () => $instance->{$methodName}($iteration)
-            );
+            $executionTimeSum += Benchmark::measure(function () use ($instance, $methodName, $iteration, &$outputs) {
+                $outputs[] = $instance->{$methodName}($iteration);
+            });
 
             $memoryUsageSum += $instance->getMemoryUsage();
             $instance = null;
@@ -577,12 +561,12 @@ class KataRunner
 
         return [
             'outputs' => $outputs,
-            'performance_count' => $this->performance->getCount(),
+            'performance_count' => $maxIterations,
             'memory_usage_sum' => $memoryUsageSum,
-            'memory_usage_avg' => $memoryUsageSum / $this->performance->getCount(),
+            'memory_usage_avg' => $memoryUsageSum / $maxIterations,
             'execution_time' => microtime(true) - $startTime,
-            'execution_time_sum' => $this->performance->getExecutionTimeSum(),
-            'execution_time_avg' => $this->performance->getExecutionTimeAvg(),
+            'execution_time_sum' => $executionTimeSum,
+            'execution_time_avg' => $executionTimeSum / $maxIterations,
         ];
     }
 
@@ -590,9 +574,9 @@ class KataRunner
         ReflectionMethod $reflectionMethod,
         int $maxSeconds
     ): array {
+        $executionTimeSum = 0;
         $memoryUsageSum = 0;
         $startTime = microtime(true);
-        $this->performance->reset();
         $msMax = $maxSeconds * 1000;
         $dateTimeEnd = now()->addMilliseconds($msMax);
         $outputs = [];
@@ -609,9 +593,9 @@ class KataRunner
             $instance = app()->make($className);
             $methodName = $reflectionMethod->name;
 
-            $outputs[] = $this->performance->run(
-                fn () => $instance->{$methodName}($iteration)
-            );
+            $executionTimeSum += Benchmark::measure(function () use ($instance, $methodName, $iteration, &$outputs) {
+                $outputs[] = $instance->{$methodName}($iteration);
+            });
 
             $memoryUsageSum += $instance->getMemoryUsage();
             $instance = null;
@@ -629,12 +613,12 @@ class KataRunner
 
         return [
             'outputs' => $outputs,
-            'performance_count' => $this->performance->getCount(),
+            'performance_count' => $iteration,
             'memory_usage_sum' => $memoryUsageSum,
-            'memory_usage_avg' => $memoryUsageSum / $this->performance->getCount(),
+            'memory_usage_avg' => $memoryUsageSum / $iteration,
             'execution_time' => microtime(true) - $startTime,
-            'execution_time_sum' => $this->performance->getExecutionTimeSum(),
-            'execution_time_avg' => $this->performance->getExecutionTimeAvg(),
+            'execution_time_sum' => $executionTimeSum,
+            'execution_time_avg' => $executionTimeSum / $iteration,
         ];
     }
 }

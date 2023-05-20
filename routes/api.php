@@ -75,7 +75,6 @@ Route::get('kata/{challenge}', function (Request $request, string $challenge) {
     $data = collect($reflectionClass->getMethods())
         ->filter(fn (ReflectionMethod $method) => $method->class === $class)
         ->filter(fn (ReflectionMethod $method) => $method->isPublic())
-        ->filter(fn (ReflectionMethod $method) => $method->name !== 'baseline')
         ->map(fn ($method) => $method->name)
         ->toArray();
 
