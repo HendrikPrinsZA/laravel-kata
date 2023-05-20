@@ -1,11 +1,15 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
+RED='\033[0;31m'
+NC='\033[0m' # No Color
 
-# TODO: Figure out how to make linting seamless
-# - Auto lint staged files only
-# - Run tests
-# - If passed, auto add changed before commit
+echo "Linting"
+./vendor/bin/tlint format
 
-# Hacked for now
-./vendor/bin/pint
-git add --all
+echo "Pinting"
+./vendor/bin/pint --dirty -v
+
+if [[ $(git diff --stat) != '' ]]; then
+  printf "\n${RED}Exception: Dirty files found, check and commit again!${NC}\n"
+  exit 1
+fi

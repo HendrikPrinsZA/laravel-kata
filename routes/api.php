@@ -32,7 +32,7 @@ Route::any('/', function (Request $request) {
 /**
  * Check the app health
  */
-Route::get('/health', function (Request $request) {
+Route::get('health', function (Request $request) {
     return JsonResource::make([
         'success' => true,
     ]);
@@ -41,7 +41,7 @@ Route::get('/health', function (Request $request) {
 /**
  * Get the list of challenges
  */
-Route::get('/kata', function (Request $request) {
+Route::get('kata', function (Request $request) {
     return JsonResource::make([
         'success' => true,
         'data' => collect(config('laravel-kata.challenges', []))
@@ -57,7 +57,7 @@ Route::get('/kata', function (Request $request) {
 /**
  * Get the list of challenge's methods
  */
-Route::get('/kata/{challenge}', function (Request $request, string $challenge) {
+Route::get('kata/{challenge}', function (Request $request, string $challenge) {
     $class = sprintf(
         'App\\Kata\\Challenges\\A\\%s',
         $challenge
@@ -88,7 +88,7 @@ Route::get('/kata/{challenge}', function (Request $request, string $challenge) {
 /**
  * Run the challenge
  */
-Route::get('/kata/{challenge}/run', function (Request $request, string $challenge) {
+Route::get('kata/{challenge}/run', function (Request $request, string $challenge) {
     /** @var KataRunner $kataRunner */
     $kataRunner = app()->makeWith(KataRunner::class, [
         'command' => null,

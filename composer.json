@@ -51,10 +51,10 @@
     },
     "scripts": {
         "tlint": [
-            "tlint lint app/"
+            "tlint lint"
         ],
         "tlint:fix": [
-            "tlint format app/"
+            "tlint format"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",

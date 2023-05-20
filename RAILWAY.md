@@ -32,7 +32,6 @@ We're taking an existing Laravel repository and deploying it to Railway.
 #### Configure
 Some configurations will be neccessary.
 
-
 #### Access
 1. Log in to railway shell
 ```
