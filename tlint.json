@@ -1,6 +1,5 @@
 {
     "exec": "vendor/bin/tlint",
-    "preset": "App\\Support\\Linting\\SupportLintingPreset",
     "disabled": [
         "NoInlineVarDocs"
     ],

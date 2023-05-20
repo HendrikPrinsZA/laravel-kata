@@ -100,41 +100,30 @@ class KataRunner
         ];
     }
 
-    protected function reportResult(array $result): void
-    {
-        /** @var KataChallengeResultObject $resultBefore */
-        $resultBefore = $result[KataRunnerMode::A->value];
-
-        /** @var KataChallengeResultObject $resultRecord */
-        $resultRecord = $result[KataRunnerMode::B->value];
-
-        $this->printReport($resultBefore, $resultRecord);
-    }
-
     protected function printReport(
-        KataChallengeResultObject $resultBefore,
-        KataChallengeResultObject $resultRecord
+        KataChallengeResultObject $resultA,
+        KataChallengeResultObject $resultB
     ): void {
-        $reportData = $this->getReportData($resultBefore, $resultRecord);
+        $reportData = $this->getReportData($resultA, $resultB);
 
         $getScoreRow = function (string $field, ?string $title = null) use ($reportData): array {
-            $valueBefore = data_get($reportData, sprintf('stats.before.%s', $field));
-            $valueAfter = data_get($reportData, sprintf('stats.record.%s', $field));
+            $valueA = data_get($reportData, sprintf('stats.a.%s', $field));
+            $valueB = data_get($reportData, sprintf('stats.b.%s', $field));
 
-            $displayValueBefore = match ($field) {
-                'execution_time_avg' => time_to_human($valueBefore),
-                'memory_usage_avg' => bytes_to_human($valueBefore),
-                default => $valueBefore,
+            $displayValueA = match ($field) {
+                'execution_time_avg' => time_to_human($valueA),
+                'memory_usage_avg' => bytes_to_human($valueA),
+                default => $valueA,
             };
 
-            $displayValueAfter = match ($field) {
-                'execution_time_avg' => time_to_human($valueAfter),
-                'memory_usage_avg' => bytes_to_human($valueAfter),
-                default => $valueAfter,
+            $displayValueB = match ($field) {
+                'execution_time_avg' => time_to_human($valueB),
+                'memory_usage_avg' => bytes_to_human($valueB),
+                default => $valueB,
             };
 
-            $success = data_get($reportData, sprintf('stats.record.%s_gains_success', $field));
-            $gainsPerc = data_get($reportData, sprintf('stats.record.%s_gains_perc', $field));
+            $success = data_get($reportData, sprintf('stats.b.%s_gains_success', $field));
+            $gainsPerc = data_get($reportData, sprintf('stats.b.%s_gains_perc', $field));
 
             $performance = match ($field) {
                 'outputs_md5' => wrap_in_format($success ? '100%' : '0%', $success),
@@ -143,18 +132,18 @@ class KataRunner
 
             return [
                 $title ?: $field,
-                $displayValueBefore,
-                $displayValueAfter,
+                $displayValueA,
+                $displayValueB,
                 $performance,
             ];
         };
 
-        $gainsPerc = data_get($reportData, 'stats.record.gains_perc');
+        $gainsPerc = data_get($reportData, 'stats.b.gains_perc');
 
         $title = sprintf(
             '%s::%s (%s%%)',
-            $resultBefore->getClassName(),
-            $resultBefore->getMethodName(),
+            $resultA->getClassName(),
+            $resultA->getMethodName(),
             $gainsPerc
         );
 
@@ -166,16 +155,16 @@ class KataRunner
 
         // Show where it comes from
         $this->report('line', sprintf(
-            'A: %s', help_me_code($resultBefore->getReflectionMethod()),
+            'A: %s', help_me_code($resultA->getReflectionMethod()),
         ));
         if (config('laravel-kata.show-code-snippets')) {
-            $this->report('comment', $resultBefore->getCodeSnippet());
+            $this->report('comment', $resultA->getCodeSnippet());
         }
         $this->report('line', sprintf(
-            'B: %s', help_me_code($resultRecord->getReflectionMethod()),
+            'B: %s', help_me_code($resultB->getReflectionMethod()),
         ));
         if (config('laravel-kata.show-code-snippets')) {
-            $this->report('comment', $resultRecord->getCodeSnippet());
+            $this->report('comment', $resultB->getCodeSnippet());
         }
 
         $this->report('table',
@@ -193,28 +182,28 @@ class KataRunner
             ]
         );
 
-        if (! data_get($reportData, 'stats.record.outputs_md5_gains_success')) {
+        if (! data_get($reportData, 'stats.b.outputs_md5_gains_success')) {
             $this->report('newLine');
             $this->report('warn', 'The outputs did not match!');
             $this->report('newLine');
             $this->report('info', 'Outputs');
             $this->report('info', 'A->first()');
-            $this->report('line', sprintf("```\n%s\n```", $resultBefore->getOutputsJsonFirst()));
+            $this->report('line', sprintf("```\n%s\n```", $resultA->getOutputsJsonFirst()));
             $this->report('info', 'B->first()');
-            $this->report('line', sprintf("```\n%s\n```", $resultRecord->getOutputsJsonFirst()));
+            $this->report('line', sprintf("```\n%s\n```", $resultB->getOutputsJsonFirst()));
 
             $this->report('info', 'A->last()');
-            $this->report('line', sprintf("```\n%s\n```", $resultBefore->getOutputsJsonLast()));
+            $this->report('line', sprintf("```\n%s\n```", $resultA->getOutputsJsonLast()));
             $this->report('info', 'B->last()');
-            $this->report('line', sprintf("```\n%s\n```", $resultRecord->getOutputsJsonLast()));
+            $this->report('line', sprintf("```\n%s\n```", $resultB->getOutputsJsonLast()));
         }
 
         // Outputs should always match
-        if (! data_get($reportData, 'stats.record.outputs_md5_gains_success')) {
+        if (! data_get($reportData, 'stats.b.outputs_md5_gains_success')) {
             throw new KataChallengeScoreException(sprintf(
                 'Outputs does not match (expected: %s, actual: %s)',
-                data_get($reportData, 'stats.before.outputs_md5'),
-                data_get($reportData, 'stats.record.outputs_md5'),
+                data_get($reportData, 'stats.a.outputs_md5'),
+                data_get($reportData, 'stats.b.outputs_md5'),
             ));
         }
 
@@ -273,10 +262,8 @@ class KataRunner
      * - Benchmark with K6
      * - Resource usage Grafana
      */
-    protected function calculateGains(
-        array $statsBefore,
-        array $statsRecord
-    ): array {
+    protected function calculateGains(array $statsA, array $statsB): array
+    {
         $fields = [
             'outputs_md5' => 'string',
             'line_count' => 'lt',
@@ -288,13 +275,13 @@ class KataRunner
 
         foreach ($fields as $field => $mode) {
             $success = false;
-            $value1 = $statsRecord[$field];
-            $value2 = $statsBefore[$field];
+            $value1 = $statsB[$field];
+            $value2 = $statsA[$field];
 
             if (in_array($mode, ['lt', 'gt'])) {
                 if ($mode === 'gt') {
                     $value1 = $value2;
-                    $value2 = $statsRecord[$field];
+                    $value2 = $statsB[$field];
                 }
 
                 $gains = $value1 - $value2;
@@ -316,9 +303,9 @@ class KataRunner
                 $success = $value1 === $value2;
             }
 
-            $statsRecord[sprintf('%s_gains_diff', $field)] = $gains;
-            $statsRecord[sprintf('%s_gains_perc', $field)] = $percDiff;
-            $statsRecord[sprintf('%s_gains_success', $field)] = $success;
+            $statsB[sprintf('%s_gains_diff', $field)] = $gains;
+            $statsB[sprintf('%s_gains_perc', $field)] = $percDiff;
+            $statsB[sprintf('%s_gains_success', $field)] = $success;
         }
 
         $gainsWeights = [
@@ -328,34 +315,34 @@ class KataRunner
             'execution_time_avg_gains_perc' => 0.35,
         ];
 
-        $statsRecord['gains_perc'] = collect($gainsWeights)->map(
-            fn ($weight, $key) => $statsRecord[$key] * $weight
+        $statsB['gains_perc'] = collect($gainsWeights)->map(
+            fn ($weight, $key) => $statsB[$key] * $weight
         )->sum();
 
-        ksort($statsRecord);
+        ksort($statsB);
 
-        return $statsRecord;
+        return $statsB;
     }
 
     protected function getReportData(
-        KataChallengeResultObject $resultBefore,
-        KataChallengeResultObject $resultRecord,
+        KataChallengeResultObject $resultA,
+        KataChallengeResultObject $resultB,
     ): array {
-        $baselineMethod = $resultBefore->getBaselineReflectionMethod();
+        $baselineMethod = $resultA->getBaselineReflectionMethod();
         $cacheKey = sprintf('%s.%s', Str::slug($baselineMethod->class), $baselineMethod->name);
         if (! isset($this->resultBaselineCache[$cacheKey])) {
-            $resultBaseline = $this->runChallengeMethod($resultBefore->getBaselineReflectionMethod());
+            $resultBaseline = $this->runChallengeMethod($resultA->getBaselineReflectionMethod());
             $this->resultBaselineCache[$cacheKey] = $resultBaseline->getStats();
         }
         $statsBaseline = $this->resultBaselineCache[$cacheKey];
-        $statsBefore = $resultBefore->getStats();
-        $statsRecord = $this->calculateGains(
-            $statsBefore,
-            $resultRecord->getStats()
+        $statsA = $resultA->getStats();
+        $statsB = $this->calculateGains(
+            $statsA,
+            $resultB->getStats()
         );
 
-        $className = $resultBefore->getClassName();
-        $methodName = $resultBefore->getMethodName();
+        $className = $resultA->getClassName();
+        $methodName = $resultA->getMethodName();
 
         // Save as json output
         $result = [
@@ -363,8 +350,8 @@ class KataRunner
             'method' => $methodName,
             'stats' => [
                 'baseline' => $statsBaseline,
-                'before' => $statsBefore,
-                'record' => $statsRecord,
+                'a' => $statsA,
+                'b' => $statsB,
             ],
         ];
 
@@ -380,10 +367,10 @@ class KataRunner
 
         if (config('laravel-kata.debug-mode')) {
             $this->addExitHintsFromViolations($statsBaseline['violations']);
-            $this->addExitHintsFromViolations($statsBefore['violations']);
+            $this->addExitHintsFromViolations($statsA['violations']);
         }
 
-        $this->addExitHintsFromViolations($statsRecord['violations']);
+        $this->addExitHintsFromViolations($statsB['violations']);
 
         return $result;
     }
@@ -412,7 +399,10 @@ class KataRunner
             $result = $this->handleChallengeMethod($reflectionMethod);
 
             if (! is_null($result)) {
-                $this->reportResult($result);
+                $this->printReport(
+                    $result[KataRunnerMode::A->value],
+                    $result[KataRunnerMode::B->value]
+                );
             }
         }
     }
@@ -564,7 +554,7 @@ class KataRunner
         $this->progressBar?->setProgress(0);
         for ($iteration = 0; $iteration < $maxIterations; $iteration++) {
             $className = $reflectionMethod->class;
-            $instance = app($className);
+            $instance = app()->make($className);
             $methodName = $reflectionMethod->name;
             $this->progressBar?->setMessage(sprintf(
                 '%s->%s(%d) [interations]',
@@ -616,7 +606,7 @@ class KataRunner
 
             $iteration++;
             $className = $reflectionMethod->class;
-            $instance = app($className);
+            $instance = app()->make($className);
             $methodName = $reflectionMethod->name;
 
             $outputs[] = $this->performance->run(
