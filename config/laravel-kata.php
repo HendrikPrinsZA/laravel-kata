@@ -69,7 +69,7 @@ return [
     // Configuration of the dummy data
     // - Will allow to separate between benchmark & tests
     'dummy-data' => [
-        'max-users' => $getValue('LK_DD_MAX_USERS', 1000),
-        'max-user-blogs' => $getValue('LK_DD_MAX_USER_BLOGS', 3),
+        'max-users' => env('LK_DD_MAX_USERS', $getValue('LK_DD_MAX_USERS', 1000)),
+        'max-user-blogs' => env('LK_DD_MAX_USER_BLOGS', $getValue('LK_DD_MAX_USER_BLOGS', 3)),
     ],
 ];

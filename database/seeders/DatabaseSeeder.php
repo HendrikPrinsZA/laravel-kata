@@ -16,6 +16,21 @@ class DatabaseSeeder extends Seeder
 
     public function run(): void
     {
+        $this->command->info('Database Seeder');
+        $this->command->table([
+            'Variable',
+            'Value',
+        ], [
+            [
+                'Dummy data / Max users',
+                config('laravel-kata.dummy-data.max-users'),
+            ],
+            [
+                'Dummy data / Max blogs per user',
+                config('laravel-kata.dummy-data.max-user-blogs'),
+            ],
+        ]);
+
         if (! Schema::hasTable('users')) {
             Artisan::call('migrate:fresh');
         }
