@@ -8,10 +8,6 @@ use Illuminate\Support\Str;
 
 class MySql extends KataChallenge
 {
-    public function baseline(): void
-    {
-    }
-
     public function orVersusIn(int $limit): array
     {
         $sql = <<<'SQL'
@@ -20,7 +16,7 @@ class MySql extends KataChallenge
         AVG(E.rate) AS `rate`
         FROM exchange_rates E
         WHERE
-        E.date > DATE(:dateFrom) AND
+        E.id <= :limit AND
         (
             E.target_currency_code = 'AED' OR
             E.target_currency_code = 'EUR' OR
@@ -32,10 +28,36 @@ class MySql extends KataChallenge
         SQL;
 
         $params = [
-            'dateFrom' => now()->subDays($limit),
+            'limit' => $limit,
         ];
 
         $value = $this->select($sql, $params);
+
+        return $this->return($value);
+    }
+
+    public function orVersusInAggregate(int $limit): float
+    {
+        $sql = <<<'SQL'
+        SELECT
+        AVG(E.rate) AS `rate`
+        FROM exchange_rates E
+        WHERE
+        E.id <= :limit AND
+        (
+            E.target_currency_code = 'AED' OR
+            E.target_currency_code = 'EUR' OR
+            E.target_currency_code = 'GBP' OR
+            E.target_currency_code = 'USD' OR
+            E.target_currency_code = 'ZAR'
+        )
+        SQL;
+
+        $params = [
+            'limit' => $limit,
+        ];
+
+        $value = $this->selectOne($sql, $params)->rate;
 
         return $this->return($value);
     }

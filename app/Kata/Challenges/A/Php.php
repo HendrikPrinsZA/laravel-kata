@@ -8,10 +8,6 @@ class Php extends KataChallenge
 {
     protected const MAX_RANGE = 1000;
 
-    public function baseline(): void
-    {
-    }
-
     /**
      * Use native functions: range()
      *

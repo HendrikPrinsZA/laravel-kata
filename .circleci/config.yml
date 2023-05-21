@@ -133,7 +133,7 @@ jobs:
       - run:
           name: Run benchmark (Kata)
           command: |
-            npm run benchmark:kata
+            npm run benchmark
       - store_artifacts:
           path: storage/app/laravel-kata
 

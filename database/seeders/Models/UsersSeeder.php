@@ -9,6 +9,7 @@ class UsersSeeder extends ModelSeeder
     public function seed(): void
     {
         $maxUsers = config('laravel-kata.dummy-data.max-users');
+
         if (User::count() >= $maxUsers) {
             return;
         }
@@ -21,7 +22,7 @@ class UsersSeeder extends ModelSeeder
         }
 
         /** @var \App\Collections\UserCollection $users */
-        $users = User::factory(config('laravel-kata.dummy-data.max-users') - 1)
+        $users = User::factory($maxUsers - 1)
             ->make();
 
         $users->upsert();

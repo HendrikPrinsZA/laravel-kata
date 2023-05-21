@@ -5,7 +5,6 @@ namespace App\Kata\Objects;
 use App\Kata\Enums\KataRunnerIterationMode;
 use App\Kata\Utilities\CodeUtility;
 use Illuminate\Http\Resources\Json\JsonResource;
-use ReflectionClass;
 use ReflectionMethod;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
@@ -41,13 +40,6 @@ class KataChallengeResultObject extends JsonResource
         return $this->reflectionMethod;
     }
 
-    public function getBaselineReflectionMethod(): ReflectionMethod
-    {
-        $reflectionClass = new ReflectionClass($this->reflectionMethod->class);
-
-        return $reflectionClass->getMethod('baseline');
-    }
-
     public function getStats(): array
     {
         $violations = $this->getViolations();
@@ -56,7 +48,7 @@ class KataChallengeResultObject extends JsonResource
             'violations' => $violations,
             'violations_count' => count($violations),
 
-            'iterations' => $this->getStat('outputs_count'),
+            'iteration_count' => $this->getStat('iteration_count', KataRunnerIterationMode::MAX_SECONDS),
             'outputs_md5' => $this->getStat('outputs_md5', KataRunnerIterationMode::MAX_ITERATIONS),
 
             'execution_time_avg' => $this->getExecutionTimeAvg(),
@@ -84,7 +76,7 @@ class KataChallengeResultObject extends JsonResource
 
     public function getExecutionTimeAvg(): float
     {
-        $count = $this->getStat('performance_count', KataRunnerIterationMode::MAX_ITERATIONS);
+        $count = $this->getStat('iteration_count', KataRunnerIterationMode::MAX_ITERATIONS);
         $sum = $this->getStat('execution_time_sum', KataRunnerIterationMode::MAX_ITERATIONS);
 
         return $sum / $count;
@@ -92,7 +84,7 @@ class KataChallengeResultObject extends JsonResource
 
     public function getMemoryUsageAvg(): float
     {
-        $count = $this->getStat('performance_count', KataRunnerIterationMode::MAX_ITERATIONS);
+        $count = $this->getStat('iteration_count', KataRunnerIterationMode::MAX_ITERATIONS);
         $sum = $this->getStat('memory_usage_sum', KataRunnerIterationMode::MAX_ITERATIONS);
 
         return $sum / $count;

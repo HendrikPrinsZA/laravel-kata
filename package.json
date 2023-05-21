@@ -5,7 +5,7 @@
         "prepare": "husky install",
         "test": "./bin/test.sh",
         "reset": "./bin/reset.sh",
-        "benchmark:kata": "./bin/benchmark-kata.sh",
+        "benchmark": "./bin/benchmark.sh",
         "client:dev": "astro dev",
         "client:start": "astro dev",
         "client:build": "astro build",

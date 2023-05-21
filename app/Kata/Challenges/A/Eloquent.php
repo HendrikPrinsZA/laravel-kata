@@ -15,10 +15,6 @@ class Eloquent extends KataChallenge
         ExchangeRate::class,
     ];
 
-    public function baseline(): void
-    {
-    }
-
     /**
      * Eloquent collections / Average
      */
@@ -75,12 +71,10 @@ class Eloquent extends KataChallenge
         return $this->return($value);
     }
 
-    public function getMaxVersusOrder(): float
+    public function getMaxVersusOrder(int $limit): float
     {
-        $minId = ExchangeRate::min('id');
-
         $value = ExchangeRate::query()
-            ->where('id', '<=', $minId + 1)
+            ->where('id', '<=', $limit)
             ->orderByDesc('rate')
             ->first()?->rate;
 
