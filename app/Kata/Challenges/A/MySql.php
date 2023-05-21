@@ -16,7 +16,7 @@ class MySql extends KataChallenge
         AVG(E.rate) AS `rate`
         FROM exchange_rates E
         WHERE
-        E.id < :limit AND
+        E.id <= :limit AND
         (
             E.target_currency_code = 'AED' OR
             E.target_currency_code = 'EUR' OR
@@ -28,7 +28,7 @@ class MySql extends KataChallenge
         SQL;
 
         $params = [
-            'limit' => $limit + 1,
+            'limit' => $limit,
         ];
 
         $value = $this->select($sql, $params);
@@ -43,7 +43,7 @@ class MySql extends KataChallenge
         AVG(E.rate) AS `rate`
         FROM exchange_rates E
         WHERE
-        E.id < :limit AND
+        E.id <= :limit AND
         (
             E.target_currency_code = 'AED' OR
             E.target_currency_code = 'EUR' OR
@@ -54,7 +54,7 @@ class MySql extends KataChallenge
         SQL;
 
         $params = [
-            'limit' => $limit + 1,
+            'limit' => $limit,
         ];
 
         $value = $this->selectOne($sql, $params)->rate;

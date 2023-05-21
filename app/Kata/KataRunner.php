@@ -540,7 +540,7 @@ class KataRunner
             ));
 
             $executionTimeSum += Benchmark::measure(function () use ($instance, $methodName, $iteration, &$outputs) {
-                $outputs[] = $instance->{$methodName}($iteration);
+                $outputs[] = $instance->{$methodName}($iteration + 1);
             });
 
             $memoryUsageSum += $instance->getMemoryUsage();

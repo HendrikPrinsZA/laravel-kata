@@ -40,7 +40,7 @@ class Sample extends KataChallenge
         };
 
         $result = '';
-        for ($i = 1; $i <= $limit + 1; $i++) {
+        for ($i = 1; $i <= $limit; $i++) {
             $output = '';
 
             if ($isDivisible($i, 3)) {

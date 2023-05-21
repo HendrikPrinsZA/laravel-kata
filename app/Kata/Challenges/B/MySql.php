@@ -14,13 +14,13 @@ class MySql extends AMySql
         AVG(E.rate) AS `rate`
         FROM exchange_rates E
         WHERE
-        E.id < :limit AND
+        E.id <= :limit AND
         E.target_currency_code IN ('AED', 'EUR', 'GBP', 'USD', 'ZAR')
         GROUP BY E.target_currency_code
         SQL;
 
         $params = [
-            'limit' => $limit + 1,
+            'limit' => $limit,
         ];
 
         $value = $this->select($sql, $params);
@@ -35,12 +35,12 @@ class MySql extends AMySql
         AVG(E.rate) AS `rate`
         FROM exchange_rates E
         WHERE
-        E.id < :limit AND
+        E.id <= :limit AND
         E.target_currency_code IN ('AED', 'EUR', 'GBP', 'USD', 'ZAR')
         SQL;
 
         $params = [
-            'limit' => $limit + 1,
+            'limit' => $limit,
         ];
 
         $value = $this->selectOne($sql, $params)->rate;

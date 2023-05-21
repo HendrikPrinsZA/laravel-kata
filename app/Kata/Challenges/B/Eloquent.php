@@ -10,7 +10,7 @@ class Eloquent extends AEloquent
 {
     public function getCollectionAverage(int $limit): ?float
     {
-        $value = ExchangeRate::where('id', '<=', $limit + 1)->avg('id');
+        $value = ExchangeRate::where('id', '<=', $limit)->avg('id');
 
         return $this->return($value);
     }
@@ -19,7 +19,7 @@ class Eloquent extends AEloquent
     {
         $value = ExchangeRate::select('id')
             ->distinct()
-            ->where('id', '<=', $limit + 1)
+            ->where('id', '<=', $limit)
             ->pluck('id');
 
         return $this->return($value);
@@ -27,14 +27,14 @@ class Eloquent extends AEloquent
 
     public function getCollectionCount(int $limit): int
     {
-        $value = ExchangeRate::where('id', '<=', $limit + 1)->count();
+        $value = ExchangeRate::where('id', '<=', $limit)->count();
 
         return $this->return($value);
     }
 
     public function getCollectionRelatedCount(int $limit): int
     {
-        $value = User::where('id', '<=', $limit + 1)
+        $value = User::where('id', '<=', $limit)
             ->orderByDesc('id')
             ->first()
             ?->blogs()->count() ?? 0;
@@ -44,7 +44,7 @@ class Eloquent extends AEloquent
 
     public function getMaxVersusOrder(int $limit): float
     {
-        $value = ExchangeRate::where('id', '<=', $limit + 1)->max('rate');
+        $value = ExchangeRate::where('id', '<=', $limit)->max('rate');
 
         return $this->return($value);
     }

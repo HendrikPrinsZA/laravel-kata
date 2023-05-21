@@ -19,7 +19,7 @@ class Sample extends ASample
             '|1' => 'Buzz',
             '1|' => 'Fizz',
         ];
-        for ($i = 1; $i <= $limit + 1; $i++) {
+        for ($i = 1; $i <= $limit; $i++) {
             $mod1 = $i % 3 == 0;
             $mod2 = $i % 5 == 0;
 
