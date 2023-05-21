@@ -21,7 +21,7 @@ class Eloquent extends KataChallenge
     public function getCollectionAverage(int $limit): ?float
     {
         $value = ExchangeRate::all()
-            ->where('id', '<=', $limit)
+            ->where('id', '<=', $limit + 1)
             ->sortBy('id')
             ->average('id');
 
@@ -34,7 +34,7 @@ class Eloquent extends KataChallenge
     public function getCollectionUnique(int $limit): iterable
     {
         $value = ExchangeRate::all()
-            ->where('id', '<=', $limit)
+            ->where('id', '<=', $limit + 1)
             ->pluck('id')
             ->unique();
 
@@ -47,7 +47,7 @@ class Eloquent extends KataChallenge
     public function getCollectionCount(int $limit): int
     {
         $value = ExchangeRate::query()
-            ->where('id', '<=', $limit)
+            ->where('id', '<=', $limit + 1)
             ->get()
             ->count();
 
@@ -64,19 +64,17 @@ class Eloquent extends KataChallenge
     public function getCollectionRelatedCount(int $limit): int
     {
         $value = User::all()
-            ->where('id', '<=', $limit)
+            ->where('id', '<=', $limit + 1)
             ->last()
             ?->blogs->count() ?? 0;
 
         return $this->return($value);
     }
 
-    public function getMaxVersusOrder(): float
+    public function getMaxVersusOrder(int $limit): float
     {
-        $minId = ExchangeRate::min('id');
-
         $value = ExchangeRate::query()
-            ->where('id', '<=', $minId + 1)
+            ->where('id', '<=', $limit + 1)
             ->orderByDesc('rate')
             ->first()?->rate;
 

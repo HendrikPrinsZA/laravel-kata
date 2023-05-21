@@ -16,7 +16,7 @@ class MySql extends KataChallenge
         AVG(E.rate) AS `rate`
         FROM exchange_rates E
         WHERE
-        E.date > DATE(:dateFrom) AND
+        E.id < :limit AND
         (
             E.target_currency_code = 'AED' OR
             E.target_currency_code = 'EUR' OR
@@ -28,10 +28,36 @@ class MySql extends KataChallenge
         SQL;
 
         $params = [
-            'dateFrom' => now()->subDays($limit),
+            'limit' => $limit + 1,
         ];
 
         $value = $this->select($sql, $params);
+
+        return $this->return($value);
+    }
+
+    public function orVersusInAggregate(int $limit): float
+    {
+        $sql = <<<'SQL'
+        SELECT
+        AVG(E.rate) AS `rate`
+        FROM exchange_rates E
+        WHERE
+        E.id < :limit AND
+        (
+            E.target_currency_code = 'AED' OR
+            E.target_currency_code = 'EUR' OR
+            E.target_currency_code = 'GBP' OR
+            E.target_currency_code = 'USD' OR
+            E.target_currency_code = 'ZAR'
+        )
+        SQL;
+
+        $params = [
+            'limit' => $limit + 1,
+        ];
+
+        $value = $this->selectOne($sql, $params)->rate;
 
         return $this->return($value);
     }
