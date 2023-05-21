@@ -24,6 +24,11 @@ The greatest collection of the worst code.
 - Expose common mistakes
 - Lab to theorycraft mechanics
 
+### Dependencies
+- Docker
+- Composer
+- NPM
+
 ## Getting started
 ```
 npm i

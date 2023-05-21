@@ -58,11 +58,11 @@ fi
 
 echo "Running in local"
 
+# Install dependencies
+composer install
+
 # Launch sail environment
 ./vendor/bin/sail down && ./vendor/bin/sail up -d --build
-
-# Install dependencies
-./vendor/bin/sail composer install
 
 docker exec -it kata-mysql mysql -uroot -p$DB_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS $DB_DATABASE; CREATE DATABASE $DB_DATABASE;"
 docker exec -it kata-mysql mysql -uroot -p$DB_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS $DB_TEST_DATABASE; CREATE DATABASE $DB_TEST_DATABASE;"
