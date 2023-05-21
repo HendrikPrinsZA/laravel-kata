@@ -103,3 +103,17 @@ Route::get('kata/{challenge}/run', function (Request $request, string $challenge
         'data' => $data,
     ]);
 });
+
+Route::get('kata/{mode}/{challenge}/{method}', function (Request $request, string $mode, string $challenge, string $method) {
+    $iteration = $request->get('iteration', 1);
+    $challengeClass = sprintf('App\\Kata\\Challenges\\%s\\%s', $mode, $challenge);
+    $challenge = app()->make($challengeClass);
+
+    $output = $challenge->{$method}($iteration);
+
+    return JsonResource::make([
+        'success' => true,
+        'data' => $output,
+        'iteration' => $iteration,
+    ]);
+});

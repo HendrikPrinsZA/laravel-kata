@@ -84,7 +84,7 @@ class KataRunner
         }
     }
 
-    public function run(): array
+    public function run(?string $method = null): array
     {
         $this->command?->info('Laravel Kata Run');
         $this->command?->table([
@@ -108,7 +108,7 @@ class KataRunner
         ]);
 
         foreach ($this->kataChallenges as $kataChallenge) {
-            $this->handleChallenge($kataChallenge);
+            $this->handleChallenge($kataChallenge, $method);
         }
 
         return [
@@ -381,8 +381,10 @@ class KataRunner
         return $result;
     }
 
-    protected function handleChallenge(string $kataChallenge): void
-    {
+    protected function handleChallenge(
+        string $kataChallenge,
+        ?string $method = null
+    ): void {
         $kataChallengeReflection = new ReflectionClass($kataChallenge);
 
         /** @var ReflectionMethod $reflectionMethod */
@@ -394,6 +396,10 @@ class KataRunner
 
             // We don't want to handle the base class
             if ($reflectionMethod->class === KataChallenge::class) {
+                continue;
+            }
+
+            if (is_null($method) || $reflectionMethod->name !== $method) {
                 continue;
             }
 
