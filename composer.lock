@@ -1511,22 +1511,22 @@
         },
         {
             "name": "jfcherng/php-diff",
-            "version": "6.14.2",
+            "version": "6.15.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jfcherng/php-diff.git",
-                "reference": "8b2bd0c987f69835a816642193d62a7c3664ca96"
+                "reference": "f6ad904329159348afe5ee83af1f603ab7cd3385"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jfcherng/php-diff/zipball/8b2bd0c987f69835a816642193d62a7c3664ca96",
-                "reference": "8b2bd0c987f69835a816642193d62a7c3664ca96",
+                "url": "https://api.github.com/repos/jfcherng/php-diff/zipball/f6ad904329159348afe5ee83af1f603ab7cd3385",
+                "reference": "f6ad904329159348afe5ee83af1f603ab7cd3385",
                 "shasum": ""
             },
             "require": {
                 "jfcherng/php-color-output": "^3",
                 "jfcherng/php-mb-string": "^1.4.6",
-                "jfcherng/php-sequence-matcher": "^3.2.9",
+                "jfcherng/php-sequence-matcher": "^3.2.10",
                 "php": ">=7.4"
             },
             "require-dev": {
@@ -1565,7 +1565,7 @@
             ],
             "support": {
                 "issues": "https://github.com/jfcherng/php-diff/issues",
-                "source": "https://github.com/jfcherng/php-diff/tree/6.14.2"
+                "source": "https://github.com/jfcherng/php-diff/tree/6.15.0"
             },
             "funding": [
                 {
@@ -1573,7 +1573,7 @@
                     "type": "custom"
                 }
             ],
-            "time": "2023-03-15T19:26:28+00:00"
+            "time": "2023-05-21T08:04:48+00:00"
         },
         {
             "name": "jfcherng/php-mb-string",
@@ -1632,16 +1632,16 @@
         },
         {
             "name": "jfcherng/php-sequence-matcher",
-            "version": "3.2.9",
+            "version": "3.2.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/jfcherng/php-sequence-matcher.git",
-                "reference": "5de2243aa611a66395d85ba1a9169b439bd13e4d"
+                "reference": "650164598be2c6ad6891dbd41de4cb5cc21cc91b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jfcherng/php-sequence-matcher/zipball/5de2243aa611a66395d85ba1a9169b439bd13e4d",
-                "reference": "5de2243aa611a66395d85ba1a9169b439bd13e4d",
+                "url": "https://api.github.com/repos/jfcherng/php-sequence-matcher/zipball/650164598be2c6ad6891dbd41de4cb5cc21cc91b",
+                "reference": "650164598be2c6ad6891dbd41de4cb5cc21cc91b",
                 "shasum": ""
             },
             "require": {
@@ -1676,7 +1676,7 @@
             "description": "A longest sequence matcher. The logic is primarily based on the Python difflib package.",
             "support": {
                 "issues": "https://github.com/jfcherng/php-sequence-matcher/issues",
-                "source": "https://github.com/jfcherng/php-sequence-matcher/tree/3.2.9"
+                "source": "https://github.com/jfcherng/php-sequence-matcher/tree/3.2.10"
             },
             "funding": [
                 {
@@ -1684,7 +1684,7 @@
                     "type": "custom"
                 }
             ],
-            "time": "2023-03-11T06:56:44+00:00"
+            "time": "2023-05-21T07:53:38+00:00"
         },
         {
             "name": "laminas/laminas-diactoros",
