@@ -17,14 +17,6 @@ class Blog extends Model
         'description',
     ];
 
-    /**
-     * Required for collection::upsert()
-     */
-    public array $collection_unique_attributes = [
-        'user_id',
-        'title',
-    ];
-
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

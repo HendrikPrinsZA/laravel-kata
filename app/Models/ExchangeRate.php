@@ -24,12 +24,6 @@ class ExchangeRate extends Model
         'rate' => 'float',
     ];
 
-    public array $collection_unique_attributes = [
-        'base_currency_id',
-        'target_currency_id',
-        'date',
-    ];
-
     public function baseCurrency(): BelongsTo
     {
         return $this->belongsTo(Currency::class);

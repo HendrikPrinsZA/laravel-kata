@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendors\SmartCommand\Traits;
+namespace Vendorize\LaravelPlus\Console\Commands\Traits;
 
 use Illuminate\Support\Facades\Cache;
 

@@ -13,7 +13,7 @@ class UserFactory extends Factory
 {
     public function definition()
     {
-        $safeEmail = fake()->unique()->safeEmail();
+        $safeEmail = sprintf('user-%s@fake.com', uniqid());
 
         return [
             'name' => fake()->name(),

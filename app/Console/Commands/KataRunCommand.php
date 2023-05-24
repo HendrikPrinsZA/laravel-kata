@@ -5,13 +5,13 @@ namespace App\Console\Commands;
 use App\Kata\Exceptions\KataChallengeScoreException;
 use App\Kata\KataRunner;
 use Illuminate\Console\Command;
-use Vendors\SmartCommand\Traits\SmartChoice;
+use Vendorize\LaravelPlus\Console\Commands\Traits\SmartChoice;
 
 class KataRunCommand extends Command
 {
     use SmartChoice;
 
-    protected $signature = 'kata:run {--all}';
+    protected $signature = 'kata:run {--all} {--challenge=*}';
 
     protected $description = 'Kata command POC';
 
@@ -21,6 +21,15 @@ class KataRunCommand extends Command
     {
         if ($this->option('all')) {
             return $this->handleRun();
+        }
+
+        $challenges = $this->option('challenge');
+        if (count($challenges) > 0) {
+            $challenges = collect($challenges)->map(
+                fn (string $challenge) => sprintf('App\\Kata\\Challenges\\A\\%s', $challenge)
+            )->toArray();
+
+            return $this->handleRun($challenges);
         }
 
         $classNames = collect(config('laravel-kata.challenges'))->map(

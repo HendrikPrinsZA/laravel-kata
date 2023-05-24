@@ -2,8 +2,10 @@
 
 namespace App\Kata;
 
+use App\Exceptions\KataChallengeException;
 use App\Kata\Enums\KataRunnerIterationMode;
 use App\Kata\Enums\KataRunnerMode;
+use App\Kata\Exceptions\KataChallengeBNotFoundException;
 use App\Kata\Exceptions\KataChallengeScoreException;
 use App\Kata\Objects\KataChallengeResultObject;
 use App\Kata\Traits\HasExitHintsTrait;
@@ -21,7 +23,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 
 class KataRunner
 {
-    use HasExitHintsTrait;
+    // use HasExitHintsTrait;
 
     protected const DEFAULT_MODES = [
         KataRunnerMode::A,
@@ -55,18 +57,18 @@ class KataRunner
 
         if (! empty($challenges)) {
             foreach ($challenges as $challengeClass) {
-                if (! in_array($challengeClass, $configChallenges)) {
-                    throw new Exception(sprintf(
-                        'Challenge not found in config "laravel-kata.challenges", expected: %s, available %s',
-                        $challengeClass,
-                        implode(', ', $configChallenges)
+                if (! class_exists($challengeClass)) {
+                    throw new KataChallengeException(sprintf(
+                        'Challenge not found: %s',
+                        $challengeClass
                     ));
                 }
 
-                if (! class_exists($challengeClass)) {
-                    throw new Exception(sprintf(
-                        'Challenge not found: %s',
-                        $challengeClass
+                if (! in_array($challengeClass, $configChallenges)) {
+                    throw new KataChallengeException(sprintf(
+                        'Challenge not found in config "laravel-kata.challenges", expected: %s, available %s',
+                        $challengeClass,
+                        implode(', ', $configChallenges)
                     ));
                 }
             }
@@ -309,6 +311,10 @@ class KataRunner
                         : 0;
                 }
 
+                if ($value1 > $value2) {
+                    $percDiff *= -1;
+                }
+
                 $success = $value1 <= $value2;
             }
 
@@ -372,11 +378,12 @@ class KataRunner
             Storage::disk('local')->put($filePath, json_encode($result));
         }
 
-        if (config('laravel-kata.debug-mode')) {
-            $this->addExitHintsFromViolations($statsA['violations']);
-        }
+        // Disabled for now
+        // if (config('laravel-kata.debug-mode')) {
+        //     $this->addExitHintsFromViolations($statsA['violations']);
+        // }
 
-        $this->addExitHintsFromViolations($statsB['violations']);
+        // $this->addExitHintsFromViolations($statsB['violations']);
 
         return $result;
     }
@@ -433,6 +440,13 @@ class KataRunner
         $targetClass = $reflectionMethod->class;
         if ($mode === KataRunnerMode::B) {
             $targetClass = str_replace('\\A\\', '\\B\\', $reflectionMethod->class);
+
+            if (! class_exists($targetClass)) {
+                throw new KataChallengeBNotFoundException(sprintf(
+                    'Expected class %s not found',
+                    $targetClass
+                ));
+            }
 
             // Change reflection method based on the mode
             $reflectionClass = new ReflectionClass($targetClass);

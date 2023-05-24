@@ -21,11 +21,6 @@ class Currency extends Model
         'code' => CurrencyCode::class,
     ];
 
-    /**
-     * Required for collection::upsert()
-     */
-    public string $collection_unique_attributes = 'code';
-
     public function countries(): HasMany
     {
         return $this->hasMany(Country::class);

@@ -11,7 +11,7 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasCollection, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, HasCollection, Notifiable;
 
     protected $fillable = [
         'name',
@@ -24,11 +24,6 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
-
-    /**
-     * Required for collection::upsert()
-     */
-    public string $collection_unique_attributes = 'email';
 
     public function blogs(): HasMany
     {
