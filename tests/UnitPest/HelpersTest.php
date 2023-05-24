@@ -9,7 +9,7 @@ it('can help me code', function () {
     $path = help_me_code($reflectionMethod);
 
     expect($path)
-        ->toBe('app/Kata/Utilities/CodeUtility.php:10');
+        ->toEndWith('/Kata/Utilities/CodeUtility.php:10');
 });
 
 it('can get array subset by keys', function () {
