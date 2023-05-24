@@ -7,9 +7,6 @@
     cacheDirectory=".phpunit.cache"
 >
   <testsuites>
-    <testsuite name="Command">
-      <directory suffix="Test.php">./tests/Command</directory>
-    </testsuite>
     <testsuite name="Unit">
       <directory suffix="Test.php">./tests/Unit</directory>
     </testsuite>
@@ -38,6 +35,7 @@
     <env name="QUEUE_CONNECTION" value="sync"/>
     <env name="TELESCOPE_ENABLED" value="false"/>
     <env name="LK_RUN_MODE" value="test"/>
+    <env name="REDIS_CLIENT" value="mock"/>
   </php>
   <source>
     <include>

@@ -15,10 +15,15 @@ class KataTestCommand extends Command
 
     public function handle(): int
     {
-        $this->testConnection();
-        $this->testConnection('testing');
+        if (! $this->testConnection()) {
+            return self::FAILURE;
+        }
 
-        return 0;
+        if (! $this->testConnection('testing')) {
+            return self::FAILURE;
+        }
+
+        return self::SUCCESS;
     }
 
     protected function testConnection($connection = 'mysql'): bool

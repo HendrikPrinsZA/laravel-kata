@@ -10,18 +10,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Country extends Model
 {
-    use HasCollection, HasFactory;
+    use HasFactory, HasCollection;
 
     protected $fillable = [
         'currency_id',
         'code',
         'name',
     ];
-
-    /**
-     * Required for collection::upsert()
-     */
-    public string $collection_unique_attributes = 'code';
 
     public function currency(): BelongsTo
     {

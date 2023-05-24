@@ -3,6 +3,7 @@
 namespace App\Kata\Traits;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Config;
 
 trait HasExitHintsTrait
 {
@@ -12,11 +13,15 @@ trait HasExitHintsTrait
 
     public function __destruct()
     {
+        if (app()->runningUnitTests()) {
+            return;
+        }
+
         if (! isset($this->command) || is_null($this->command)) {
             return;
         }
 
-        if (! config('laravel-kata.show-hints')) {
+        if (! Config::get('laravel-kata.show-hints')) {
             return;
         }
 
@@ -42,7 +47,7 @@ trait HasExitHintsTrait
     protected function addExitHintsFromViolations(array $violations): void
     {
         if (is_null($this->showHintsExtended)) {
-            $this->showHintsExtended = config('laravel-kata.show-hints-extended', false);
+            $this->showHintsExtended = Config::get('laravel-kata.show-hints-extended', false);
         }
 
         $hintKeys = [

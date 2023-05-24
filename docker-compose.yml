@@ -7,7 +7,7 @@ services:
             context: ./docker/8.2
             dockerfile: Dockerfile
             args:
-                CI_MODE: '${CI_MODE}'
+                CI_MODE: '${CI_MODE:-local}'
                 WWWGROUP: '${WWWGROUP}'
         extra_hosts:
             - 'host.docker.internal:host-gateway'
