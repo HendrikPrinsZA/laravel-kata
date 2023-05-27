@@ -23,7 +23,7 @@ use Symfony\Component\Console\Helper\ProgressBar;
 
 class KataRunner
 {
-    // use HasExitHintsTrait;
+    use HasExitHintsTrait;
 
     protected const DEFAULT_MODES = [
         KataRunnerMode::A,
@@ -383,7 +383,7 @@ class KataRunner
         //     $this->addExitHintsFromViolations($statsA['violations']);
         // }
 
-        // $this->addExitHintsFromViolations($statsB['violations']);
+        $this->addExitHintsFromViolations($statsB['violations']);
 
         return $result;
     }

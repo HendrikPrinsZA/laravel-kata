@@ -7,21 +7,19 @@ use Illuminate\Support\Facades\Config;
 
 trait HasExitHintsTrait
 {
+    protected ?bool $showHints = null;
+
     protected ?bool $showHintsExtended = null;
 
     protected ?Collection $exitHints = null;
 
     public function __destruct()
     {
-        if (app()->runningUnitTests()) {
+        if (! $this->showHints) {
             return;
         }
 
         if (! isset($this->command) || is_null($this->command)) {
-            return;
-        }
-
-        if (! Config::get('laravel-kata.show-hints')) {
             return;
         }
 
@@ -46,8 +44,12 @@ trait HasExitHintsTrait
 
     protected function addExitHintsFromViolations(array $violations): void
     {
+        if (is_null($this->showHints)) {
+            $this->showHints = Config::get('laravel-kata.show-hints-extended', false);
+        }
+
         if (is_null($this->showHintsExtended)) {
-            $this->showHintsExtended = Config::get('laravel-kata.show-hints-extended', false);
+            $this->showHintsExtended = Config::get('laravel-kata.show-hints', false);
         }
 
         $hintKeys = [

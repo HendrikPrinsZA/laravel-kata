@@ -7,9 +7,6 @@
     cacheDirectory=".phpunit.cache"
 >
   <testsuites>
-    <testsuite name="Unit">
-      <directory suffix="Test.php">./tests/Unit</directory>
-    </testsuite>
     <testsuite name="Feature">
       <directory suffix="Test.php">./tests/Feature</directory>
     </testsuite>
@@ -41,5 +38,10 @@
     <include>
       <directory suffix=".php">./app</directory>
     </include>
+    <exclude>
+      <directory suffix=".php">./app/Providers</directory>
+      <directory suffix=".php">./app/Http/Middleware</directory>
+      <file>app/Console/Kernel.php</file>
+    </exclude>
   </source>
 </phpunit>

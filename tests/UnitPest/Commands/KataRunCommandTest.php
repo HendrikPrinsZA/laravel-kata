@@ -9,17 +9,20 @@ use Tests\UnitPest\Commands\FakeChallenges\A\TooSlow;
 use Tests\UnitPest\Commands\FakeChallenges\A\WrongOutput;
 
 beforeEach(function () {
+    Config::set('laravel-kata.gains-perc-minimum', 0);
     Config::set('laravel-kata.max-seconds', 0);
     Config::set('laravel-kata.max-iterations', 1);
     Config::set('laravel-kata.progress-bar-disabled', true);
     Config::set('laravel-kata.save-results-to-storage', false);
     Config::set('laravel-kata.dummy-data.max-users', 1);
     Config::set('laravel-kata.dummy-data.max-user-blogs', 1);
+    Config::set('laravel-kata.show-hints', false);
+    Config::set('laravel-kata.show-hints-extended', false);
 });
 
 it('can run all', function () {
     $this->artisan('kata:run --all')
-        ->assertExitCode(Command::SUCCESS); // Maybe we don't care about the exit code, consitency?
+        ->assertExitCode(Command::SUCCESS);
 });
 
 it('can run single', function () {

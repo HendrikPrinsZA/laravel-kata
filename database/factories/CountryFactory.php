@@ -12,7 +12,7 @@ class CountryFactory extends Factory
 {
     public function definition()
     {
-        $countries = CountryCode::all();
+        $countries = CountryCode::all(); // This is wrong!
         $countryCode = $this->faker->randomElement($countries->keys());
 
         return $countries[$countryCode];
