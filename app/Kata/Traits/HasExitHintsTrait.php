@@ -45,11 +45,11 @@ trait HasExitHintsTrait
     protected function addExitHintsFromViolations(array $violations): void
     {
         if (is_null($this->showHints)) {
-            $this->showHints = Config::get('laravel-kata.show-hints-extended', false);
+            $this->showHints = Config::get('laravel-kata.show-hints', false);
         }
 
         if (is_null($this->showHintsExtended)) {
-            $this->showHintsExtended = Config::get('laravel-kata.show-hints', false);
+            $this->showHintsExtended = Config::get('laravel-kata.show-hints-extended', false);
         }
 
         $hintKeys = [
