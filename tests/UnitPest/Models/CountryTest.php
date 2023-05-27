@@ -14,3 +14,11 @@ it('can get exchange rates aggregates', function () {
         ->exchangeRatesMax->toBe(20.872)
         ->exchangeRatesCount->toBe(1827);
 });
+
+it('can make model', function () {
+    $country = Country::factory()->make();
+
+    expect($country)
+        ->toBeInstanceOf(Country::class)
+        ->id->toBeNull();
+});

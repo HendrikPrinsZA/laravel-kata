@@ -62,11 +62,11 @@ echo "Running in local"
 composer install
 
 # Launch sail environment
-./vendor/bin/sail down && ./vendor/bin/sail up -d --build
+./vendor/bin/sail down --rmi local -v && ./vendor/bin/sail up -d --build
 
 docker exec -it kata-mysql mysql -uroot -p$DB_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS $DB_DATABASE; CREATE DATABASE $DB_DATABASE;"
 docker exec -it kata-mysql mysql -uroot -p$DB_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS $DB_TEST_DATABASE; CREATE DATABASE $DB_TEST_DATABASE;"
 docker exec -it kata-mysql mysql -uroot -p$DB_ROOT_PASSWORD -e "GRANT ALL PRIVILEGES ON *.* TO '$DB_USERNAME'@'%'; FLUSH PRIVILEGES;"
 
-./vendor/bin/sail artisan migrate:fresh --env=$APP_ENV --database=$DB_DATABASE  --seed --force --no-interaction
+./vendor/bin/sail artisan migrate:fresh --env=$APP_ENV --database=$DB_DATABASE --seed --force --no-interaction
 ./vendor/bin/sail artisan migrate:fresh --env=testing --database=$DB_TEST_DATABASE --seed --force --no-interaction

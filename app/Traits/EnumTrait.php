@@ -8,10 +8,6 @@ trait EnumTrait
 {
     private function getMappingDetails(self $case): array
     {
-        if (method_exists($this, 'mappingDetails')) {
-            return $this->mappingDetails()[$case->value];
-        }
-
         if (method_exists($this, 'details')) {
             return $this->details();
         }
