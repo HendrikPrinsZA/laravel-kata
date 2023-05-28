@@ -9,19 +9,6 @@ use Illuminate\Testing\TestResponse;
 
 abstract class TestCase extends BaseTestCase
 {
-    const RESPONSE_STRUCTURES = [
-        'challenges' => [
-            'success' => 'boolean',
-            'data' => 'array',
-            'data.0' => 'string',
-        ],
-        'challenge' => [
-            'success' => 'boolean',
-            'data' => 'array',
-            'data.0' => 'string',
-        ],
-    ];
-
     use CreatesApplication;
 
     protected function setUp(): void

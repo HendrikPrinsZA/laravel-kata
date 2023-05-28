@@ -7,27 +7,48 @@ it('can connect', function () {
     $this->assertTrue(true);
 });
 
-test('parent', function () {
+test('get challenges', function () {
     $response = $this->get('/api/kata')
         ->assertStatus(200);
 
-    $this->assertJsonResponseFormat($response, self::RESPONSE_STRUCTURES['challenges']);
-    $this->assertTrue(true);
+    $this->assertJsonResponseFormat($response, [
+        'success' => 'boolean',
+        'data' => 'array',
+        'data.0' => 'string',
+    ]);
 
     return array_values($response->json('data'));
 });
 
-test('child', function (array $challenges) {
+test('get challenge methods', function (array $challenges) {
     $challengeMethods = [];
 
     foreach ($challenges as $challenge) {
         $response = $this->get(sprintf('/api/kata/%s', $challenge))
             ->assertStatus(200);
 
-        $this->assertJsonResponseFormat($response, self::RESPONSE_STRUCTURES['challenge']);
+        $this->assertJsonResponseFormat($response, [
+            'success' => 'boolean',
+            'data' => 'array',
+            'data.0' => 'string',
+        ]);
 
         $challengeMethods[$challenge] = $response->json('data');
     }
 
     return $challengeMethods;
-})->depends('parent');
+})->depends('get challenges');
+
+test('run challenge', function ($challenges) {
+    foreach ($challenges as $challenge) {
+        $response = $this->get(sprintf('/api/kata/%s/run', $challenge), [
+            'iterations' => 1,
+        ])->assertStatus(200);
+
+        $this->assertJsonResponseFormat($response, [
+            'success' => 'boolean',
+            'data' => 'array',
+            'data.report' => 'array',
+        ]);
+    }
+})->depends('get challenges');
