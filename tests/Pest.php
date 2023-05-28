@@ -1,6 +1,10 @@
 <?php
 
-use Tests\PestTestCase;
+use Tests\TestCaseData;
+use Tests\TestCaseNoData;
 
-uses(PestTestCase::class)
-    ->in(__DIR__);
+uses(TestCaseData::class)
+    ->in(sprintf('%s/%s', __DIR__, '/Data'));
+
+uses(TestCaseNoData::class)
+    ->in(sprintf('%s/%s', __DIR__, '/NoData'));

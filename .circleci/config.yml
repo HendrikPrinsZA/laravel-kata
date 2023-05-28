@@ -100,10 +100,8 @@ jobs:
       - setup-laravel
       - run:
           name: Run tests
-          # command: |
-          #   php artisan test --coverage
           command: |
-            php -d pcov.enabled=1 vendor/bin/pest \
+            php -d pcov.enabled=1 vendor/bin/pest --parallel --processes=4 \
               --coverage-clover=clover.xml \
               --log-junit ~/phpunit/junit.xml \
               --stop-on-failure
