@@ -14,9 +14,9 @@ use Illuminate\Support\Facades\Http;
 
 class ExchangeRateService
 {
-    protected const MAX_YEARS = 5;
+    public const API_HOST = 'https://api.exchangerate.host';
 
-    protected const API_HOST = 'https://api.exchangerate.host';
+    protected const MAX_YEARS = 5;
 
     public function getCurrencies(): CurrencyCollection
     {
@@ -40,10 +40,9 @@ class ExchangeRateService
         return $currencies;
     }
 
-    public function syncExchangeRates(): void
+    public function syncExchangeRates(?int $maxYears = null): void
     {
-        $dateStart = ExchangeRate::max('date') ?? now()->subYears(self::MAX_YEARS)->toDateString();
-
+        $dateStart = ExchangeRate::max('date') ?? now()->subYears($maxYears ?? self::MAX_YEARS)->toDateString();
         $dateStart = Carbon::createFromFormat('Y-m-d', $dateStart);
 
         // Check from yesterday
@@ -108,6 +107,10 @@ class ExchangeRateService
         }
 
         $rates = Http::get($url)->json('rates');
+
+        // Note: Used to reset the static cache (for testing)
+        // dd(json_encode($rates));
+
         Cache::set($cacheKey, $rates);
 
         return $rates;

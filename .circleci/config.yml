@@ -103,7 +103,7 @@ jobs:
           # command: |
           #   php artisan test --coverage
           command: |
-            php -d pcov.enabled=1 vendor/bin/pest \
+            php -d pcov.enabled=1 vendor/bin/pest --parallel \
               --coverage-clover=clover.xml \
               --log-junit ~/phpunit/junit.xml \
               --stop-on-failure

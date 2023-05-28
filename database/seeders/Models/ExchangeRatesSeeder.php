@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Cache;
 
 class ExchangeRatesSeeder extends ModelSeeder
 {
+    public const SNAPSHOT_DATE = '2023-05-27';
+
     public function __construct(
         protected ExchangeRateService $exchangeRateService
     ) {
@@ -16,9 +18,9 @@ class ExchangeRatesSeeder extends ModelSeeder
     public function seed(): void
     {
         if (app()->environment('testing')) {
-            Carbon::setTestNow(Carbon::parse('2022-05-17'));
+            Carbon::setTestNow(Carbon::parse(self::SNAPSHOT_DATE));
             $this->loadFxCache();
-            $this->exchangeRateService->syncExchangeRates();
+            $this->exchangeRateService->syncExchangeRates(1);
             Carbon::setTestNow();
 
             return;

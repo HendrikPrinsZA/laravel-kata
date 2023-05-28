@@ -7,14 +7,11 @@
     cacheDirectory=".phpunit.cache"
 >
   <testsuites>
-    <testsuite name="Feature">
-      <directory suffix="Test.php">./tests/Feature</directory>
+    <testsuite name="NoData">
+      <directory suffix="Test.php">./tests/NoData</directory>
     </testsuite>
-    <testsuite name="FeaturePest">
-      <directory suffix="Test.php">./tests/FeaturePest</directory>
-    </testsuite>
-    <testsuite name="UnitPest">
-      <directory suffix="Test.php">./tests/UnitPest</directory>
+    <testsuite name="Data">
+      <directory suffix="Test.php">./tests/Data</directory>
     </testsuite>
   </testsuites>
   <coverage/>
@@ -26,8 +23,6 @@
     <env name="CACHE_DRIVER" value="redis"/>
     <env name="SESSION_DRIVER" value="redis"/>
     <env name="SESSION_LIFETIME" value="120"/>
-    <env name="REDIS_PASSWORD" value="null"/>
-    <env name="REDIS_PORT" value="6379"/>
     <env name="MAIL_MAILER" value="array"/>
     <env name="QUEUE_CONNECTION" value="sync"/>
     <env name="TELESCOPE_ENABLED" value="false"/>

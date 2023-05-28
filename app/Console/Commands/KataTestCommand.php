@@ -28,19 +28,23 @@ class KataTestCommand extends Command
 
     protected function testConnection($connection = 'mysql'): bool
     {
+        $success = true;
+        $config = config(sprintf('database.connections.%s', $connection));
         try {
             /** @var MySqlConnection $connection */
             $connection = DB::connection($connection);
             $connection->getPDO();
             $connection->getDatabaseName();
-        } catch (Exception $e) {
-            $this->warn($e->getMessage());
-
-            return false;
+            $database = $connection->getDatabaseName();
+            $success = $database === $config['database'];
+        } catch (Exception $exception) {
+            $this->warn(sprintf('Database: %s (not connected)', $config['database']));
+            $this->warn($exception->getMessage());
+            $success = false;
         }
 
-        $this->info(sprintf('Database: %s', $connection->getDatabaseName()));
+        $this->info(sprintf('Database: %s (connected)', $config['database']));
 
-        return true;
+        return $success;
     }
 }

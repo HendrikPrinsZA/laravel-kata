@@ -30,9 +30,6 @@ enum CountryCode: string
     public function details(): array
     {
         $currencies = $this->getCurrencies();
-        if ($currencies->isEmpty()) {
-            throw new Exception('No currencies found');
-        }
 
         return match ($this) {
             self::AE => [
