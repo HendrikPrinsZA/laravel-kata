@@ -26,8 +26,10 @@
     <env name="MAIL_MAILER" value="array"/>
     <env name="QUEUE_CONNECTION" value="sync"/>
     <env name="TELESCOPE_ENABLED" value="false"/>
-    <env name="LK_RUN_MODE" value="test"/>
     <env name="REDIS_CLIENT" value="mock"/>
+    <env name="LK_RUN_MODE" value="test"/>
+    <env name="LK_DD_MAX_USERS" value="100"/>
+    <env name="LK_DD_MAX_USER_BLOGS" value="3"/>
   </php>
   <source>
     <include>
