@@ -2,16 +2,14 @@
 
 namespace App\Kata;
 
-use App\Exceptions\KataChallengeException;
 use App\Kata\Enums\KataRunnerIterationMode;
 use App\Kata\Enums\KataRunnerMode;
-use App\Kata\Exceptions\KataChallengeBNotFoundException;
+use App\Kata\Exceptions\KataChallengeNotFoundException;
 use App\Kata\Exceptions\KataChallengeScoreException;
 use App\Kata\Objects\KataChallengeResultObject;
 use App\Kata\Traits\HasExitHintsTrait;
 use App\Kata\Utilities\CodeUtility;
 use Carbon\Carbon;
-use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Benchmark;
 use Illuminate\Support\Facades\Cache;
@@ -58,14 +56,14 @@ class KataRunner
         if (! empty($challenges)) {
             foreach ($challenges as $challengeClass) {
                 if (! class_exists($challengeClass)) {
-                    throw new KataChallengeException(sprintf(
+                    throw new KataChallengeNotFoundException(sprintf(
                         'Challenge not found: %s',
                         $challengeClass
                     ));
                 }
 
                 if (! in_array($challengeClass, $configChallenges)) {
-                    throw new KataChallengeException(sprintf(
+                    throw new KataChallengeNotFoundException(sprintf(
                         'Challenge not found in config "laravel-kata.challenges", expected: %s, available %s',
                         $challengeClass,
                         implode(', ', $configChallenges)
@@ -237,7 +235,7 @@ class KataRunner
 
     protected function report(...$args): void
     {
-        if (app()->runningInConsole()) {
+        if (app()->runningInConsole() && ! is_null($this->command)) {
             $this->reportConsole(...$args);
 
             return;
@@ -442,7 +440,7 @@ class KataRunner
             $targetClass = str_replace('\\A\\', '\\B\\', $reflectionMethod->class);
 
             if (! class_exists($targetClass)) {
-                throw new KataChallengeBNotFoundException(sprintf(
+                throw new KataChallengeNotFoundException(sprintf(
                     'Expected class %s not found',
                     $targetClass
                 ));
@@ -451,10 +449,6 @@ class KataRunner
             // Change reflection method based on the mode
             $reflectionClass = new ReflectionClass($targetClass);
             $reflectionMethod = $reflectionClass->getMethod($reflectionMethod->name);
-        }
-
-        if (! class_exists($targetClass)) {
-            throw new Exception(sprintf('Class not found %s', $targetClass));
         }
 
         /** @var KataChallenge $instance */
@@ -503,26 +497,16 @@ class KataRunner
             return Cache::get($cacheKey);
         }
 
-        $response = null;
-        switch ($kataRunnerIterationMode) {
-            case KataRunnerIterationMode::MAX_ITERATIONS:
-                $response = $this->runChallengeMethodMaxIterations(
-                    $reflectionMethod,
-                    $maxIterations
-                );
-                break;
-            case KataRunnerIterationMode::MAX_SECONDS:
-                $response = $this->runChallengeMethodMaxSeconds(
-                    $reflectionMethod,
-                    $maxSeconds
-                );
-                break;
-            default:
-                throw new Exception(sprintf(
-                    'Unexpected kata run iteration mode of "%s"',
-                    $kataRunnerIterationMode->value
-                ));
-        }
+        $response = match ($kataRunnerIterationMode) {
+            KataRunnerIterationMode::MAX_ITERATIONS => $this->runChallengeMethodMaxIterations(
+                $reflectionMethod,
+                $maxIterations
+            ),
+            KataRunnerIterationMode::MAX_SECONDS => $this->runChallengeMethodMaxSeconds(
+                $reflectionMethod,
+                $maxSeconds
+            )
+        };
 
         if (config('laravel-kata.experimental.cache-results')) {
             Cache::set($cacheKey, $response);

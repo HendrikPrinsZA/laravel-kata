@@ -1,12 +1,13 @@
 <?php
 
 use App\Exceptions\KataChallengeException;
-use App\Kata\Exceptions\KataChallengeBNotFoundException;
+use App\Kata\Exceptions\KataChallengeNotFoundException;
+use App\Models\Blog;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
-use Tests\UnitPest\Commands\FakeChallenges\A\NotFoundB;
-use Tests\UnitPest\Commands\FakeChallenges\A\TooSlow;
-use Tests\UnitPest\Commands\FakeChallenges\A\WrongOutput;
+use Tests\Data\Console\Commands\FakeChallenges\A\NotFound;
+use Tests\Data\Console\Commands\FakeChallenges\A\TooSlow;
+use Tests\Data\Console\Commands\FakeChallenges\A\WrongOutput;
 
 beforeEach(function () {
     Config::set('laravel-kata.gains-perc-minimum', 0);
@@ -32,50 +33,69 @@ it('can run single', function () {
         ->assertExitCode(Command::SUCCESS);
 });
 
-// it('can run by challenge', function () {
-//     $this->artisan('kata:run --challenge=Sample')
-//         ->assertExitCode(Command::SUCCESS);
-// });
+it('can run by challenge', function () {
+    $this->artisan('kata:run --challenge=Sample')
+        ->assertExitCode(Command::SUCCESS);
+});
 
-// it('fails on challenge that does not exist', function () {
-//     $this->expectException(KataChallengeException::class);
-//     $this->artisan('kata:run --challenge=ClassDoesNotExist');
-// });
+it('fails on wrong output', function () {
+    Config::set('laravel-kata.challenges', [
+        WrongOutput::class,
+    ]);
 
-// it('fails on challenge not in config', function () {
-//     Config::set('laravel-kata.challenges', [
-//         WrongOutput::class,
-//     ]);
+    $this->artisan('kata:run --all')
+        ->expectsOutputToContain('Outputs does not match')
+        ->assertExitCode(Command::FAILURE);
+});
 
-//     $this->expectException(KataChallengeException::class);
-//     $this->artisan('kata:run --challenge=Sample');
-// });
+it('fails on too slow', function () {
+    Config::set('laravel-kata.challenges', [
+        TooSlow::class,
+    ]);
 
-// it('fails on wrong output', function () {
-//     Config::set('laravel-kata.challenges', [
-//         WrongOutput::class,
-//     ]);
+    $this->artisan('kata:run --all')
+        ->expectsOutputToContain('Score is lower than expected')
+        ->assertExitCode(Command::FAILURE);
+});
 
-//     $this->artisan('kata:run --all')
-//         ->expectsOutputToContain('Outputs does not match')
-//         ->assertExitCode(Command::FAILURE);
-// });
+it('fails if A not found', function () {
+    Config::set('laravel-kata.challenges', [
+        'Not\\A\\Class',
+    ]);
 
-// it('fails on too slow', function () {
-//     Config::set('laravel-kata.challenges', [
-//         TooSlow::class,
-//     ]);
+    $this->expectException(KataChallengeNotFoundException::class);
+    $this->artisan('kata:run --all');
+});
 
-//     $this->artisan('kata:run --all')
-//         ->expectsOutputToContain('Score is lower than expected')
-//         ->assertExitCode(Command::FAILURE);
-// });
+it('fails if B not found', function () {
+    Config::set('laravel-kata.challenges', [
+        NotFound::class,
+    ]);
 
-// it('fails if B not found', function () {
-//     Config::set('laravel-kata.challenges', [
-//         NotFoundB::class,
-//     ]);
+    $this->expectException(KataChallengeNotFoundException::class);
+    $this->artisan('kata:run --all');
+});
 
-//     $this->expectException(KataChallengeBNotFoundException::class);
-//     $this->artisan('kata:run --all');
-// });
+it('fails on challenge that does not exist', function () {
+    $this->expectException(KataChallengeNotFoundException::class);
+    $this->artisan('kata:run --challenge=ClassDoesNotExist');
+});
+
+it('fails if challenge not in config', function () {
+    Config::set('laravel-kata.challenges', [
+        'Not\\A\\Class',
+    ]);
+
+    $this->expectException(KataChallengeNotFoundException::class);
+    $this->artisan('kata:run --challenge=Sample');
+});
+
+it('fails on expected model expty', function () {
+    Config::set('laravel-kata.challenges', [
+        NotFound::class,
+    ]);
+    Blog::truncate();
+
+    $this->expectException(KataChallengeException::class);
+    $this->artisan('kata:run --all');
+});
