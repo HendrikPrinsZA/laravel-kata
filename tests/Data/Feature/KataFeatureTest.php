@@ -2,6 +2,12 @@
 
 namespace Tests\Data\Feature;
 
+use Illuminate\Support\Facades\Config;
+
+beforeEach(function () {
+    Config::set('laravel-kata.gains-perc-minimum', -1);
+});
+
 it('can connect', function () {
     $this->get('/')->assertStatus(200);
     $this->assertTrue(true);
