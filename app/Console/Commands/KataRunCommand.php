@@ -61,6 +61,10 @@ class KataRunCommand extends Command
         try {
             $this->kataRunner->run();
         } catch (KataChallengeScoreException $exception) {
+            if (app()->runningUnitTests()) {
+                throw $exception;
+            }
+
             $this->line(wrap_in_format(sprintf('%s', $exception->getMessage()), false));
 
             return self::FAILURE;
