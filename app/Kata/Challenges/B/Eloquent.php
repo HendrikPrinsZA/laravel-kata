@@ -8,7 +8,7 @@ use App\Models\User;
 
 class Eloquent extends AEloquent
 {
-    public function getCollectionAverage(int $limit): ?float
+    public function getCollectionAverage(int $limit): float
     {
         $value = ExchangeRate::where('id', '<=', $limit)->avg('id');
 
@@ -45,6 +45,15 @@ class Eloquent extends AEloquent
     public function getMaxVersusOrder(int $limit): float
     {
         $value = ExchangeRate::where('id', '<=', $limit)->max('rate');
+
+        return $this->return($value);
+    }
+
+    public function eagerLoading(int $limit): float
+    {
+        $value = User::with('blogs')->where('id', '<=', $limit)->get()
+            ->reduce(
+                fn (int $total, User $user) => $total + $user->blogs->count(), 0);
 
         return $this->return($value);
     }

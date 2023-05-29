@@ -11,7 +11,7 @@ class KataRunCommand extends Command
 {
     use SmartChoice;
 
-    protected $signature = 'kata:run {--all} {--challenge=*}';
+    protected $signature = 'kata:run {--all} {--challenge=*} {--method=*}';
 
     protected $description = 'Kata command POC';
 
@@ -50,15 +50,21 @@ class KataRunCommand extends Command
         $configChallenges = config('laravel-kata.challenges');
 
         $challenges = ! empty($challenges) ? $challenges : $configChallenges;
+        $methods = $this->option('method');
 
         $this->kataRunner = app()->makeWith(KataRunner::class, [
             'command' => $this,
             'challenges' => $challenges,
+            'methods' => $methods,
         ]);
 
         try {
             $this->kataRunner->run();
         } catch (KataChallengeScoreException $exception) {
+            if (app()->runningUnitTests()) {
+                throw $exception;
+            }
+
             $this->line(wrap_in_format(sprintf('%s', $exception->getMessage()), false));
 
             return self::FAILURE;

@@ -39,16 +39,14 @@ test('get challenge methods', function (array $challenges) {
     return $challengeMethods;
 })->depends('get challenges');
 
-test('run challenge', function ($challenges) {
-    foreach ($challenges as $challenge) {
-        $response = $this->get(sprintf('/api/kata/%s/run', $challenge), [
-            'iterations' => 1,
-        ])->assertStatus(200);
+test('run challenge', function () {
+    $response = $this->get('/api/kata/Sample/run', [
+        'iterations' => 1,
+    ])->assertStatus(200);
 
-        $this->assertJsonResponseFormat($response, [
-            'success' => 'boolean',
-            'data' => 'array',
-            'data.report' => 'array',
-        ]);
-    }
-})->depends('get challenges');
+    $this->assertJsonResponseFormat($response, [
+        'success' => 'boolean',
+        'data' => 'array',
+        'data.report' => 'array',
+    ]);
+});

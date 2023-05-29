@@ -18,11 +18,10 @@ class Eloquent extends KataChallenge
     /**
      * Eloquent collections / Average
      */
-    public function getCollectionAverage(int $limit): ?float
+    public function getCollectionAverage(int $limit): float
     {
-        $value = ExchangeRate::all()
-            ->where('id', '<=', $limit)
-            ->sortBy('id')
+        $value = ExchangeRate::where('id', '<=', $limit)
+            ->get()
             ->average('id');
 
         return $this->return($value);
@@ -77,6 +76,18 @@ class Eloquent extends KataChallenge
             ->where('id', '<=', $limit)
             ->orderByDesc('rate')
             ->first()?->rate;
+
+        return $this->return($value);
+    }
+
+    public function eagerLoading(int $limit): float
+    {
+        $value = 0;
+
+        /** @var User $user */
+        foreach (User::where('id', '<=', $limit)->get() as $user) {
+            $value += $user->blogs()->count();
+        }
 
         return $this->return($value);
     }

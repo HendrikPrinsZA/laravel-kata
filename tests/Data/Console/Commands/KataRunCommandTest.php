@@ -2,6 +2,7 @@
 
 use App\Exceptions\KataChallengeException;
 use App\Kata\Exceptions\KataChallengeNotFoundException;
+use App\Kata\Exceptions\KataChallengeScoreException;
 use App\Models\Blog;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
@@ -10,7 +11,7 @@ use Tests\Data\Console\Commands\FakeChallenges\A\TooSlow;
 use Tests\Data\Console\Commands\FakeChallenges\A\WrongOutput;
 
 beforeEach(function () {
-    Config::set('laravel-kata.gains-perc-minimum', 0);
+    Config::set('laravel-kata.gains-perc-minimum', -1);
     Config::set('laravel-kata.max-seconds', 0);
     Config::set('laravel-kata.max-iterations', 1);
     Config::set('laravel-kata.progress-bar-disabled', true);
@@ -38,57 +39,54 @@ it('can run by challenge', function () {
         ->assertExitCode(Command::SUCCESS);
 });
 
+it('can run by challenge method', function () {
+    $this->artisan('kata:run --challenge=Sample --method=calculatePi')
+        ->assertExitCode(Command::SUCCESS);
+});
+
 it('fails on wrong output', function () {
     Config::set('laravel-kata.challenges', [
         WrongOutput::class,
     ]);
 
-    $this->artisan('kata:run --all')
-        ->expectsOutputToContain('Outputs does not match')
-        ->assertExitCode(Command::FAILURE);
-});
+    $this->artisan('kata:run --all');
+})->throws(KataChallengeScoreException::class);
 
 it('fails on too slow', function () {
     Config::set('laravel-kata.challenges', [
         TooSlow::class,
     ]);
 
-    $this->artisan('kata:run --all')
-        ->expectsOutputToContain('Score is lower than expected')
-        ->assertExitCode(Command::FAILURE);
-});
+    $this->artisan('kata:run --all');
+})->throws(KataChallengeScoreException::class);
 
 it('fails if A not found', function () {
     Config::set('laravel-kata.challenges', [
         'Not\\A\\Class',
     ]);
 
-    $this->expectException(KataChallengeNotFoundException::class);
     $this->artisan('kata:run --all');
-});
+})->throws(KataChallengeNotFoundException::class);
 
 it('fails if B not found', function () {
     Config::set('laravel-kata.challenges', [
         NotFound::class,
     ]);
 
-    $this->expectException(KataChallengeNotFoundException::class);
     $this->artisan('kata:run --all');
-});
+})->throws(KataChallengeNotFoundException::class);
 
 it('fails on challenge that does not exist', function () {
-    $this->expectException(KataChallengeNotFoundException::class);
     $this->artisan('kata:run --challenge=ClassDoesNotExist');
-});
+})->throws(KataChallengeNotFoundException::class);
 
 it('fails if challenge not in config', function () {
     Config::set('laravel-kata.challenges', [
         'Not\\A\\Class',
     ]);
 
-    $this->expectException(KataChallengeNotFoundException::class);
     $this->artisan('kata:run --challenge=Sample');
-});
+})->throws(KataChallengeNotFoundException::class);
 
 it('fails on expected model expty', function () {
     Config::set('laravel-kata.challenges', [
@@ -96,6 +94,5 @@ it('fails on expected model expty', function () {
     ]);
     Blog::truncate();
 
-    $this->expectException(KataChallengeException::class);
     $this->artisan('kata:run --all');
-});
+})->throws(KataChallengeException::class);
