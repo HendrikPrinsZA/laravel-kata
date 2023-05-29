@@ -38,6 +38,11 @@ it('can run by challenge', function () {
         ->assertExitCode(Command::SUCCESS);
 });
 
+it('can run by challenge method', function () {
+    $this->artisan('kata:run --challenge=Sample --method=calculatePi')
+        ->assertExitCode(Command::SUCCESS);
+});
+
 it('fails on wrong output', function () {
     Config::set('laravel-kata.challenges', [
         WrongOutput::class,

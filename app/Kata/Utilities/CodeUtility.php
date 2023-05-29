@@ -19,7 +19,6 @@ class CodeUtility
 
         $code = collect(array_slice($lines, $startLine, $length))
             ->map(fn ($line) => substr($line, 4))
-            ->map(fn ($line) => str_replace('  ', ' ', $line))
             ->map(fn ($line) => is_null($limit) ? $line : Str::limit($line, 80))
             ->join('');
 

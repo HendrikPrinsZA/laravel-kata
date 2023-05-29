@@ -47,7 +47,8 @@ class KataRunner
 
     public function __construct(
         protected ?Command $command = null,
-        protected array $challenges = []
+        protected array $challenges = [],
+        protected array $methods = []
     ) {
         $this->createdAt = now();
 
@@ -376,11 +377,7 @@ class KataRunner
             Storage::disk('local')->put($filePath, json_encode($result));
         }
 
-        // Disabled for now
-        // if (config('laravel-kata.debug-mode')) {
-        //     $this->addExitHintsFromViolations($statsA['violations']);
-        // }
-
+        $this->addExitHintsFromViolations($statsA['violations']);
         $this->addExitHintsFromViolations($statsB['violations']);
 
         return $result;
@@ -399,6 +396,11 @@ class KataRunner
 
             // We don't want to handle the base class
             if ($reflectionMethod->class === KataChallenge::class) {
+                continue;
+            }
+
+            // Filter by methods
+            if (! empty($this->methods) && ! in_array($reflectionMethod->name, $this->methods)) {
                 continue;
             }
 
