@@ -10,12 +10,10 @@
         "guzzlehttp/guzzle": "^7.2",
         "jfcherng/php-diff": "^6.12",
         "laravel/framework": "^10.0",
-        "laravel/octane": "^2.0",
         "laravel/sanctum": "^3.2",
         "laravel/tinker": "^2.7",
         "phpmd/phpmd": "^2.13",
         "predis/predis": "^2.0",
-        "spiral/roadrunner": "^2023.1",
         "tightenco/tlint": "^8.0"
     },
     "require-dev": {
