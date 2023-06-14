@@ -32,7 +32,7 @@ The greatest collection of the worst code.
 ## Getting started
 ```
 npm i
-npm run reset
+npm run restart
 
 ./vendor/bin/sail kata:run
 ```

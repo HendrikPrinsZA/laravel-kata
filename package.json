@@ -4,7 +4,7 @@
     "scripts": {
         "prepare": "husky install",
         "test": "./bin/test.sh",
-        "reset": "./bin/reset.sh",
+        "restart": "./bin/restart.sh",
         "benchmark": "./bin/benchmark.sh",
         "client:dev": "astro dev",
         "client:start": "astro dev",

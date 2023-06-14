@@ -11,7 +11,7 @@ use Tests\Data\Console\Commands\FakeChallenges\A\TooSlow;
 use Tests\Data\Console\Commands\FakeChallenges\A\WrongOutput;
 
 beforeEach(function () {
-    Config::set('laravel-kata.gains-perc-minimum', -1);
+    Config::set('laravel-kata.gains-perc-minimum', -100);
     Config::set('laravel-kata.max-seconds', 0);
     Config::set('laravel-kata.max-iterations', 1);
     Config::set('laravel-kata.progress-bar-disabled', true);
@@ -53,6 +53,7 @@ it('fails on wrong output', function () {
 })->throws(KataChallengeScoreException::class);
 
 it('fails on too slow', function () {
+    Config::set('laravel-kata.gains-perc-minimum', 0);
     Config::set('laravel-kata.challenges', [
         TooSlow::class,
     ]);
