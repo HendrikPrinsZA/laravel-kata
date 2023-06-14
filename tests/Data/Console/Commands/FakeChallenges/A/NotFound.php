@@ -2,7 +2,7 @@
 
 namespace Tests\Data\Console\Commands\FakeChallenges\A;
 
-use App\Kata\KataChallenge;
+use App\KataChallenge;
 use App\Models\Blog;
 
 class NotFound extends KataChallenge

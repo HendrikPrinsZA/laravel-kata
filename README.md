@@ -42,7 +42,7 @@ Calculate the value of pi.
 
 ### Solution A
 ```php
-namespace App\Kata\Challenges\A;
+namespace App\Challenges\A;
 
 class Sample
 {
@@ -66,7 +66,7 @@ class Sample
 
 ### Solution B
 ```php
-namespace App\Kata\Challenges\B;
+namespace App\Challenges\B;
 
 class Sample
 {

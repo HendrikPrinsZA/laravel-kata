@@ -1,12 +1,12 @@
 <?php
 
-use App\Kata\Challenges\A\Eloquent;
-use App\Kata\Challenges\A\Laravel;
-use App\Kata\Challenges\A\MySql;
-use App\Kata\Challenges\A\Php;
-use App\Kata\Challenges\A\Sample;
-use App\Kata\Enums\KataRunMode;
-use App\Kata\Exceptions\KataInvalidRunModeException;
+use App\Challenges\A\Eloquent;
+use App\Challenges\A\Laravel;
+use App\Challenges\A\MySql;
+use App\Challenges\A\Php;
+use App\Challenges\A\Sample;
+use App\Enums\KataRunMode;
+use App\Exceptions\KataInvalidRunModeException;
 
 $runMode = KataRunMode::tryFrom(env('LK_RUN_MODE', KataRunMode::DEBUG->value));
 if (is_null($runMode)) {

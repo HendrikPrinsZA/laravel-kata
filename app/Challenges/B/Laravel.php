@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Kata\Challenges\B;
+namespace App\Challenges\B;
 
-use App\Kata\Challenges\A\Laravel as ALaravel;
+use App\Challenges\A\Laravel as ALaravel;
 use App\Models\Country;
 use App\Services\CountryService;
 

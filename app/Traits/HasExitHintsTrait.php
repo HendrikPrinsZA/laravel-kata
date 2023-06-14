@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Kata\Traits;
+namespace App\Traits;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;

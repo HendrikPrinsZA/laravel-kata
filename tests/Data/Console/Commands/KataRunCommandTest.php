@@ -1,8 +1,8 @@
 <?php
 
 use App\Exceptions\KataChallengeException;
-use App\Kata\Exceptions\KataChallengeNotFoundException;
-use App\Kata\Exceptions\KataChallengeScoreException;
+use App\Exceptions\KataChallengeNotFoundException;
+use App\Exceptions\KataChallengeScoreException;
 use App\Models\Blog;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;

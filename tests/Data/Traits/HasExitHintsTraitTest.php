@@ -1,6 +1,6 @@
 <?php
 
-use App\Kata\Traits\HasExitHintsTrait;
+use App\Traits\HasExitHintsTrait;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Config;
 

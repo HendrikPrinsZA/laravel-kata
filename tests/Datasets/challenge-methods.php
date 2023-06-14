@@ -1,11 +1,11 @@
 <?php
 
-use App\Kata\Challenges\A\Eloquent;
-use App\Kata\Challenges\A\Laravel;
-use App\Kata\Challenges\A\MySql;
-use App\Kata\Challenges\A\Php;
-use App\Kata\Challenges\A\Sample;
-use App\Kata\KataChallenge;
+use App\Challenges\A\Eloquent;
+use App\Challenges\A\Laravel;
+use App\Challenges\A\MySql;
+use App\Challenges\A\Php;
+use App\Challenges\A\Sample;
+use App\KataChallenge;
 
 $challengeClasses = [
     Sample::class,

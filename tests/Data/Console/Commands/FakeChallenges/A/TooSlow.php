@@ -2,7 +2,7 @@
 
 namespace Tests\Data\Console\Commands\FakeChallenges\A;
 
-use App\Kata\KataChallenge;
+use App\KataChallenge;
 
 class TooSlow extends KataChallenge
 {

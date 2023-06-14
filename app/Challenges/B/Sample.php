@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Kata\Challenges\B;
+namespace App\Challenges\B;
 
-use App\Kata\Challenges\A\Sample as ASample;
+use App\Challenges\A\Sample as ASample;
 
 class Sample extends ASample
 {

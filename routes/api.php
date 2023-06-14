@@ -1,6 +1,6 @@
 <?php
 
-use App\Kata\KataRunner;
+use App\KataRunner;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Route;
@@ -59,7 +59,7 @@ Route::get('kata', function (Request $request) {
  */
 Route::get('kata/{challenge}', function (Request $request, string $challenge) {
     $class = sprintf(
-        'App\\Kata\\Challenges\\A\\%s',
+        'App\\Challenges\\A\\%s',
         $challenge
     );
 
@@ -92,7 +92,7 @@ Route::get('kata/{challenge}/run', function (Request $request, string $challenge
     $kataRunner = app()->makeWith(KataRunner::class, [
         'command' => null,
         'challenges' => [
-            sprintf('App\\Kata\\Challenges\\A\\%s', $challenge),
+            sprintf('App\\Challenges\\A\\%s', $challenge),
         ],
     ]);
 

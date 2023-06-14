@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Kata\Exceptions;
+namespace App\Exceptions;
 
 use Exception;
 

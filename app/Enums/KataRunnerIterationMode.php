@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Kata\Enums;
+namespace App\Enums;
 
 enum KataRunnerIterationMode: string
 {

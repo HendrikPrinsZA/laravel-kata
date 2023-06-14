@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Kata\Challenges\A;
+namespace App\Challenges\A;
 
 use App\Enums\CountryCode;
-use App\Kata\KataChallenge;
+use App\KataChallenge;
 use App\Models\Country;
 
 class Laravel extends KataChallenge

@@ -1,6 +1,6 @@
 <?php
 
-use App\Kata\Utilities\CodeUtility;
+use App\Utilities\CodeUtility;
 
 it('can help me code', function () {
     $reflectionClass = new ReflectionClass(CodeUtility::class);
@@ -9,7 +9,7 @@ it('can help me code', function () {
     $path = help_me_code($reflectionMethod);
 
     expect($path)
-        ->toEndWith('/Kata/Utilities/CodeUtility.php:10');
+        ->toEndWith('/Utilities/CodeUtility.php:10');
 });
 
 it('can get array subset by keys', function () {

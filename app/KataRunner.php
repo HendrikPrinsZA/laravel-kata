@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Kata;
+namespace App;
 
-use App\Kata\Enums\KataRunnerIterationMode;
-use App\Kata\Enums\KataRunnerMode;
-use App\Kata\Exceptions\KataChallengeNotFoundException;
-use App\Kata\Exceptions\KataChallengeScoreException;
-use App\Kata\Objects\KataChallengeResultObject;
-use App\Kata\Traits\HasExitHintsTrait;
-use App\Kata\Utilities\CodeUtility;
+use App\Enums\KataRunnerIterationMode;
+use App\Enums\KataRunnerMode;
+use App\Exceptions\KataChallengeNotFoundException;
+use App\Exceptions\KataChallengeScoreException;
+use App\Objects\KataChallengeResultObject;
+use App\Traits\HasExitHintsTrait;
+use App\Utilities\CodeUtility;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Benchmark;
@@ -103,7 +103,7 @@ class KataRunner
             [
                 'Challenges',
                 collect($this->kataChallenges)->map(
-                    fn ($challenge) => str_replace('App\\Kata\\Challenges\\A\\', '', $challenge)
+                    fn ($challenge) => str_replace('App\\Challenges\\A\\', '', $challenge)
                 )->join(', '),
             ],
         ]);

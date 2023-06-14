@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Kata\Utilities;
+namespace App\Utilities;
 
 use Illuminate\Support\Str;
 use ReflectionMethod;

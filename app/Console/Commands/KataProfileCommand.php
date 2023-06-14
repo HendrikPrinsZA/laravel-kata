@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use App\Kata\Challenges\A\Sample;
+use App\Challenges\A\Sample;
 use Illuminate\Console\Command;
 
 class KataProfileCommand extends Command

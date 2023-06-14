@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Kata\Challenges\B;
+namespace App\Challenges\B;
 
-use App\Kata\Challenges\A\Php as APhp;
+use App\Challenges\A\Php as APhp;
 
 class Php extends APhp
 {

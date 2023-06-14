@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Kata\Challenges\B;
+namespace App\Challenges\B;
 
-use App\Kata\Challenges\A\MySql as AMySql;
+use App\Challenges\A\MySql as AMySql;
 
 class MySql extends AMySql
 {

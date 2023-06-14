@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Kata\Challenges\B;
+namespace App\Challenges\B;
 
-use App\Kata\Challenges\A\Eloquent as AEloquent;
+use App\Challenges\A\Eloquent as AEloquent;
 use App\Models\ExchangeRate;
 use App\Models\User;
 

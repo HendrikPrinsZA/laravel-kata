@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Kata;
+namespace App;
 
 use App\Exceptions\KataChallengeException;
 use Illuminate\Http\Request;

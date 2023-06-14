@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Kata\Objects;
+namespace App\Objects;
 
-use App\Kata\Enums\KataRunnerIterationMode;
-use App\Kata\Utilities\CodeUtility;
+use App\Enums\KataRunnerIterationMode;
+use App\Utilities\CodeUtility;
 use Illuminate\Http\Resources\Json\JsonResource;
 use ReflectionMethod;
 use Symfony\Component\Process\Exception\ProcessFailedException;
