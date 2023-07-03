@@ -24,7 +24,7 @@
         "vite": "^4.0.3"
     },
     "dependencies": {
-        "@astrojs/svelte": "^3.0.0",
+        "@astrojs/svelte": "^3.1.0",
         "@astrojs/tailwind": "^4.0.0",
         "@astrojs/vue": "^2.1.1",
         "astro": "^2.4.5",
