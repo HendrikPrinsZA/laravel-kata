@@ -10,22 +10,6 @@ class Laravel extends KataChallenge
 {
     protected const MAX_INTERATIONS = 100;
 
-    public function modelMutationVersusServiceSingle(int $limit): float
-    {
-        $country = $this->getCountryByIndex($limit);
-        $country->setExchangeRatesAggregates();
-
-        $value = array_sum([
-            $country->exchangeRatesAvg,
-            $country->exchangeRatesSum,
-            $country->exchangeRatesMin,
-            $country->exchangeRatesMax,
-            $country->exchangeRatesCount,
-        ]);
-
-        return $this->return($value);
-    }
-
     public function modelMutationVersusServiceMultiple(): float
     {
         $total = 0;
