@@ -3,6 +3,7 @@
     "type": "module",
     "scripts": {
         "prepare": "husky install",
+        "bump": "./bin/bump.sh",
         "test": "./bin/test.sh",
         "restart": "./bin/restart.sh",
         "benchmark": "./bin/benchmark.sh",
