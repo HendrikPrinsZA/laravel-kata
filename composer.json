@@ -14,7 +14,7 @@
         "laravel/tinker": "^2.7",
         "phpmd/phpmd": "^2.13",
         "predis/predis": "^2.0",
-        "tightenco/tlint": "^8.0"
+        "tightenco/tlint": "^9.0"
     },
     "require-dev": {
         "brianium/paratest": "^7.1",
