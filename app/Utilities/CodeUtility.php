@@ -9,7 +9,7 @@ class CodeUtility
 {
     public static function getCodeSnippet(
         ReflectionMethod $reflectionMethod,
-        ?int $limit = null
+        int $limit = null
     ): string {
         $fileName = $reflectionMethod->getFileName();
         $startLine = $reflectionMethod->getStartLine() - 1;

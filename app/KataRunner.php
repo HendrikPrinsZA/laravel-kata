@@ -123,7 +123,7 @@ class KataRunner
     ): void {
         $reportData = $this->getReportData($resultA, $resultB);
 
-        $getScoreRow = function (string $field, ?string $title = null) use ($reportData): array {
+        $getScoreRow = function (string $field, string $title = null) use ($reportData): array {
             $valueA = data_get($reportData, sprintf('stats.a.%s', $field));
             $valueB = data_get($reportData, sprintf('stats.b.%s', $field));
 
