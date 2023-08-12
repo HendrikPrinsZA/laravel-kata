@@ -40,7 +40,7 @@ class ExchangeRateService
         return $currencies;
     }
 
-    public function syncExchangeRates(?int $maxYears = null): void
+    public function syncExchangeRates(int $maxYears = null): void
     {
         $dateStart = ExchangeRate::max('date') ?? now()->subYears($maxYears ?? self::MAX_YEARS)->toDateString();
         $dateStart = Carbon::createFromFormat('Y-m-d', $dateStart);
