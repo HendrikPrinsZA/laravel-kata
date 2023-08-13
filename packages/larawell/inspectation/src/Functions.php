@@ -9,7 +9,7 @@ if (! function_exists('inspect')) {
      * @template TValue
      *
      * @param  TValue|null  $value
-     * @return Expectation<TValue|null>
+     * @return Inspectation<TValue|null>
      */
     function inspect(mixed $value = null): Inspectation
     {
