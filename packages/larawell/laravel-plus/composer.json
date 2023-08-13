@@ -1,0 +1,21 @@
+{
+    "name": "larawell/laravel-plus",
+    "description": "Experimental Laravel Extensions",
+    "type": "composer-plugin",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Larawell\\LaravelPlus\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Hendrik Prinsloo",
+            "email": "info@hendrikprinsloo.co.za"
+        }
+    ],
+    "require": {
+        "php": "^8.1.0"
+    },
+    "require-dev": { }
+}

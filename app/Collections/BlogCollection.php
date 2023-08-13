@@ -2,7 +2,7 @@
 
 namespace App\Collections;
 
-use Vendorize\LaravelPlus\Collections\SmartCollection;
+use Larawell\LaravelPlus\Collections\SmartCollection;
 
 class BlogCollection extends SmartCollection
 {

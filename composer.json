@@ -33,13 +33,15 @@
     },
     "autoload": {
         "files": [
-            "app/helpers.php"
+            "app/helpers.php",
+            "packages/larawell/inspectation/src/Functions.php"
         ],
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
-            "Vendorize\\": "vendorize/"
+            "Larawell\\LaravelPlus\\": "packages/larawell/laravel-plus/src",
+            "Larawell\\Inspectation\\": "packages/larawell/inspectation/src"
         }
     },
     "autoload-dev": {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Vendorize\LaravelPlus\Exceptions;
+namespace Larawell\LaravelPlus\Exceptions;
 
 use Exception;
 
