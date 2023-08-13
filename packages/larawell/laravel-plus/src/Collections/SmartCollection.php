@@ -1,11 +1,11 @@
 <?php
 
-namespace Vendorize\LaravelPlus\Collections;
+namespace Larawell\LaravelPlus\Collections;
 
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection as SupportCollection;
-use Vendorize\LaravelPlus\Exceptions\SmartCollectionException;
+use Larawell\LaravelPlus\Exceptions\SmartCollectionException;
 
 class SmartCollection extends Collection
 {

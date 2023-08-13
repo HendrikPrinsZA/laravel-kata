@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use App\Exceptions\KataChallengeScoreException;
 use App\KataRunner;
 use Illuminate\Console\Command;
-use Vendorize\LaravelPlus\Console\Commands\Traits\SmartChoice;
+use Larawell\LaravelPlus\Console\Commands\Traits\SmartChoice;
 
 class KataRunCommand extends Command
 {
