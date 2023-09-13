@@ -2,6 +2,20 @@
 
 namespace Tests\Data\Feature;
 
+use Illuminate\Support\Facades\Config;
+
+beforeEach(function () {
+    Config::set('laravel-kata.gains-perc-minimum', -100);
+    Config::set('laravel-kata.max-seconds', 0);
+    Config::set('laravel-kata.max-iterations', 1);
+    Config::set('laravel-kata.progress-bar-disabled', true);
+    Config::set('laravel-kata.save-results-to-storage', false);
+    Config::set('laravel-kata.dummy-data.max-users', 1);
+    Config::set('laravel-kata.dummy-data.max-user-blogs', 1);
+    Config::set('laravel-kata.show-hints', false);
+    Config::set('laravel-kata.show-hints-extended', false);
+});
+
 it('can connect', function () {
     $this->get('/')->assertStatus(200);
     $this->assertTrue(true);
