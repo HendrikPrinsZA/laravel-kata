@@ -12,7 +12,3 @@ it('can seed', function () {
     expect(ExchangeRate::all()->avg('rate'))
         ->toBe(6.007963797814225);
 });
-
-// TODO: Test with clearing the cache
-// - Note: We shoulod not reach out to the external
-//         service, use ExchangeRateService::API_HOST to mock

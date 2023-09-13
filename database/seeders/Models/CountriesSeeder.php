@@ -12,7 +12,7 @@ class CountriesSeeder extends ModelSeeder
     {
         $countries = CountryCollection::make();
         CountryCode::all()->each(
-            fn (array $details) => $countries->push(Country::factory()->make($details))
+            fn (array $details) => $countries->push(Country::make($details))
         );
 
         $countries->upsert();

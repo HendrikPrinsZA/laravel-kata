@@ -30,7 +30,7 @@ class ExchangeRateService
             $code = $symbol['code'];
             $name = $symbol['description'];
 
-            $currency = Currency::factory()->make([
+            $currency = Currency::make([
                 'code' => CurrencyCode::from($code),
                 'name' => $name,
             ]);
