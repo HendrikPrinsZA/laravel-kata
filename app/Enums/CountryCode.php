@@ -2,10 +2,8 @@
 
 namespace App\Enums;
 
-use App\Collections\CurrencyCollection;
 use App\Models\Currency;
 use App\Traits\EnumTrait;
-use Exception;
 
 enum CountryCode: string
 {
@@ -17,45 +15,33 @@ enum CountryCode: string
     case US = 'US';
     case ZA = 'ZA';
 
-    protected function getCurrencies(): CurrencyCollection
-    {
-        $currencies = Currency::all();
-        if ($currencies->isEmpty()) {
-            throw new Exception(sprintf('No currencies found for "%s"', $this->name));
-        }
-
-        return $currencies;
-    }
-
     public function details(): array
     {
-        $currencies = $this->getCurrencies();
-
         return match ($this) {
             self::AE => [
                 'code' => $this->value,
                 'name' => 'Dubai',
-                'currency_id' => $currencies->firstWhere('code', CurrencyCode::AED)->id,
+                'currency_id' => Currency::firstWhere('code', CurrencyCode::AED)?->id,
             ],
             self::NL => [
                 'code' => $this->value,
                 'name' => 'The Netherlands',
-                'currency_id' => $currencies->firstWhere('code', CurrencyCode::EUR)->id,
+                'currency_id' => Currency::firstWhere('code', CurrencyCode::EUR)?->id,
             ],
             self::UK => [
                 'code' => $this->value,
                 'name' => 'United Kingdom',
-                'currency_id' => $currencies->firstWhere('code', CurrencyCode::GBP)->id,
+                'currency_id' => Currency::firstWhere('code', CurrencyCode::GBP)?->id,
             ],
             self::US => [
                 'code' => $this->value,
                 'name' => 'United States',
-                'currency_id' => $currencies->firstWhere('code', CurrencyCode::USD)->id,
+                'currency_id' => Currency::firstWhere('code', CurrencyCode::USD)?->id,
             ],
             self::ZA => [
                 'code' => $this->value,
                 'name' => 'South Africa',
-                'currency_id' => $currencies->firstWhere('code', CurrencyCode::ZAR)->id,
+                'currency_id' => Currency::firstWhere('code', CurrencyCode::ZAR)?->id,
             ],
         };
     }
