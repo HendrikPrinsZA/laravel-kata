@@ -17,6 +17,6 @@ git add --all && git commit -m "Updated Composer dependencies"
 
 rm package-lock.json
 npm upgrade
-git add --all && git commit -m "Updated NPM dependencies"
+# git add --all && git commit -m "Updated NPM dependencies"
 
-git push origin bump/$today
+# git push origin bump/$today
