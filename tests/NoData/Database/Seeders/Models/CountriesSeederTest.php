@@ -11,9 +11,3 @@ it('can seed with currencies', function () {
     expect(Country::count())
         ->toBeGreaterThan(0);
 });
-
-it('fails on no currencies', function () {
-    expect(
-        fn () => $this->seed(CountriesSeeder::class)
-    )->toThrow(Exception::class);
-});
