@@ -77,12 +77,6 @@ class ExchangeRateService
             $codes->join(',')
         );
 
-        if (app()->runningUnitTests()) {
-            if (Currency::count() === 0) {
-                $this->getCurrencies()->upsert();
-            }
-        }
-
         $currencyLookup = Currency::whereIn('code', CurrencyCode::cases())->get()
             ->keyBy(fn (Currency $currency) => $currency->code->value)
             ->toArray();
