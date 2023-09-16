@@ -2,11 +2,13 @@
 
 use App\Exceptions\KataChallengeException;
 use App\Exceptions\KataChallengeNotFoundException;
+use App\Exceptions\KataChallengeProfilingException;
 use App\Exceptions\KataChallengeScoreException;
 use App\Models\Blog;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
 use Tests\Data\Console\Commands\FakeChallenges\A\NotFound;
+use Tests\Data\Console\Commands\FakeChallenges\A\NotUsingReturn;
 use Tests\Data\Console\Commands\FakeChallenges\A\TooSlow;
 use Tests\Data\Console\Commands\FakeChallenges\A\WrongOutput;
 
@@ -89,7 +91,7 @@ it('fails if challenge not in config', function () {
     $this->artisan('kata:run --challenge=Sample');
 })->throws(KataChallengeNotFoundException::class);
 
-it('fails on expected model expty', function () {
+it('fails on expected model empty', function () {
     Config::set('laravel-kata.challenges', [
         NotFound::class,
     ]);
@@ -97,3 +99,11 @@ it('fails on expected model expty', function () {
 
     $this->artisan('kata:run --all');
 })->throws(KataChallengeException::class);
+
+it('fails when not using $this->return()', function () {
+    Config::set('laravel-kata.challenges', [
+        NotUsingReturn::class,
+    ]);
+
+    $this->artisan('kata:run --all');
+})->throws(KataChallengeProfilingException::class);

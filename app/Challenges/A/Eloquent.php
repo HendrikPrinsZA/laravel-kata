@@ -18,9 +18,9 @@ class Eloquent extends KataChallenge
     /**
      * Eloquent collections / Average
      */
-    public function getCollectionAverage(int $limit): float
+    public function getCollectionAverage(int $iteration): float
     {
-        $value = ExchangeRate::where('id', '<=', $limit)
+        $value = ExchangeRate::where('id', '<=', $iteration)
             ->get()
             ->average('id');
 
@@ -30,10 +30,10 @@ class Eloquent extends KataChallenge
     /**
      * Eloquent collections / Unique
      */
-    public function getCollectionUnique(int $limit): iterable
+    public function getCollectionUnique(int $iteration): iterable
     {
         $value = ExchangeRate::all()
-            ->where('id', '<=', $limit)
+            ->where('id', '<=', $iteration)
             ->pluck('id')
             ->unique();
 
@@ -43,10 +43,10 @@ class Eloquent extends KataChallenge
     /**
      * Eloquent collections / Count
      */
-    public function getCollectionCount(int $limit): int
+    public function getCollectionCount(int $iteration): int
     {
         $value = ExchangeRate::query()
-            ->where('id', '<=', $limit)
+            ->where('id', '<=', $iteration)
             ->get()
             ->count();
 
@@ -60,32 +60,32 @@ class Eloquent extends KataChallenge
      *
      * See https://codeburst.io/how-to-use-laravels-eloquent-efficiently-d46f5c392ca8
      */
-    public function getCollectionRelatedCount(int $limit): int
+    public function getCollectionRelatedCount(int $iteration): int
     {
         $value = User::all()
-            ->where('id', '<=', $limit)
+            ->where('id', '<=', $iteration)
             ->last()
             ?->blogs->count() ?? 0;
 
         return $this->return($value);
     }
 
-    public function getMaxVersusOrder(int $limit): float
+    public function getMaxVersusOrder(int $iteration): float
     {
         $value = ExchangeRate::query()
-            ->where('id', '<=', $limit)
+            ->where('id', '<=', $iteration)
             ->orderByDesc('rate')
             ->first()?->rate;
 
         return $this->return($value);
     }
 
-    public function eagerLoading(int $limit): float
+    public function eagerLoading(int $iteration): float
     {
         $value = 0;
 
         /** @var User $user */
-        foreach (User::where('id', '<=', $limit)->get() as $user) {
+        foreach (User::where('id', '<=', $iteration)->get() as $user) {
             $value += $user->blogs()->count();
         }
 

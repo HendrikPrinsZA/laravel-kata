@@ -4,10 +4,10 @@ namespace Tests\Data\Console\Commands\FakeChallenges\A;
 
 use App\KataChallenge;
 
-class TooSlow extends KataChallenge
+class NotUsingReturn extends KataChallenge
 {
     public function sample(): int
     {
-        return $this->return(1);
+        return 1;
     }
 }

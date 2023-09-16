@@ -34,12 +34,15 @@
     "autoload": {
         "files": [
             "app/helpers.php",
-            "packages/larawell/inspectation/src/Functions.php"
+            "packages/larawell/inspectation/src/Functions.php",
+            "domain/DirtyCode/products.php",
+            "domain/DirtyCode/shapes.php"
         ],
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
+            "Domain\\": "domain/",
             "Larawell\\LaravelPlus\\": "packages/larawell/laravel-plus/src",
             "Larawell\\Inspectation\\": "packages/larawell/inspectation/src"
         }

@@ -10,4 +10,4 @@ it('can get countries', function () {
         ->toBeInstanceOf(Currency::class)
         ->id->not->toBeNull()
         ->countries->toContainOnlyInstancesOf(Country::class);
-})->skip('need to look into parrallel testing conflict');
+});

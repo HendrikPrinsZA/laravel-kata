@@ -3,10 +3,13 @@
 namespace App;
 
 use App\Exceptions\KataChallengeException;
+use App\Exceptions\KataChallengeProfilingException;
 use Illuminate\Http\Request;
 
 class KataChallenge
 {
+    protected const MEMORY_REAL_USAGE = true;
+
     protected const MAX_INTERATIONS = null;
 
     protected const EXPECTED_MODELS = [];
@@ -15,12 +18,14 @@ class KataChallenge
 
     protected int $maxIterations = 1;
 
-    protected int $memoryUsageStart;
+    protected ?int $memoryUsageStart = null;
 
-    protected int $memoryUsageEnd;
+    protected ?int $memoryUsageTotal = null;
 
     public function __construct(protected ?Request $request = null)
     {
+        $this->memoryUsageStart = memory_get_usage(self::MEMORY_REAL_USAGE);
+
         $this->maxSeconds = $this->request?->get('max-seconds') ?? config(
             'laravel-kata.max-seconds',
             $this->maxSeconds
@@ -34,8 +39,6 @@ class KataChallenge
             );
 
         $this->setUp();
-
-        $this->memoryUsageStart = memory_get_usage(false);
     }
 
     public function return(mixed $value): mixed
@@ -45,21 +48,30 @@ class KataChallenge
         return $value;
     }
 
-    public function getMemoryUsage(): int
-    {
-        if (isset($this->memoryUsageEnd, $this->memoryUsageStart)) {
-            // not sure how end > start, but it happens (thanks php)
-            return $this->memoryUsageEnd > $this->memoryUsageStart
-                ? $this->memoryUsageEnd - $this->memoryUsageStart
-                : 0;
-        }
-
-        return 0;
-    }
-
     public function captureMemoryUsage(): void
     {
-        $this->memoryUsageEnd = memory_get_usage(false);
+        $this->memoryUsageTotal ??= 0;
+
+        $memoryUsageEnd = memory_get_usage(self::MEMORY_REAL_USAGE);
+        $memoryUsage = $memoryUsageEnd - $this->memoryUsageStart;
+
+        if ($memoryUsage > 0) {
+            $this->memoryUsageTotal += $memoryUsage;
+        }
+
+        $this->memoryUsageStart = memory_get_usage(self::MEMORY_REAL_USAGE);
+    }
+
+    public function getMemoryUsage(): int
+    {
+        if (is_null($this->memoryUsageTotal)) {
+            throw new KataChallengeProfilingException(sprintf(
+                'Memory usage not captured for %s, did you forget to call $this->return()?',
+                static::class,
+            ));
+        }
+
+        return $this->memoryUsageTotal;
     }
 
     public function getMaxSeconds(): int

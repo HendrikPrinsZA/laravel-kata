@@ -13,12 +13,12 @@ class Php extends KataChallenge
      *
      * See https://www.thegeekstuff.com/2014/04/optimize-php-code/
      */
-    public function nativeRange(int $limit): int
+    public function nativeRange(int $iteration): int
     {
-        $limit = $this->getRangeLimit($limit);
+        $iteration = $this->getRangeLimit($iteration);
 
         $range = [];
-        for ($i = 0; $i <= $limit; $i++) {
+        for ($i = 0; $i <= $iteration; $i++) {
             $range[] = $i;
         }
 
@@ -30,9 +30,9 @@ class Php extends KataChallenge
      *
      * See https://www.thegeekstuff.com/2014/04/optimize-php-code/
      */
-    public function nativeSum(int $limit): int
+    public function nativeSum(int $iteration): int
     {
-        $numbers = range(0, $this->getRangeLimit($limit));
+        $numbers = range(0, $this->getRangeLimit($iteration));
 
         $total = 0;
         foreach ($numbers as $number) {
@@ -42,8 +42,8 @@ class Php extends KataChallenge
         return $this->return($total);
     }
 
-    protected function getRangeLimit(int $limit): int
+    protected function getRangeLimit(int $iteration): int
     {
-        return $limit <= self::MAX_RANGE ? $limit : self::MAX_RANGE;
+        return $iteration <= self::MAX_RANGE ? $iteration : self::MAX_RANGE;
     }
 }

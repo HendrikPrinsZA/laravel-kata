@@ -329,8 +329,8 @@ class KataRunner
         }
 
         $gainsWeights = [
-            'line_count_gains_perc' => 0.1,
-            'memory_usage_avg_gains_perc' => 0.2,
+            'line_count_gains_perc' => 0.05,
+            'memory_usage_avg_gains_perc' => 0.25,
             'iteration_count_gains_perc' => 0.35,
             'execution_time_avg_gains_perc' => 0.35,
         ];
@@ -388,9 +388,9 @@ class KataRunner
         $kataChallengeReflection = new ReflectionClass($kataChallenge);
 
         /** @var ReflectionMethod $reflectionMethod */
-        foreach ($kataChallengeReflection->getMethods() as $reflectionMethod) {
-            // We only run public methods
-            if ($reflectionMethod->getModifiers() !== ReflectionMethod::IS_PUBLIC) {
+        foreach ($kataChallengeReflection->getMethods(ReflectionMethod::IS_PUBLIC) as $reflectionMethod) {
+            // Ignore any methods starting with "before"
+            if (Str::startsWith($reflectionMethod->name, 'before')) {
                 continue;
             }
 
@@ -521,17 +521,23 @@ class KataRunner
         ReflectionMethod $reflectionMethod,
         int $iterationCount
     ): array {
-        $memoryUsageSum = 0;
+        $className = $reflectionMethod->class;
+        $instance = app()->make($className);
+        $methodName = $reflectionMethod->name;
+
+        $beforeMethod = sprintf('before%s', ucfirst($methodName));
+        if (method_exists($instance, $beforeMethod)) {
+            $instance->{$beforeMethod}();
+        }
+
         $executionTimeSum = 0;
+        $memoryUsageSum = 0;
         $startTime = microtime(true);
         $outputs = [];
 
         $this->progressBar?->setMaxSteps($iterationCount);
         $this->progressBar?->setProgress(0);
         for ($iteration = 0; $iteration < $iterationCount; $iteration++) {
-            $className = $reflectionMethod->class;
-            $instance = app()->make($className);
-            $methodName = $reflectionMethod->name;
             $this->progressBar?->setMessage(sprintf(
                 '%s->%s(%d) [interations]',
                 $className,
@@ -544,10 +550,10 @@ class KataRunner
             });
 
             $memoryUsageSum += $instance->getMemoryUsage();
-            $instance = null;
             $this->progressBar?->advance();
         }
 
+        $instance = null;
         $this->progressBar?->finish();
         $this->progressBar?->clear();
 
@@ -575,6 +581,15 @@ class KataRunner
         ReflectionMethod $reflectionMethod,
         int $maxSeconds
     ): array {
+        $className = $reflectionMethod->class;
+        $instance = app()->make($className);
+        $methodName = $reflectionMethod->name;
+
+        $beforeMethod = sprintf('before%s', ucfirst($methodName));
+        if (method_exists($instance, $beforeMethod)) {
+            $instance->{$beforeMethod}();
+        }
+
         $executionTimeSum = 0;
         $memoryUsageSum = 0;
         $startTime = microtime(true);
@@ -584,39 +599,34 @@ class KataRunner
 
         $this->progressBar?->setMaxSteps($msMax);
         $this->progressBar?->setProgress(0);
-
-        $iterationCount = 0;
+        $iteration = 0;
         do {
+            $iteration++;
             $msLeft = now()->diffInMilliseconds($dateTimeEnd, false);
 
-            $iterationCount++;
-            $className = $reflectionMethod->class;
-            $instance = app()->make($className);
-            $methodName = $reflectionMethod->name;
-
-            $executionTimeSum += Benchmark::measure(function () use ($instance, $methodName, $iterationCount, &$outputs) {
-                $outputs[] = $instance->{$methodName}($iterationCount);
+            $executionTimeSum += Benchmark::measure(function () use ($instance, $methodName, $iteration, &$outputs) {
+                $outputs[] = $instance->{$methodName}($iteration);
             });
-
             $memoryUsageSum += $instance->getMemoryUsage();
-            $instance = null;
+
             $this->progressBar?->setProgress($msMax - $msLeft);
             $this->progressBar?->setMessage(sprintf(
                 '%s->%s(%d) [duration]',
                 $className,
                 $methodName,
-                $iterationCount
+                $iteration
             ));
         } while ($msLeft > 0);
 
+        $instance = null;
         $this->progressBar?->finish();
         $this->progressBar?->clear();
 
         $outputsMd5 = md5(json_encode($outputs));
-        if ($iterationCount > 2) {
+        if ($iteration > 2) {
             $outputs = [
                 $outputs[0],
-                $outputs[$iterationCount - 1],
+                $outputs[$iteration - 1],
             ];
         }
 
@@ -624,12 +634,12 @@ class KataRunner
             'outputs_json' => json_encode($outputs),
             'outputs_md5' => $outputsMd5,
             'outputs' => $outputs,
-            'iteration_count' => $iterationCount,
+            'iteration_count' => $iteration,
             'memory_usage_sum' => $memoryUsageSum,
-            'memory_usage_avg' => $memoryUsageSum / $iterationCount,
+            'memory_usage_avg' => $memoryUsageSum / $iteration,
             'execution_time' => microtime(true) - $startTime,
             'execution_time_sum' => $executionTimeSum,
-            'execution_time_avg' => $executionTimeSum / $iterationCount,
+            'execution_time_avg' => $executionTimeSum / $iteration,
         ];
     }
 }

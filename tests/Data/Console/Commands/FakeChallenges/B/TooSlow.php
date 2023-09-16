@@ -10,6 +10,6 @@ class TooSlow extends ATooSlow
     {
         sleep(1);
 
-        return 1;
+        return $this->return(1);
     }
 }
