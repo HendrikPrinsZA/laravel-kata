@@ -6,11 +6,6 @@ use App\KataChallenge;
 
 class Sample extends KataChallenge
 {
-    /**
-     * Get the value of pi
-     *
-     * Stolen from here https://www.geeksforgeeks.org/calculate-pi-with-python/
-     */
     public function calculatePi(): float
     {
         $denominator = 1;
@@ -59,5 +54,22 @@ class Sample extends KataChallenge
         }
 
         return $this->return($result);
+    }
+
+    public function memoryAllocation(int $limit): array
+    {
+        $largeArray = range(1, $limit);
+        $tempArray = [];
+
+        foreach ($largeArray as $item) {
+            $tempArray[] = str_repeat($item, 100);
+        }
+
+        $resultArray = [];
+        foreach ($tempArray as $item) {
+            $resultArray[] = strrev($item);
+        }
+
+        return $this->return($resultArray);
     }
 }

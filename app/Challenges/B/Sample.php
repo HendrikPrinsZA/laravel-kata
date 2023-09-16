@@ -29,4 +29,16 @@ class Sample extends ASample
 
         return $this->return($result);
     }
+
+    public function memoryAllocation(int $limit): array
+    {
+        $largeArray = range(1, $limit);
+        $resultArray = [];
+
+        foreach ($largeArray as $item) {
+            $resultArray[] = strrev(str_repeat($item, 100));
+        }
+
+        return $this->return($resultArray);
+    }
 }

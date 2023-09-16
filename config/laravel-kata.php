@@ -1,5 +1,7 @@
 <?php
 
+use App\Challenges\A\CleanCode;
+use App\Challenges\A\CleanCodeDatabase;
 use App\Challenges\A\Eloquent;
 use App\Challenges\A\Laravel;
 use App\Challenges\A\MySql;
@@ -32,8 +34,8 @@ $defaults = match ($runMode) {
         'LK_MAX_SECONDS' => 0,
         'LK_MAX_ITERATIONS' => 1,
 
-        'LK_DD_MAX_USERS' => 1000,
-        'LK_DD_MAX_USER_BLOGS' => 3,
+        'LK_DD_MAX_USERS' => 100,
+        'LK_DD_MAX_USER_BLOGS' => 2,
     ],
 };
 
@@ -46,6 +48,8 @@ return [
         Eloquent::class,
         MySql::class,
         Laravel::class,
+        CleanCode::class,
+        CleanCodeDatabase::class,
     ],
 
     // Params
@@ -59,7 +63,7 @@ return [
     'show-hints' => false,
     'show-hints-extended' => false,
     'show-code-snippets' => false,
-    'gains-perc-minimum' => 0.1,
+    'gains-perc-minimum' => -100, // We don't care about negative gains :)
 
     // Experimental (not stable)
     'experimental' => [

@@ -8,6 +8,6 @@ class WrongOutput extends KataChallenge
 {
     public function sample(): int
     {
-        return 1;
+        return $this->return(1);
     }
 }
