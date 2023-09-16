@@ -10,12 +10,12 @@ use Domain\CleanCode\Objects\ShapeSquare;
 
 class CleanCode extends KataChallenge
 {
-    public function productsMake(int $limit): float
+    public function productsMake(int $iteration): float
     {
         $productController = app()->make(ProductController::class);
 
         $sum = 0;
-        for ($i = 0; $i <= $limit; $i++) {
+        for ($i = 0; $i <= $iteration; $i++) {
             $price = 10.99 * $i;
             $product = $productController->makeProduct([
                 'name' => 'Test product '.$i,
@@ -29,10 +29,10 @@ class CleanCode extends KataChallenge
         return $this->return($sum);
     }
 
-    public function shapes(int $limit): float
+    public function shapes(int $iteration): float
     {
         $sum = 0;
-        for ($i = 0; $i <= $limit; $i++) {
+        for ($i = 0; $i <= $iteration; $i++) {
             $shapeCircle = new ShapeCircle(5.0 * ($i + 1));
             $shapeSquare = new ShapeSquare(4.0 * ($i + 1));
             $shapeRectangle = new ShapeRectangle(3.0 * ($i + 1), 7.0 * ($i + 1));

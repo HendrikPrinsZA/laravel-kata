@@ -11,7 +11,7 @@ class Sample extends ASample
         return $this->return(round(M_PI, 2));
     }
 
-    public function fizzBuzz(int $limit): string
+    public function fizzBuzz(int $iteration): string
     {
         $result = '';
         $fizzBuzz = [
@@ -19,7 +19,7 @@ class Sample extends ASample
             '|1' => 'Buzz',
             '1|' => 'Fizz',
         ];
-        for ($i = 1; $i <= $limit; $i++) {
+        for ($i = 1; $i <= $iteration; $i++) {
             $mod1 = $i % 3 == 0;
             $mod2 = $i % 5 == 0;
 
@@ -30,9 +30,9 @@ class Sample extends ASample
         return $this->return($result);
     }
 
-    public function memoryAllocation(int $limit): array
+    public function memoryAllocation(int $iteration): array
     {
-        $largeArray = range(1, $limit);
+        $largeArray = range(1, $iteration);
         $resultArray = [];
 
         foreach ($largeArray as $item) {

@@ -6,7 +6,7 @@ use App\Challenges\A\MySql as AMySql;
 
 class MySql extends AMySql
 {
-    public function orVersusIn(int $limit): array
+    public function orVersusIn(int $iteration): array
     {
         $sql = <<<'SQL'
         SELECT
@@ -20,7 +20,7 @@ class MySql extends AMySql
         SQL;
 
         $params = [
-            'limit' => $limit,
+            'limit' => $iteration,
         ];
 
         $value = $this->select($sql, $params);
@@ -28,7 +28,7 @@ class MySql extends AMySql
         return $this->return($value);
     }
 
-    public function orVersusInAggregate(int $limit): float
+    public function orVersusInAggregate(int $iteration): float
     {
         $sql = <<<'SQL'
         SELECT
@@ -40,7 +40,7 @@ class MySql extends AMySql
         SQL;
 
         $params = [
-            'limit' => $limit,
+            'limit' => $iteration,
         ];
 
         $value = $this->selectOne($sql, $params)->rate;

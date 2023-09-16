@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Exceptions\KataChallengeException;
+use App\Exceptions\KataChallengeProfilingException;
 use Illuminate\Http\Request;
 
 class KataChallenge
@@ -63,6 +64,13 @@ class KataChallenge
 
     public function getMemoryUsage(): int
     {
+        if (is_null($this->memoryUsageTotal)) {
+            throw new KataChallengeProfilingException(sprintf(
+                'Memory usage not captured for %s, did you forget to call $this->return()?',
+                static::class,
+            ));
+        }
+
         return $this->memoryUsageTotal;
     }
 

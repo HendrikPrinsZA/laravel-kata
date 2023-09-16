@@ -22,7 +22,7 @@ class Sample extends KataChallenge
         return $this->return(round($sum, 2));
     }
 
-    public function fizzBuzz(int $limit): string
+    public function fizzBuzz(int $iteration): string
     {
         $isDivisible = function ($number, $divisor) {
             for ($i = 1; $i <= $number; $i++) {
@@ -35,7 +35,7 @@ class Sample extends KataChallenge
         };
 
         $result = '';
-        for ($i = 1; $i <= $limit; $i++) {
+        for ($i = 1; $i <= $iteration; $i++) {
             $output = '';
 
             if ($isDivisible($i, 3)) {
@@ -56,9 +56,9 @@ class Sample extends KataChallenge
         return $this->return($result);
     }
 
-    public function memoryAllocation(int $limit): array
+    public function memoryAllocation(int $iteration): array
     {
-        $largeArray = range(1, $limit);
+        $largeArray = range(1, $iteration);
         $tempArray = [];
 
         foreach ($largeArray as $item) {

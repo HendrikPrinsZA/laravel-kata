@@ -27,10 +27,10 @@ class Laravel extends KataChallenge
         return $this->return($total);
     }
 
-    protected function getCountryByIndex(int $limit): Country
+    protected function getCountryByIndex(int $iteration): Country
     {
         $countryCodes = CountryCode::cases();
-        $index = $limit % count($countryCodes);
+        $index = $iteration % count($countryCodes);
 
         return Country::firstWhere('code', $countryCodes[$index]->value);
     }

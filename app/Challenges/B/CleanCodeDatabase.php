@@ -8,12 +8,12 @@ use function Domain\DirtyCode\product_create;
 
 class CleanCodeDatabase extends ACleanCodeDatabase
 {
-    public function productsCreate(int $limit): float
+    public function productsCreate(int $iteration): float
     {
-        $limit = $limit > 100 ? 100 : $limit;
+        $iteration = $iteration > 100 ? 100 : $iteration;
 
         $sum = 0;
-        for ($i = 0; $i <= $limit; $i++) {
+        for ($i = 0; $i <= $iteration; $i++) {
             $price = 10.99 * $i;
             $product = product_create([
                 'name' => 'Test product '.$i,
@@ -25,5 +25,17 @@ class CleanCodeDatabase extends ACleanCodeDatabase
         }
 
         return $this->return($sum);
+    }
+
+    public function memoryAllocation(int $iteration): array
+    {
+        $largeArray = range(1, $iteration);
+        $resultArray = [];
+
+        foreach ($largeArray as $item) {
+            $resultArray[] = strrev(str_repeat($item, 100));
+        }
+
+        return $this->return($resultArray);
     }
 }

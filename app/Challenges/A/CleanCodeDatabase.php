@@ -15,15 +15,15 @@ class CleanCodeDatabase extends KataChallenge
         Product::truncate();
     }
 
-    public function productsCreate(int $limit): float
+    public function productsCreate(int $iteration): float
     {
-        $limit = $limit > 100 ? 100 : $limit;
+        $iteration = $iteration > 100 ? 100 : $iteration;
 
         /** @var \Domain\CleanCode\Controllers\ProductController $productController */
         $productController = app()->make(ProductController::class);
 
         $sum = 0;
-        for ($i = 0; $i <= $limit; $i++) {
+        for ($i = 0; $i <= $iteration; $i++) {
             $price = 10.99 * $i;
             $product = $productController->createProduct([
                 'name' => 'Test product '.$i,
@@ -35,5 +35,22 @@ class CleanCodeDatabase extends KataChallenge
         }
 
         return $this->return($sum);
+    }
+
+    public function memoryAllocation(int $iteration): array
+    {
+        $largeArray = range(1, $iteration);
+        $tempArray = [];
+
+        foreach ($largeArray as $item) {
+            $tempArray[] = str_repeat($item, 100);
+        }
+
+        $resultArray = [];
+        foreach ($tempArray as $item) {
+            $resultArray[] = strrev($item);
+        }
+
+        return $this->return($resultArray);
     }
 }

@@ -531,6 +531,7 @@ class KataRunner
         }
 
         $executionTimeSum = 0;
+        $memoryUsageSum = 0;
         $startTime = microtime(true);
         $outputs = [];
 
@@ -548,13 +549,11 @@ class KataRunner
                 $outputs[] = $instance->{$methodName}($iteration + 1);
             });
 
-            // $memoryUsageSum += $instance->getMemoryUsage();
+            $memoryUsageSum += $instance->getMemoryUsage();
             $this->progressBar?->advance();
         }
 
-        $memoryUsageSum = $instance->getMemoryUsage();
         $instance = null;
-
         $this->progressBar?->finish();
         $this->progressBar?->clear();
 
@@ -608,8 +607,8 @@ class KataRunner
             $executionTimeSum += Benchmark::measure(function () use ($instance, $methodName, $iteration, &$outputs) {
                 $outputs[] = $instance->{$methodName}($iteration);
             });
-
             $memoryUsageSum += $instance->getMemoryUsage();
+
             $this->progressBar?->setProgress($msMax - $msLeft);
             $this->progressBar?->setMessage(sprintf(
                 '%s->%s(%d) [duration]',
@@ -619,6 +618,7 @@ class KataRunner
             ));
         } while ($msLeft > 0);
 
+        $instance = null;
         $this->progressBar?->finish();
         $this->progressBar?->clear();
 
