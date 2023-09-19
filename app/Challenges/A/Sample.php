@@ -56,13 +56,13 @@ class Sample extends KataChallenge
         return $result;
     }
 
-    public function memoryAllocation(int $iteration): array
+    public function memoryAllocation(int $iteration): string
     {
         $largeArray = range(1, $iteration);
         $tempArray = [];
 
         foreach ($largeArray as $item) {
-            $tempArray[] = str_repeat($item, 100);
+            $tempArray[] = str_repeat($item, floor($iteration / 10) + 1);
         }
 
         $resultArray = [];
@@ -70,6 +70,6 @@ class Sample extends KataChallenge
             $resultArray[] = strrev($item);
         }
 
-        return $resultArray;
+        return md5(implode('|', $resultArray));
     }
 }

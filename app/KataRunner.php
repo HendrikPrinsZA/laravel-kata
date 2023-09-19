@@ -75,8 +75,9 @@ class KataRunner
         $this->iterationModes = config('laravel-kata.modes');
         if (app()->runningUnitTests()) {
             $this->iterationModes = collect(config('laravel-kata.modes'))
-                ->reject(fn (string $mode) => KataRunnerIterationMode::XDEBUG_PROFILE->value)
-                ->values();
+                ->reject(fn (KataRunnerIterationMode $mode) => $mode === KataRunnerIterationMode::XDEBUG_PROFILE)
+                ->values()
+                ->toArray();
         }
 
         if (! is_null($this->command) && ! config('laravel-kata.progress-bar-disabled')) {
@@ -126,6 +127,16 @@ class KataRunner
         $getScoreRow = function (string $field, string $title = null, float $weight = 0.0) use ($reportData): array {
             $valueA = data_get($reportData, sprintf('stats.a.%s', $field));
             $valueB = data_get($reportData, sprintf('stats.b.%s', $field));
+
+            if (is_null($valueA) || is_null($valueB)) {
+                return [
+                    $title ?: $field,
+                    $valueA,
+                    $valueB,
+                    'N/A',
+                    'N/A',
+                ];
+            }
 
             $displayValueA = match ($field) {
                 'execution_time_avg' => time_to_human($valueA),
@@ -311,10 +322,14 @@ class KataRunner
 
         foreach ($fields as $field => $mode) {
             $success = false;
-            $value1 = $statsB[$field];
-            $value2 = $statsA[$field];
+            $value1 = data_get($statsB, $field);
+            $value2 = data_get($statsA, $field);
 
-            if (in_array($mode, ['lt', 'gt'])) {
+            if (is_null($value1) || is_null($value2)) {
+                $gains = 'N/A';
+                $percDiff = 0;
+                $success = false;
+            } elseif (in_array($mode, ['lt', 'gt'])) {
                 if ($mode === 'gt') {
                     $value1 = $value2;
                     $value2 = $statsB[$field];
@@ -335,9 +350,7 @@ class KataRunner
                 }
 
                 $success = $value1 <= $value2;
-            }
-
-            if ($mode === 'string') {
+            } elseif ($mode === 'string') {
                 $gains = 0;
                 $percDiff = 0;
                 $success = $value1 === $value2;
@@ -529,7 +542,7 @@ class KataRunner
                 $reflectionMethod,
                 $maxSeconds
             ),
-            KataRunnerIterationMode::XDEBUG_PROFILE => $this->runChallengeMethodProfile(
+            KataRunnerIterationMode::XDEBUG_PROFILE => $this->profile(
                 $reflectionMethod,
             )
         };
@@ -659,7 +672,7 @@ class KataRunner
         ];
     }
 
-    protected function runChallengeMethodProfile(ReflectionMethod $reflectionMethod): array
+    protected function profile(ReflectionMethod $reflectionMethod): array
     {
         $className = $reflectionMethod->class;
         /** @var \App\KataChallenge $instance */

@@ -42,9 +42,19 @@ class KataChallengeResultObject extends JsonResource
 
     public function getStats(): array
     {
+        $extraReturn = [];
+
         $violations = $this->getViolations();
 
+        $profile = data_get($this->result, KataRunnerIterationMode::XDEBUG_PROFILE->value, []);
+        if (! empty($profile)) {
+            $maxIterations = data_get($profile, 'max_iterations', 1);
+            $extraReturn['profile_memory_usage_avg'] = data_get($profile, 'memory_usage.total', 0) / $maxIterations;
+            $extraReturn['profile_time_avg'] = data_get($profile, 'time.total', 0) / $maxIterations;
+        }
+
         return [
+            ...$extraReturn,
             '_result' => $this->result, // Why normalize?
 
             'violations' => $violations,
@@ -55,11 +65,6 @@ class KataChallengeResultObject extends JsonResource
 
             'execution_time_avg' => $this->getStat('execution_time_avg', KataRunnerIterationMode::MAX_ITERATIONS),
             'execution_time_sum' => $this->getStat('execution_time_sum', KataRunnerIterationMode::MAX_ITERATIONS),
-
-            'profile_memory_usage_avg' => $this->result[KataRunnerIterationMode::XDEBUG_PROFILE->value]['memory_usage']['total'] / 100,
-            'profile_time_avg' => $this->result[KataRunnerIterationMode::XDEBUG_PROFILE->value]['time']['total'] / 100,
-            // 'profile_memory_usage_avg' => $this->result['profile']['memory_usage']['total'] / 100,
-            // 'profile_time_avg' => $this->result['profile']['time']['total'] / 100,
 
             'line_count' => $this->reflectionMethod->getEndLine() - $this->reflectionMethod->getStartLine(),
         ];

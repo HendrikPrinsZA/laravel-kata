@@ -108,6 +108,10 @@ class Benchmark extends SupportBenchmark
         int $maxIterations = 1,
         int $maxTries = 3
     ): array {
+        if (app()->runningUnitTests()) {
+            throw new BenchmarkProfileException('Not allowed when testing');
+        }
+
         if ($maxTries <= 0) {
             throw new BenchmarkProfileException('Max tries failed');
         }
@@ -126,7 +130,7 @@ class Benchmark extends SupportBenchmark
                 ...self::profileGetStats($tempFilePath),
                 'max_iterations' => $maxIterations,
             ];
-        } catch (BenchmarkProfileException $exception) {
+        } catch (BenchmarkProfileException $_) {
             return self::profile($benchmarkable, $maxIterations, $maxTries - 1);
         } finally {
             unlink($tempFilePath.'.xt');

@@ -1,7 +1,6 @@
 <?php
 
-it('has valid return', function (
-    int $iterations,
+it('has valid return x1', function (
     string $challengeA,
     string $method
 ) {
@@ -9,11 +8,28 @@ it('has valid return', function (
     $instanceA = app()->make($challengeA);
     $instanceB = app()->make($challengeB);
 
-    $returnA = $instanceA->{$method}($iterations);
-    $returnB = $instanceB->{$method}($iterations);
+    $returnA = $instanceA->{$method}(1);
+    $returnB = $instanceB->{$method}(1);
 
     expect($returnA)->not->toBeEmpty();
     expect($returnB)->not->toBeEmpty();
     expect($returnA)->toEqual($returnB);
 
-})->with([1, 3])->with('challenge-methods');
+})->with('challenge-methods');
+
+it('has valid return x3', function (
+    string $challengeA,
+    string $method
+) {
+    $challengeB = str_replace('\\A\\', '\\B\\', $challengeA);
+    $instanceA = app()->make($challengeA);
+    $instanceB = app()->make($challengeB);
+
+    $returnA = $instanceA->{$method}(3);
+    $returnB = $instanceB->{$method}(3);
+
+    expect($returnA)->not->toBeEmpty();
+    expect($returnB)->not->toBeEmpty();
+    expect($returnA)->toEqual($returnB);
+
+})->with('challenge-methods');

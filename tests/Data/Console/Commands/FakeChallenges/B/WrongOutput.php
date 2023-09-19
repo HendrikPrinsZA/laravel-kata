@@ -8,6 +8,6 @@ class WrongOutput extends AWrongOutput
 {
     public function sample(): int
     {
-        return $this->return(2);
+        return 2;
     }
 }

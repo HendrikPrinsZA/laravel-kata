@@ -45,13 +45,13 @@ if (! function_exists('wrap_in_format')) {
 if (! function_exists('bytes_to_human')) {
     function bytes_to_human(float $bytes): string
     {
-        $precision = 9;
+        $bytes = intval($bytes);
         $units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
         $factor = floor((strlen($bytes) - 1) / 3);
 
         return sprintf(
             '%s %s',
-            number_format($bytes / (1024 ** $factor), $precision),
+            round($bytes / (1024 ** $factor)),
             $units[$factor]
         );
     }

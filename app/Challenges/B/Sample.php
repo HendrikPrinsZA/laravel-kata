@@ -30,15 +30,15 @@ class Sample extends ASample
         return $result;
     }
 
-    public function memoryAllocation(int $iteration): array
+    public function memoryAllocation(int $iteration): string
     {
         $largeArray = range(1, $iteration);
         $resultArray = [];
 
         foreach ($largeArray as $item) {
-            $resultArray[] = strrev(str_repeat($item, 100));
+            $resultArray[] = strrev(str_repeat($item, floor($iteration / 10) + 1));
         }
 
-        return $resultArray;
+        return md5(implode('|', $resultArray));
     }
 }
