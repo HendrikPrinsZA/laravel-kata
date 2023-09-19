@@ -133,7 +133,9 @@ class Benchmark extends SupportBenchmark
         } catch (BenchmarkProfileException $_) {
             return self::profile($benchmarkable, $maxIterations, $maxTries - 1);
         } finally {
-            unlink($tempFilePath.'.xt');
+            if (file_exists($tempFilePath.'.xt')) {
+                @unlink($tempFilePath.'.xt');
+            }
         }
     }
 }
