@@ -18,6 +18,6 @@ class Laravel extends ALaravel
             $total += array_sum($countryService->getExchangeRatesAggregates($country));
         }
 
-        return $this->return($total);
+        return $total;
     }
 }

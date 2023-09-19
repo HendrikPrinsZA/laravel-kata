@@ -22,7 +22,7 @@ class Php extends KataChallenge
             $range[] = $i;
         }
 
-        return $this->return(count($range));
+        return count($range);
     }
 
     /**
@@ -39,7 +39,7 @@ class Php extends KataChallenge
             $total += $number;
         }
 
-        return $this->return($total);
+        return $total;
     }
 
     protected function getRangeLimit(int $iteration): int

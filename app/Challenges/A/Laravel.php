@@ -24,7 +24,7 @@ class Laravel extends KataChallenge
             ]);
         }
 
-        return $this->return($total);
+        return $total;
     }
 
     protected function getCountryByIndex(int $iteration): Country

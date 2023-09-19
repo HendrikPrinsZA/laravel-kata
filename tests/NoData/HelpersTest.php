@@ -44,47 +44,64 @@ it('can wrap in format', function (
     ['is false (warn)', false, true, '<fg=yellow>is false (warn)</>'],
 ]);
 
-it('can convert bytes to human', function (float $bytes, string $expected) {
+it('can convert bytes to human', function (float $bytes) {
     $human = bytes_to_human($bytes);
 
-    expect($human)->toBe($expected);
+    expect($human)->toMatchSnapshot();
 })->with([
-    [0, '0.00000 B'],
-    [0.1, '0.10000 B'],
-    [1, '1.00000 B'],
-    [100, '100.00000 B'],
-    [1000, '0.97656 kB'],
-    [10000, '9.76562 kB'],
-    [100000, '97.65625 kB'],
-    [1000000, '0.95367 MB'],
-    [10000000, '9.53674 MB'],
-    [100000000, '95.36743 MB'],
-    [1000000000, '0.93132 GB'],
-    [10000000000, '9.31323 GB'],
-    [100000000000, '93.13226 GB'],
-    [999999999999, '931.32257 GB'],
-    [9999999999999, '9.09495 TB'],
+    0,
+    0.1,
+    1,
+    100,
+    1000,
+    10000,
+    100000,
+    1000000,
+    10000000,
+    100000000,
+    1000000000,
+    10000000000,
+    100000000000,
+    999999999999,
+    9999999999999,
 ]);
 
-it('can convert time to human', function (float $bytes, string $expected) {
-    $human = time_to_human($bytes);
+it('can convert time to human (digital)', function (float $bytes) {
+    $human = time_to_human($bytes, digital: true);
 
-    expect($human)->toBe($expected);
+    expect($human)->toMatchSnapshot();
 })->with([
-    [0, '0.00000 ms'],
-    [0.1, '0.10000 ms'],
-    [1, '1.00000 ms'],
-    [100, '100.00000 ms'],
-    [1000, '1,000.00000 ms'],
-    [10000, '10,000.00000 ms'],
-    [100000, '100,000.00000 ms'],
-    [1000000, '1,000,000.00000 ms'],
-    [9999999, '9,999,999.00000 ms'],
-    [99999999, '99,999,999.00000 ms'],
+    0,
+    0.1,
+    1,
+    100,
+    1000,
+    10000,
+    100000,
+    1000000,
+    9999999,
+    99999999,
+]);
+
+it('can convert time to human (false)', function (float $bytes) {
+    $human = time_to_human($bytes, digital: false);
+
+    expect($human)->toMatchSnapshot();
+})->with([
+    0,
+    0.1,
+    1,
+    100,
+    1000,
+    10000,
+    100000,
+    1000000,
+    9999999,
+    99999999,
 ]);
 
 it('will not redefine functions', function () {
     include 'app/helpers.php';
 
-    expect(time_to_human(0))->toBe('0.00000 ms');
+    expect(time_to_human(0))->toBe('0.000000000 s');
 });

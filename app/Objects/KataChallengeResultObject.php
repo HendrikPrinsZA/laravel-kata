@@ -45,14 +45,21 @@ class KataChallengeResultObject extends JsonResource
         $violations = $this->getViolations();
 
         return [
+            '_result' => $this->result, // Why normalize?
+
             'violations' => $violations,
             'violations_count' => count($violations),
 
             'iteration_count' => $this->getStat('iteration_count', KataRunnerIterationMode::MAX_SECONDS),
             'outputs_md5' => $this->getStat('outputs_md5', KataRunnerIterationMode::MAX_ITERATIONS),
 
-            'execution_time_avg' => $this->getExecutionTimeAvg(),
-            'memory_usage_avg' => $this->getMemoryUsageAvg(),
+            'execution_time_avg' => $this->getStat('execution_time_avg', KataRunnerIterationMode::MAX_ITERATIONS),
+            'execution_time_sum' => $this->getStat('execution_time_sum', KataRunnerIterationMode::MAX_ITERATIONS),
+
+            'profile_memory_usage_avg' => $this->result[KataRunnerIterationMode::XDEBUG_PROFILE->value]['memory_usage']['total'] / 100,
+            'profile_time_avg' => $this->result[KataRunnerIterationMode::XDEBUG_PROFILE->value]['time']['total'] / 100,
+            // 'profile_memory_usage_avg' => $this->result['profile']['memory_usage']['total'] / 100,
+            // 'profile_time_avg' => $this->result['profile']['time']['total'] / 100,
 
             'line_count' => $this->reflectionMethod->getEndLine() - $this->reflectionMethod->getStartLine(),
         ];
@@ -72,22 +79,6 @@ class KataChallengeResultObject extends JsonResource
         }
 
         return array_sum($values);
-    }
-
-    public function getExecutionTimeAvg(): float
-    {
-        $count = $this->getStat('iteration_count', KataRunnerIterationMode::MAX_ITERATIONS);
-        $sum = $this->getStat('execution_time_sum', KataRunnerIterationMode::MAX_ITERATIONS);
-
-        return $sum / $count;
-    }
-
-    public function getMemoryUsageAvg(): float
-    {
-        $count = $this->getStat('iteration_count', KataRunnerIterationMode::MAX_ITERATIONS);
-        $sum = $this->getStat('memory_usage_sum', KataRunnerIterationMode::MAX_ITERATIONS);
-
-        return $sum / $count;
     }
 
     public function getOutputsJson(

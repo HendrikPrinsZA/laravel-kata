@@ -8,6 +8,7 @@ use App\Challenges\A\MySql;
 use App\Challenges\A\Php;
 use App\Challenges\A\Sample;
 use App\Enums\KataRunMode;
+use App\Enums\KataRunnerIterationMode;
 use App\Exceptions\KataInvalidRunModeException;
 
 $runMode = KataRunMode::tryFrom(env('LK_RUN_MODE', KataRunMode::DEBUG->value));
@@ -17,8 +18,10 @@ if (is_null($runMode)) {
 
 $defaults = match ($runMode) {
     KataRunMode::DEBUG => [
-        'LK_MAX_SECONDS' => 1,
-        'LK_MAX_ITERATIONS' => 100,
+        // 'LK_MAX_SECONDS' => 1,
+        // 'LK_MAX_ITERATIONS' => 1,
+        'LK_MAX_SECONDS' => 3,
+        'LK_MAX_ITERATIONS' => 1000,
 
         'LK_DD_MAX_USERS' => 1,
         'LK_DD_MAX_USER_BLOGS' => 3,
@@ -56,6 +59,12 @@ return [
     'max-seconds' => $getValue('LK_MAX_SECONDS'),
     'max-iterations' => $getValue('LK_MAX_ITERATIONS'),
     'progress-bar-disabled' => env('LK_PROGRESS_BAR_DISABLED', false),
+
+    'modes' => [
+        KataRunnerIterationMode::MAX_ITERATIONS,
+        KataRunnerIterationMode::MAX_SECONDS,
+        KataRunnerIterationMode::XDEBUG_PROFILE,
+    ],
 
     // To be converted to env variables
     'save-results-to-storage' => true,

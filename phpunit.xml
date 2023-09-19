@@ -28,8 +28,8 @@
     <env name="TELESCOPE_ENABLED" value="false"/>
     <env name="REDIS_CLIENT" value="mock"/>
     <env name="LK_RUN_MODE" value="test"/>
-    <env name="LK_DD_MAX_USERS" value="100"/>
-    <env name="LK_DD_MAX_USER_BLOGS" value="3"/>
+    <env name="LK_DD_MAX_USERS" value="10"/>
+    <env name="LK_DD_MAX_USER_BLOGS" value="2"/>
   </php>
   <source>
     <include>

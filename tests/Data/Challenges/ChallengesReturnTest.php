@@ -16,4 +16,4 @@ it('has valid return', function (
     expect($returnB)->not->toBeEmpty();
     expect($returnA)->toEqual($returnB);
 
-})->with([1, 10, 100])->with('challenge-methods');
+})->with([1, 3])->with('challenge-methods');

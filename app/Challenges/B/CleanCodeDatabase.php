@@ -24,7 +24,7 @@ class CleanCodeDatabase extends ACleanCodeDatabase
             $sum += $product->price;
         }
 
-        return $this->return($sum);
+        return $sum;
     }
 
     public function memoryAllocation(int $iteration): array
@@ -36,6 +36,6 @@ class CleanCodeDatabase extends ACleanCodeDatabase
             $resultArray[] = strrev(str_repeat($item, 100));
         }
 
-        return $this->return($resultArray);
+        return $resultArray;
     }
 }

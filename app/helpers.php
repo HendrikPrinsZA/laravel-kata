@@ -45,21 +45,41 @@ if (! function_exists('wrap_in_format')) {
 if (! function_exists('bytes_to_human')) {
     function bytes_to_human(float $bytes): string
     {
-        $precision = 5;
+        $precision = 9;
         $units = ['B', 'kB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
         $factor = floor((strlen($bytes) - 1) / 3);
 
         return sprintf(
-            "%.{$precision}f %s",
-            $bytes / (1024 ** $factor),
+            '%s %s',
+            number_format($bytes / (1024 ** $factor), $precision),
             $units[$factor]
         );
     }
 }
 
 if (! function_exists('time_to_human')) {
-    function time_to_human(float $milliseconds): string
+    function time_to_human(float $milliseconds, bool $digital = true): string
     {
-        return sprintf('%s ms', number_format($milliseconds, 5));
+        return $digital ? ms_to_time($milliseconds) : sprintf('%s s', number_format($milliseconds, 9));
+    }
+}
+
+if (! function_exists('ms_to_time')) {
+    function ms_to_time(float $milliseconds)
+    {
+        $seconds = floor($milliseconds / 1000);
+        $minutes = floor($seconds / 60);
+        $hours = floor($minutes / 60);
+
+        $minutes = $minutes - ($hours * 60);
+        $seconds = $seconds - ($hours * 60 * 60) - ($minutes * 60);
+        $ms = $milliseconds % 1000;
+
+        $timeFormat = sprintf('%02d:%02d:%02d.%03d', $hours, $minutes, $seconds, $ms);
+        if ($timeFormat === '00:00:00.000') {
+            return time_to_human($milliseconds, false);
+        }
+
+        return $timeFormat;
     }
 }

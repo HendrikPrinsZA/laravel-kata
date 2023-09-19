@@ -1,0 +1,12 @@
+Version: 3.2.1
+File format: 4
+TRACE START [2023-09-17 18:29:00.168759]
+22	54731	0	4.350674	25029952	App\KataRunner->App\{closure:/var/www/html/app/KataRunner.php:659-659}	1		/var/www/html/app/Utilities/Benchmark.php	100	0
+23	54732	0	4.350688	25029952	App\Challenges\A\Sample->sleep	1		/var/www/html/app/KataRunner.php	659	1	3
+24	54733	0	4.350712	25029952	sleep	0		/var/www/html/app/Challenges/A/Sample.php	11	1	3
+24	54733	1	7.352751	25029984
+23	54732	1	7.353625	25029952
+22	54731	1	7.353879	25029952
+22	54734	0	7.353963	25029952	xdebug_stop_trace	0		/var/www/html/app/Utilities/Benchmark.php	102	0
+			7.353992	25030000
+TRACE END   [2023-09-17 18:29:03.172198]

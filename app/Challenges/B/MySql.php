@@ -25,7 +25,7 @@ class MySql extends AMySql
 
         $value = $this->select($sql, $params);
 
-        return $this->return($value);
+        return $value;
     }
 
     public function orVersusInAggregate(int $iteration): float
@@ -45,6 +45,6 @@ class MySql extends AMySql
 
         $value = $this->selectOne($sql, $params)->rate;
 
-        return $this->return($value);
+        return $value;
     }
 }

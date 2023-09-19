@@ -8,15 +8,11 @@ class Php extends APhp
 {
     public function nativeRange(int $iteration): int
     {
-        $value = count(range(0, $this->getRangeLimit($iteration)));
-
-        return $this->return($value);
+        return count(range(0, $this->getRangeLimit($iteration)));
     }
 
     public function nativeSum(int $iteration): int
     {
-        $numbers = range(0, $this->getRangeLimit($iteration));
-
-        return $this->return(array_sum($numbers));
+        return array_sum(range(0, $this->getRangeLimit($iteration)));
     }
 }
