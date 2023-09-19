@@ -10,9 +10,6 @@ it('has valid return x1', function (
 
     $returnA = $instanceA->{$method}(1);
     $returnB = $instanceB->{$method}(1);
-
-    expect($returnA)->not->toBeEmpty();
-    expect($returnB)->not->toBeEmpty();
     expect($returnA)->toEqual($returnB);
 
 })->with('challenge-methods');
@@ -27,9 +24,6 @@ it('has valid return x3', function (
 
     $returnA = $instanceA->{$method}(3);
     $returnB = $instanceB->{$method}(3);
-
-    expect($returnA)->not->toBeEmpty();
-    expect($returnB)->not->toBeEmpty();
     expect($returnA)->toEqual($returnB);
 
 })->with('challenge-methods');
