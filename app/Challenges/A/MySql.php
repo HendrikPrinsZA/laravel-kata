@@ -33,7 +33,7 @@ class MySql extends KataChallenge
 
         $value = $this->select($sql, $params);
 
-        return $this->return($value);
+        return $value;
     }
 
     public function orVersusInAggregate(int $iteration): float
@@ -59,7 +59,7 @@ class MySql extends KataChallenge
 
         $value = $this->selectOne($sql, $params)->rate;
 
-        return $this->return($value);
+        return $value;
     }
 
     protected function selectOne(string $sql, array $params = []): mixed

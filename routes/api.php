@@ -20,18 +20,12 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-/**
- * A teapot for Jason
- */
 Route::any('/', function (Request $request) {
     $message = "I'm a teapot!";
 
     return response($message, 418);
 });
 
-/**
- * Check the app health
- */
 Route::get('health', function (Request $request) {
     return JsonResource::make([
         'success' => true,

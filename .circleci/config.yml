@@ -61,9 +61,13 @@ commands:
   setup-php:
     steps:
       - run:
-          name: Installing PHP modules
+          name: Installing PHP redis
           command: |
             yes 'no' | sudo pecl install -f redis || true
+      - run:
+          name: Installing PHP xdebug
+          command: |
+            sudo pecl install xdebug
       - run:
           name: Installing PHP pcov
           command: |

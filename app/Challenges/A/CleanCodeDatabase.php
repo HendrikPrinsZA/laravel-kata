@@ -34,7 +34,7 @@ class CleanCodeDatabase extends KataChallenge
             $sum += $product->price;
         }
 
-        return $this->return($sum);
+        return $sum;
     }
 
     public function memoryAllocation(int $iteration): array
@@ -51,6 +51,6 @@ class CleanCodeDatabase extends KataChallenge
             $resultArray[] = strrev($item);
         }
 
-        return $this->return($resultArray);
+        return $resultArray;
     }
 }

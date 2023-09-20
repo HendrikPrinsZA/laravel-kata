@@ -6,7 +6,7 @@ source $PATH_TO_REPO/.env
 
 if [ "${CI_MODE}" == "circleci" ]; then
     echo "LK_RUN_MODE=benchmark" >> "$PATH_TO_REPO/.env"
-    php artisan kata:run --all
+    php -d xdebug.mode=profile artisan kata:run --all
 else
     ./vendor/bin/sail artisan kata:run --all
 fi

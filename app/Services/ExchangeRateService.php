@@ -20,6 +20,16 @@ class ExchangeRateService
 
     public function getCurrencies(): CurrencyCollection
     {
+        if (app()->runningUnitTests()) {
+            $currencies = collect(CurrencyCode::cases())
+                ->map(fn (CurrencyCode $currencyCode) => Currency::make([
+                    'code' => $currencyCode,
+                    'name' => $currencyCode->value,
+                ]));
+
+            return CurrencyCollection::make($currencies);
+        }
+
         $codes = CurrencyCode::all()->pluck('code');
         $response = Http::get(sprintf('%s/symbols', self::API_HOST));
         $symbols = collect($response->json('symbols'))

@@ -8,76 +8,51 @@ use App\Models\User;
 
 class Eloquent extends KataChallenge
 {
-    protected const MAX_INTERATIONS = 100;
+    protected const MAX_INTERATIONS = 50;
 
     protected const EXPECTED_MODELS = [
         User::class,
         ExchangeRate::class,
     ];
 
-    /**
-     * Eloquent collections / Average
-     */
     public function getCollectionAverage(int $iteration): float
     {
-        $value = ExchangeRate::where('id', '<=', $iteration)
+        return ExchangeRate::where('id', '<=', $iteration)
             ->get()
             ->average('id');
-
-        return $this->return($value);
     }
 
-    /**
-     * Eloquent collections / Unique
-     */
     public function getCollectionUnique(int $iteration): iterable
     {
-        $value = ExchangeRate::all()
+        return ExchangeRate::query()
             ->where('id', '<=', $iteration)
+            ->get()
             ->pluck('id')
             ->unique();
-
-        return $this->return($value);
     }
 
-    /**
-     * Eloquent collections / Count
-     */
     public function getCollectionCount(int $iteration): int
     {
-        $value = ExchangeRate::query()
+        return ExchangeRate::query()
             ->where('id', '<=', $iteration)
             ->get()
             ->count();
-
-        return $this->return($value);
     }
 
-    /**
-     * Eloquent collections / Count
-     *
-     * Don’t use a collection to count the number of related entries.
-     *
-     * See https://codeburst.io/how-to-use-laravels-eloquent-efficiently-d46f5c392ca8
-     */
     public function getCollectionRelatedCount(int $iteration): int
     {
-        $value = User::all()
+        return User::all()
             ->where('id', '<=', $iteration)
             ->last()
             ?->blogs->count() ?? 0;
-
-        return $this->return($value);
     }
 
     public function getMaxVersusOrder(int $iteration): float
     {
-        $value = ExchangeRate::query()
+        return ExchangeRate::query()
             ->where('id', '<=', $iteration)
             ->orderByDesc('rate')
             ->first()?->rate;
-
-        return $this->return($value);
     }
 
     public function eagerLoading(int $iteration): float
@@ -89,6 +64,6 @@ class Eloquent extends KataChallenge
             $value += $user->blogs()->count();
         }
 
-        return $this->return($value);
+        return $value;
     }
 }

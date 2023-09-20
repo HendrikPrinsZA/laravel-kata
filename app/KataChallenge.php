@@ -3,7 +3,6 @@
 namespace App;
 
 use App\Exceptions\KataChallengeException;
-use App\Exceptions\KataChallengeProfilingException;
 use Illuminate\Http\Request;
 
 class KataChallenge
@@ -18,60 +17,21 @@ class KataChallenge
 
     protected int $maxIterations = 1;
 
-    protected ?int $memoryUsageStart = null;
-
-    protected ?int $memoryUsageTotal = null;
-
     public function __construct(protected ?Request $request = null)
     {
-        $this->memoryUsageStart = memory_get_usage(self::MEMORY_REAL_USAGE);
-
         $this->maxSeconds = $this->request?->get('max-seconds') ?? config(
             'laravel-kata.max-seconds',
             $this->maxSeconds
         );
 
         $this->maxIterations = $this->request?->get('max-iterations')
-            ?? static::MAX_INTERATIONS
-            ?? config(
-                'laravel-kata.max-iterations',
-                $this->maxIterations
-            );
+            ?? config('laravel-kata.max-iterations', $this->maxIterations);
+
+        if (! is_null(static::MAX_INTERATIONS) && $this->maxIterations > static::MAX_INTERATIONS) {
+            $this->maxIterations = static::MAX_INTERATIONS;
+        }
 
         $this->setUp();
-    }
-
-    public function return(mixed $value): mixed
-    {
-        $this->captureMemoryUsage();
-
-        return $value;
-    }
-
-    public function captureMemoryUsage(): void
-    {
-        $this->memoryUsageTotal ??= 0;
-
-        $memoryUsageEnd = memory_get_usage(self::MEMORY_REAL_USAGE);
-        $memoryUsage = $memoryUsageEnd - $this->memoryUsageStart;
-
-        if ($memoryUsage > 0) {
-            $this->memoryUsageTotal += $memoryUsage;
-        }
-
-        $this->memoryUsageStart = memory_get_usage(self::MEMORY_REAL_USAGE);
-    }
-
-    public function getMemoryUsage(): int
-    {
-        if (is_null($this->memoryUsageTotal)) {
-            throw new KataChallengeProfilingException(sprintf(
-                'Memory usage not captured for %s, did you forget to call $this->return()?',
-                static::class,
-            ));
-        }
-
-        return $this->memoryUsageTotal;
     }
 
     public function getMaxSeconds(): int

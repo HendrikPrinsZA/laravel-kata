@@ -10,6 +10,8 @@ use Domain\CleanCode\Objects\ShapeSquare;
 
 class CleanCode extends KataChallenge
 {
+    protected const MAX_INTERATIONS = 150;
+
     public function productsMake(int $iteration): float
     {
         $productController = app()->make(ProductController::class);
@@ -26,7 +28,7 @@ class CleanCode extends KataChallenge
             $sum += $product->price;
         }
 
-        return $this->return($sum);
+        return $sum;
     }
 
     public function shapes(int $iteration): float
@@ -43,6 +45,6 @@ class CleanCode extends KataChallenge
                 $shapeRectangle->areaPlusCircumference();
         }
 
-        return $this->return($sum);
+        return $sum;
     }
 }

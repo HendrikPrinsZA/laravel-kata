@@ -8,7 +8,7 @@ class Sample extends ASample
 {
     public function calculatePi(): float
     {
-        return $this->return(round(M_PI, 2));
+        return round(M_PI, 2);
     }
 
     public function fizzBuzz(int $iteration): string
@@ -27,18 +27,18 @@ class Sample extends ASample
             $result .= $word.'|';
         }
 
-        return $this->return($result);
+        return $result;
     }
 
-    public function memoryAllocation(int $iteration): array
+    public function memoryAllocation(int $iteration): string
     {
         $largeArray = range(1, $iteration);
         $resultArray = [];
 
         foreach ($largeArray as $item) {
-            $resultArray[] = strrev(str_repeat($item, 100));
+            $resultArray[] = strrev(str_repeat($item, floor($iteration / 10) + 1));
         }
 
-        return $this->return($resultArray);
+        return md5(implode('|', $resultArray));
     }
 }

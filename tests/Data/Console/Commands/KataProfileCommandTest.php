@@ -16,7 +16,7 @@ beforeEach(function () {
     Config::set('laravel-kata.show-code-snippets', true);
 });
 
-it('can run all', function () {
+it('can run single', function () {
     $this->artisan('kata:profile Sample calculatePi')
         ->assertExitCode(Command::SUCCESS);
 });

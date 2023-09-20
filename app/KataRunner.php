@@ -8,10 +8,10 @@ use App\Exceptions\KataChallengeNotFoundException;
 use App\Exceptions\KataChallengeScoreException;
 use App\Objects\KataChallengeResultObject;
 use App\Traits\HasExitHintsTrait;
+use App\Utilities\Benchmark;
 use App\Utilities\CodeUtility;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
-use Illuminate\Support\Benchmark;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -26,11 +26,6 @@ class KataRunner
     protected const DEFAULT_MODES = [
         KataRunnerMode::A,
         KataRunnerMode::B,
-    ];
-
-    protected const DEFAULT_ITERATION_MODES = [
-        KataRunnerIterationMode::MAX_ITERATIONS,
-        KataRunnerIterationMode::MAX_SECONDS,
     ];
 
     protected array $modes;
@@ -77,7 +72,13 @@ class KataRunner
 
         $this->modes = self::DEFAULT_MODES;
 
-        $this->iterationModes = self::DEFAULT_ITERATION_MODES;
+        $this->iterationModes = config('laravel-kata.modes');
+        if (app()->runningUnitTests()) {
+            $this->iterationModes = collect(config('laravel-kata.modes'))
+                ->reject(fn (KataRunnerIterationMode $mode) => $mode === KataRunnerIterationMode::XDEBUG_PROFILE)
+                ->values()
+                ->toArray();
+        }
 
         if (! is_null($this->command) && ! config('laravel-kata.progress-bar-disabled')) {
             $this->progressBar = $this->command?->getOutput()->createProgressBar(0);
@@ -123,19 +124,33 @@ class KataRunner
     ): void {
         $reportData = $this->getReportData($resultA, $resultB);
 
-        $getScoreRow = function (string $field, string $title = null) use ($reportData): array {
+        $getScoreRow = function (string $field, string $title = null, float $weight = 0.0) use ($reportData): array {
             $valueA = data_get($reportData, sprintf('stats.a.%s', $field));
             $valueB = data_get($reportData, sprintf('stats.b.%s', $field));
 
+            if (is_null($valueA) || is_null($valueB)) {
+                return [
+                    $title ?: $field,
+                    $valueA,
+                    $valueB,
+                    'N/A',
+                    'N/A',
+                ];
+            }
+
             $displayValueA = match ($field) {
                 'execution_time_avg' => time_to_human($valueA),
-                'memory_usage_avg' => bytes_to_human($valueA),
+                'execution_time_sum' => time_to_human($valueA),
+                'profile_time_avg' => time_to_human($valueA),
+                'profile_memory_usage_avg' => bytes_to_human($valueA),
                 default => $valueA,
             };
 
             $displayValueB = match ($field) {
                 'execution_time_avg' => time_to_human($valueB),
-                'memory_usage_avg' => bytes_to_human($valueB),
+                'execution_time_sum' => time_to_human($valueB),
+                'profile_time_avg' => time_to_human($valueB),
+                'profile_memory_usage_avg' => bytes_to_human($valueB),
                 default => $valueB,
             };
 
@@ -144,7 +159,7 @@ class KataRunner
 
             $performance = match ($field) {
                 'outputs_md5' => wrap_in_format($success ? '100%' : '0%', $success),
-                default => wrap_in_format(sprintf('%s%%', $gainsPerc), $success, warn: true),
+                default => wrap_in_format(sprintf('%s%%', round($gainsPerc)), $success, warn: true),
             };
 
             return [
@@ -152,18 +167,17 @@ class KataRunner
                 $displayValueA,
                 $displayValueB,
                 $performance,
+                sprintf('%s: %s', number_format($weight, 2), number_format($weight * $gainsPerc, 2)),
             ];
         };
 
         $gainsPerc = data_get($reportData, 'stats.b.gains_perc');
-
         $title = sprintf(
-            '%s::%s (%s%%)',
+            '%s::%s (%sX)',
             $resultA->getClassName(),
             $resultA->getMethodName(),
-            $gainsPerc
+            round($gainsPerc / 100, 2)
         );
-
         $this->report('newLine');
         $this->report(
             'line',
@@ -171,16 +185,15 @@ class KataRunner
         );
 
         // Show where it comes from
-        $this->report('line', sprintf(
-            'A: %s', help_me_code($resultA->getReflectionMethod()),
-        ));
         if (config('laravel-kata.show-code-snippets')) {
+            $this->report('line', sprintf(
+                'A: %s', help_me_code($resultA->getReflectionMethod()),
+            ));
             $this->report('comment', $resultA->getCodeSnippet());
-        }
-        $this->report('line', sprintf(
-            'B: %s', help_me_code($resultB->getReflectionMethod()),
-        ));
-        if (config('laravel-kata.show-code-snippets')) {
+
+            $this->report('line', sprintf(
+                'B: %s', help_me_code($resultB->getReflectionMethod()),
+            ));
             $this->report('comment', $resultB->getCodeSnippet());
         }
 
@@ -190,13 +203,29 @@ class KataRunner
                 'A               ',
                 'B               ',
                 'Gains           ',
+                'Weighted gains  ',
             ],
             [
-                $getScoreRow('line_count', 'Lines'),
-                $getScoreRow('iteration_count', 'Iterations'),
-                $getScoreRow('execution_time_avg', 'Execution time'),
-                $getScoreRow('memory_usage_avg', 'Memory usage'),
-            ]
+                $getScoreRow('violations_count', 'Code / Violations', 0.05),
+                $getScoreRow('line_count', 'Code / Lines', 0.05),
+                $getScoreRow('iteration_count', sprintf(
+                    'Benchmark / Iterations in %ss',
+                    config('laravel-kata.max-seconds'),
+                ), 0.20),
+                $getScoreRow('execution_time_sum', sprintf(
+                    'Benchmark / Execution time for %dx',
+                    data_get($reportData, 'stats.a._result.max-iterations.iteration_count', 52),
+                ), 0.20),
+                $getScoreRow('profile_time_avg', 'Profiling / Execution time (avg)', 0.25),
+                $getScoreRow('profile_memory_usage_avg', 'Profiling / Memory usage (avg)', 0.25),
+                [
+                    '',
+                    '',
+                    '',
+                    '',
+                    sprintf('1.00: %s', number_format($gainsPerc, 2)),
+                ],
+            ],
         );
 
         if (! data_get($reportData, 'stats.b.outputs_md5_gains_success')) {
@@ -285,16 +314,22 @@ class KataRunner
             'line_count' => 'lt',
             'violations_count' => 'lt',
             'iteration_count' => 'gt',
-            'memory_usage_avg' => 'lt',
+            'profile_memory_usage_avg' => 'lt',
             'execution_time_avg' => 'lt',
+            'execution_time_sum' => 'lt',
+            'profile_time_avg' => 'lt',
         ];
 
         foreach ($fields as $field => $mode) {
             $success = false;
-            $value1 = $statsB[$field];
-            $value2 = $statsA[$field];
+            $value1 = data_get($statsB, $field);
+            $value2 = data_get($statsA, $field);
 
-            if (in_array($mode, ['lt', 'gt'])) {
+            if (is_null($value1) || is_null($value2)) {
+                $gains = 'N/A';
+                $percDiff = 0;
+                $success = false;
+            } elseif (in_array($mode, ['lt', 'gt'])) {
                 if ($mode === 'gt') {
                     $value1 = $value2;
                     $value2 = $statsB[$field];
@@ -306,7 +341,7 @@ class KataRunner
                     $percDiff = 100;
                 } else {
                     $percDiff = $value1 != 0
-                        ? round(abs(($value1 - $value2) / $value1) * 100, 2)
+                        ? abs(($value1 - $value2) / $value1) * 100
                         : 0;
                 }
 
@@ -315,9 +350,7 @@ class KataRunner
                 }
 
                 $success = $value1 <= $value2;
-            }
-
-            if ($mode === 'string') {
+            } elseif ($mode === 'string') {
                 $gains = 0;
                 $percDiff = 0;
                 $success = $value1 === $value2;
@@ -329,10 +362,12 @@ class KataRunner
         }
 
         $gainsWeights = [
+            'violations_count_gains_perc' => 0.05,
             'line_count_gains_perc' => 0.05,
-            'memory_usage_avg_gains_perc' => 0.25,
-            'iteration_count_gains_perc' => 0.35,
-            'execution_time_avg_gains_perc' => 0.35,
+            'iteration_count_gains_perc' => 0.20,
+            'execution_time_sum_gains_perc' => 0.20,
+            'profile_time_avg_gains_perc' => 0.25,
+            'profile_memory_usage_avg_gains_perc' => 0.25,
         ];
 
         $statsB['gains_perc'] = collect($gainsWeights)->map(
@@ -468,7 +503,6 @@ class KataRunner
                 $maxSeconds,
             );
 
-            $challengeOutputs['memory_usage_peak'] = memory_get_peak_usage(false);
             $result[$iterationMode->value] = $challengeOutputs;
         }
 
@@ -507,6 +541,9 @@ class KataRunner
             KataRunnerIterationMode::MAX_SECONDS => $this->runChallengeMethodMaxSeconds(
                 $reflectionMethod,
                 $maxSeconds
+            ),
+            KataRunnerIterationMode::XDEBUG_PROFILE => $this->profile(
+                $reflectionMethod,
             )
         };
 
@@ -531,7 +568,6 @@ class KataRunner
         }
 
         $executionTimeSum = 0;
-        $memoryUsageSum = 0;
         $startTime = microtime(true);
         $outputs = [];
 
@@ -549,7 +585,6 @@ class KataRunner
                 $outputs[] = $instance->{$methodName}($iteration + 1);
             });
 
-            $memoryUsageSum += $instance->getMemoryUsage();
             $this->progressBar?->advance();
         }
 
@@ -569,8 +604,6 @@ class KataRunner
             'outputs_json' => json_encode($outputs),
             'outputs_md5' => $outputsMd5,
             'iteration_count' => $iterationCount,
-            'memory_usage_sum' => $memoryUsageSum,
-            'memory_usage_avg' => $memoryUsageSum / $iterationCount,
             'execution_time' => microtime(true) - $startTime,
             'execution_time_sum' => $executionTimeSum,
             'execution_time_avg' => $executionTimeSum / $iterationCount,
@@ -591,7 +624,6 @@ class KataRunner
         }
 
         $executionTimeSum = 0;
-        $memoryUsageSum = 0;
         $startTime = microtime(true);
         $msMax = $maxSeconds * 1000;
         $dateTimeEnd = now()->addMilliseconds($msMax);
@@ -607,7 +639,6 @@ class KataRunner
             $executionTimeSum += Benchmark::measure(function () use ($instance, $methodName, $iteration, &$outputs) {
                 $outputs[] = $instance->{$methodName}($iteration);
             });
-            $memoryUsageSum += $instance->getMemoryUsage();
 
             $this->progressBar?->setProgress($msMax - $msLeft);
             $this->progressBar?->setMessage(sprintf(
@@ -635,11 +666,21 @@ class KataRunner
             'outputs_md5' => $outputsMd5,
             'outputs' => $outputs,
             'iteration_count' => $iteration,
-            'memory_usage_sum' => $memoryUsageSum,
-            'memory_usage_avg' => $memoryUsageSum / $iteration,
             'execution_time' => microtime(true) - $startTime,
             'execution_time_sum' => $executionTimeSum,
             'execution_time_avg' => $executionTimeSum / $iteration,
         ];
+    }
+
+    protected function profile(ReflectionMethod $reflectionMethod): array
+    {
+        $className = $reflectionMethod->class;
+        /** @var \App\KataChallenge $instance */
+        $instance = app()->make($className);
+        $methodName = $reflectionMethod->name;
+
+        $maxIterations = ceil($instance->getMaxIterations() / 2);
+
+        return Benchmark::profile(fn () => $instance->{$methodName}($maxIterations), maxIterations: $maxIterations);
     }
 }

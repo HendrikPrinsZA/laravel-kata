@@ -26,7 +26,7 @@ class CleanCode extends ACleanCode
             $sum += $product->price;
         }
 
-        return $this->return($sum);
+        return $sum;
     }
 
     public function shapes(int $iteration): float
@@ -39,6 +39,6 @@ class CleanCode extends ACleanCode
                 rectangle_area_plus_circumference(3.0 * ($i + 1), 7.0 * ($i + 1));
         }
 
-        return $this->return($sum);
+        return $sum;
     }
 }

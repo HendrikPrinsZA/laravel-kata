@@ -42,17 +42,29 @@ class KataChallengeResultObject extends JsonResource
 
     public function getStats(): array
     {
+        $extraReturn = [];
+
         $violations = $this->getViolations();
 
+        $profile = data_get($this->result, KataRunnerIterationMode::XDEBUG_PROFILE->value, []);
+        if (! empty($profile)) {
+            $maxIterations = data_get($profile, 'max_iterations', 1);
+            $extraReturn['profile_memory_usage_avg'] = data_get($profile, 'memory_usage.total', 0) / $maxIterations;
+            $extraReturn['profile_time_avg'] = data_get($profile, 'time.total', 0) / $maxIterations;
+        }
+
         return [
+            ...$extraReturn,
+            '_result' => $this->result, // Why normalize?
+
             'violations' => $violations,
             'violations_count' => count($violations),
 
             'iteration_count' => $this->getStat('iteration_count', KataRunnerIterationMode::MAX_SECONDS),
             'outputs_md5' => $this->getStat('outputs_md5', KataRunnerIterationMode::MAX_ITERATIONS),
 
-            'execution_time_avg' => $this->getExecutionTimeAvg(),
-            'memory_usage_avg' => $this->getMemoryUsageAvg(),
+            'execution_time_avg' => $this->getStat('execution_time_avg', KataRunnerIterationMode::MAX_ITERATIONS),
+            'execution_time_sum' => $this->getStat('execution_time_sum', KataRunnerIterationMode::MAX_ITERATIONS),
 
             'line_count' => $this->reflectionMethod->getEndLine() - $this->reflectionMethod->getStartLine(),
         ];
@@ -72,22 +84,6 @@ class KataChallengeResultObject extends JsonResource
         }
 
         return array_sum($values);
-    }
-
-    public function getExecutionTimeAvg(): float
-    {
-        $count = $this->getStat('iteration_count', KataRunnerIterationMode::MAX_ITERATIONS);
-        $sum = $this->getStat('execution_time_sum', KataRunnerIterationMode::MAX_ITERATIONS);
-
-        return $sum / $count;
-    }
-
-    public function getMemoryUsageAvg(): float
-    {
-        $count = $this->getStat('iteration_count', KataRunnerIterationMode::MAX_ITERATIONS);
-        $sum = $this->getStat('memory_usage_sum', KataRunnerIterationMode::MAX_ITERATIONS);
-
-        return $sum / $count;
     }
 
     public function getOutputsJson(

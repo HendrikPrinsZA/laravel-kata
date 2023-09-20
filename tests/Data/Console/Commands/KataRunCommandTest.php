@@ -1,14 +1,13 @@
 <?php
 
+use App\Challenges\A\Sample;
 use App\Exceptions\KataChallengeException;
 use App\Exceptions\KataChallengeNotFoundException;
-use App\Exceptions\KataChallengeProfilingException;
 use App\Exceptions\KataChallengeScoreException;
 use App\Models\Blog;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
 use Tests\Data\Console\Commands\FakeChallenges\A\NotFound;
-use Tests\Data\Console\Commands\FakeChallenges\A\NotUsingReturn;
 use Tests\Data\Console\Commands\FakeChallenges\A\TooSlow;
 use Tests\Data\Console\Commands\FakeChallenges\A\WrongOutput;
 
@@ -25,11 +24,19 @@ beforeEach(function () {
 });
 
 it('can run all', function () {
+    Config::set('laravel-kata.challenges', [
+        Sample::class,
+    ]);
+
     $this->artisan('kata:run --all')
         ->assertExitCode(Command::SUCCESS);
 });
 
 it('can run single', function () {
+    Config::set('laravel-kata.challenges', [
+        Sample::class,
+    ]);
+
     $this->artisan('kata:run')
         ->expectsQuestion('Challenges', '#0')
         ->expectsQuestion('Challenges (1)', 'n')
@@ -37,11 +44,19 @@ it('can run single', function () {
 });
 
 it('can run by challenge', function () {
+    Config::set('laravel-kata.challenges', [
+        Sample::class,
+    ]);
+
     $this->artisan('kata:run --challenge=Sample')
         ->assertExitCode(Command::SUCCESS);
 });
 
 it('can run by challenge method', function () {
+    Config::set('laravel-kata.challenges', [
+        Sample::class,
+    ]);
+
     $this->artisan('kata:run --challenge=Sample --method=calculatePi')
         ->assertExitCode(Command::SUCCESS);
 });
@@ -99,11 +114,3 @@ it('fails on expected model empty', function () {
 
     $this->artisan('kata:run --all');
 })->throws(KataChallengeException::class);
-
-it('fails when not using $this->return()', function () {
-    Config::set('laravel-kata.challenges', [
-        NotUsingReturn::class,
-    ]);
-
-    $this->artisan('kata:run --all');
-})->throws(KataChallengeProfilingException::class);
