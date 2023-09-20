@@ -4,6 +4,7 @@ namespace App\Utilities;
 
 use App\Exceptions\BenchmarkProfileException;
 use Closure;
+use ErrorException;
 use Illuminate\Support\Benchmark as SupportBenchmark;
 
 class Benchmark extends SupportBenchmark
@@ -34,8 +35,6 @@ class Benchmark extends SupportBenchmark
 
     public static function profileGetStats(string $filepath): array
     {
-        $filepath = trim($filepath, '.xt').'.xt';
-
         if (! file_exists($filepath)) {
             throw new BenchmarkProfileException(sprintf(
                 'Expected profile stats file not found at: %s',
@@ -78,6 +77,8 @@ class Benchmark extends SupportBenchmark
 
         }
 
+        fclose($handle);
+
         if (is_null($start)) {
             throw new BenchmarkProfileException('No start found');
         }
@@ -117,12 +118,11 @@ class Benchmark extends SupportBenchmark
         }
 
         // Might want to save the static file for debugging...
+        $tempFilePath = sys_get_temp_dir().'/'.uniqid('xdt-', true);
         // copy($tempFilePath.'.xt', sprintf('/var/www/html/sample-memory-%s.xt', now()->format('ymd_His')));
 
         try {
-            $tempFile = tmpfile();
-            $tempFilePath = stream_get_meta_data($tempFile)['uri'];
-            xdebug_start_trace($tempFilePath, XDEBUG_TRACE_COMPUTERIZED);
+            xdebug_start_trace($tempFilePath, XDEBUG_TRACE_COMPUTERIZED | XDEBUG_TRACE_NAKED_FILENAME);
             $benchmarkable();
             xdebug_stop_trace();
 
@@ -130,11 +130,17 @@ class Benchmark extends SupportBenchmark
                 ...self::profileGetStats($tempFilePath),
                 'max_iterations' => $maxIterations,
             ];
-        } catch (BenchmarkProfileException $_) {
+        } catch (BenchmarkProfileException $exception) {
             return self::profile($benchmarkable, $maxIterations, $maxTries - 1);
+        } catch (ErrorException $exception) {
+            if ($exception->getMessage() === 'Functionality is not enabled') {
+                return [];
+            }
+
+            throw new BenchmarkProfileException($exception->getMessage());
         } finally {
-            if (file_exists($tempFilePath.'.xt')) {
-                @unlink($tempFilePath.'.xt');
+            if (file_exists($tempFilePath)) {
+                @unlink($tempFilePath);
             }
         }
     }
