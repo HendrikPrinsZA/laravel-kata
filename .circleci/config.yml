@@ -65,7 +65,7 @@ commands:
           command: |
             yes 'no' | sudo pecl install -f redis || true
       - run:
-          name: Installing PHP pcov
+          name: Installing PHP xdebug
           command: |
             sudo pecl install xdebug
       - run:
