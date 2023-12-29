@@ -21,27 +21,27 @@ enum CountryCode: string
             self::AE => [
                 'code' => $this->value,
                 'name' => 'Dubai',
-                'currency_id' => Currency::firstWhere('code', CurrencyCode::AED)?->id,
+                'currency_id' => Currency::firstWhere('code', CurrencyCode::AED)->id,
             ],
             self::NL => [
                 'code' => $this->value,
                 'name' => 'The Netherlands',
-                'currency_id' => Currency::firstWhere('code', CurrencyCode::EUR)?->id,
+                'currency_id' => Currency::firstWhere('code', CurrencyCode::EUR)->id,
             ],
             self::UK => [
                 'code' => $this->value,
                 'name' => 'United Kingdom',
-                'currency_id' => Currency::firstWhere('code', CurrencyCode::GBP)?->id,
+                'currency_id' => Currency::firstWhere('code', CurrencyCode::GBP)->id,
             ],
             self::US => [
                 'code' => $this->value,
                 'name' => 'United States',
-                'currency_id' => Currency::firstWhere('code', CurrencyCode::USD)?->id,
+                'currency_id' => Currency::firstWhere('code', CurrencyCode::USD)->id,
             ],
             self::ZA => [
                 'code' => $this->value,
                 'name' => 'South Africa',
-                'currency_id' => Currency::firstWhere('code', CurrencyCode::ZAR)?->id,
+                'currency_id' => Currency::firstWhere('code', CurrencyCode::ZAR)->id,
             ],
         };
     }

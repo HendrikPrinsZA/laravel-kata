@@ -14,43 +14,30 @@ use Illuminate\Support\Facades\Http;
 
 class ExchangeRateService
 {
-    public const API_HOST = 'https://api.exchangerate.host';
-
     protected const MAX_YEARS = 5;
+
+    protected string $apiHost;
+
+    protected string $apiKey;
+
+    public function __construct()
+    {
+        $this->apiHost = config('exchange-rates.api-host');
+        $this->apiKey = config('exchange-rates.api-key');
+    }
 
     public function getCurrencies(): CurrencyCollection
     {
-        if (app()->runningUnitTests()) {
-            $currencies = collect(CurrencyCode::cases())
-                ->map(fn (CurrencyCode $currencyCode) => Currency::make([
-                    'code' => $currencyCode,
-                    'name' => $currencyCode->value,
-                ]));
+        $currencies = collect(CurrencyCode::cases())
+            ->map(fn (CurrencyCode $currencyCode) => Currency::make([
+                'code' => $currencyCode,
+                'name' => $currencyCode->value,
+            ]));
 
-            return CurrencyCollection::make($currencies);
-        }
-
-        $codes = CurrencyCode::all()->pluck('code');
-        $response = Http::get(sprintf('%s/symbols', self::API_HOST));
-        $symbols = collect($response->json('symbols'))
-            ->filter(fn ($symbol) => $codes->contains($symbol['code']));
-
-        $currencies = CurrencyCollection::make();
-        foreach ($symbols as $symbol) {
-            $code = $symbol['code'];
-            $name = $symbol['description'];
-
-            $currency = Currency::make([
-                'code' => CurrencyCode::from($code),
-                'name' => $name,
-            ]);
-            $currencies->push($currency);
-        }
-
-        return $currencies;
+        return CurrencyCollection::make($currencies);
     }
 
-    public function syncExchangeRates(int $maxYears = null): void
+    public function syncExchangeRates(?int $maxYears = null): void
     {
         $dateStart = ExchangeRate::max('date') ?? now()->subYears($maxYears ?? self::MAX_YEARS)->toDateString();
         $dateStart = Carbon::createFromFormat('Y-m-d', $dateStart);
@@ -79,8 +66,9 @@ class ExchangeRateService
             ->pluck('value');
 
         $url = sprintf(
-            '%s/timeseries?start_date=%s&end_date=%s&base=%s&symbols=%s',
-            self::API_HOST,
+            '%s/timeframe?access_key=%s&start_date=%s&end_date=%s&source=%s&currencies=%s',
+            $this->apiHost,
+            $this->apiKey,
             $startDate->toDateString(),
             $endDate->toDateString(),
             CurrencyCode::EUR->value,
@@ -96,6 +84,7 @@ class ExchangeRateService
         foreach ($rates as $rawDate => $rawRates) {
             $date = Carbon::createFromFormat('Y-m-d', $rawDate);
             foreach ($rawRates as $currencyCode => $rate) {
+                $currencyCode = substr($currencyCode, 3);
                 $exchangeRates->push(ExchangeRate::factory()->makeOne([
                     'base_currency_id' => $currencyLookup[CurrencyCode::EUR->value]['id'],
                     'target_currency_id' => $currencyLookup[$currencyCode]['id'],
@@ -111,15 +100,17 @@ class ExchangeRateService
 
     public function getRates(string $url): array
     {
-        $cacheKey = sprintf('fx:%s', md5($url));
+        $urlMd5 = md5($url);
+        $cacheKey = sprintf('fx:%s', $urlMd5);
         if (Cache::has($cacheKey)) {
             return Cache::get($cacheKey);
         }
 
-        $rates = Http::get($url)->json('rates');
+        $rates = Http::get($url)->json('quotes');
 
         // Note: Used to reset the static cache (for testing)
-        // dd(json_encode($rates));
+        // $filepath = sprintf('%s/../../database/seeders/Models/Files/fx_%s.json', __DIR__, $urlMd5);
+        // file_put_contents($filepath, json_encode($rates));
 
         Cache::set($cacheKey, $rates);
 
