@@ -100,7 +100,8 @@ class ExchangeRateService
 
     public function getRates(string $url): array
     {
-        $cacheKey = sprintf('fx:%s', md5($url));
+        $urlMd5 = md5($url);
+        $cacheKey = sprintf('fx:%s', $urlMd5);
         if (Cache::has($cacheKey)) {
             return Cache::get($cacheKey);
         }
@@ -108,7 +109,8 @@ class ExchangeRateService
         $rates = Http::get($url)->json('quotes');
 
         // Note: Used to reset the static cache (for testing)
-        // dd(json_encode($rates));
+        // $filepath = sprintf('%s/../../database/seeders/Models/Files/fx_%s.json', __DIR__, $urlMd5);
+        // file_put_contents($filepath, json_encode($rates));
 
         Cache::set($cacheKey, $rates);
 
