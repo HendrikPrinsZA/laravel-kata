@@ -73,7 +73,7 @@ return [
     'debug-mode' => false,
     'show-hints' => false,
     'show-hints-extended' => false,
-    'show-code-snippets' => true,
+    'show-code-snippets' => false,
     'gains-perc-minimum' => -100, // We don't care about negative gains :)
 
     // Experimental (not stable)
