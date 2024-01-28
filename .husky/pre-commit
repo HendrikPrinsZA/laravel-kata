@@ -4,10 +4,10 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 echo "Linting"
-./vendor/bin/tlint format
+./vendor/bin/sail php ./vendor/bin/tlint format
 
 echo "Pinting"
-./vendor/bin/pint --dirty -v
+./vendor/bin/sail php ./vendor/bin/pint --dirty -v
 
 if [[ $(git diff --stat) != '' ]]; then
   printf "\n${RED}Exception: Dirty files found, check and commit again!${NC}\n"

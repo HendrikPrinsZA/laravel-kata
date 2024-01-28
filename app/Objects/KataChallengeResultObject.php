@@ -43,8 +43,9 @@ class KataChallengeResultObject extends JsonResource
     public function getStats(): array
     {
         $extraReturn = [];
-
-        $violations = $this->getViolations();
+        $violations = $this->reflectionMethod->class::SKIP_VIOLATIONS
+            ? []
+            : $this->getViolations();
 
         $profile = data_get($this->result, KataRunnerIterationMode::XDEBUG_PROFILE->value, []);
         if (! empty($profile)) {
@@ -72,7 +73,7 @@ class KataChallengeResultObject extends JsonResource
 
     public function getStat(
         string $key,
-        KataRunnerIterationMode $kataRunnerIterationMode = null
+        ?KataRunnerIterationMode $kataRunnerIterationMode = null
     ): mixed {
         if (! is_null($kataRunnerIterationMode)) {
             return $this->result[$kataRunnerIterationMode->value][$key];

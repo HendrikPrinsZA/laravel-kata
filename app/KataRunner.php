@@ -124,7 +124,7 @@ class KataRunner
     ): void {
         $reportData = $this->getReportData($resultA, $resultB);
 
-        $getScoreRow = function (string $field, string $title = null, float $weight = 0.0) use ($reportData): array {
+        $getScoreRow = function (string $field, ?string $title = null, float $weight = 0.0) use ($reportData): array {
             $valueA = data_get($reportData, sprintf('stats.a.%s', $field));
             $valueB = data_get($reportData, sprintf('stats.b.%s', $field));
 
@@ -142,7 +142,11 @@ class KataRunner
                 'execution_time_avg' => time_to_human($valueA),
                 'execution_time_sum' => time_to_human($valueA),
                 'profile_time_avg' => time_to_human($valueA),
-                'profile_memory_usage_avg' => bytes_to_human($valueA),
+                'profile_memory_usage_avg' => sprintf(
+                    '%s (%d)',
+                    bytes_to_human($valueA),
+                    $valueA
+                ),
                 default => $valueA,
             };
 
@@ -150,7 +154,11 @@ class KataRunner
                 'execution_time_avg' => time_to_human($valueB),
                 'execution_time_sum' => time_to_human($valueB),
                 'profile_time_avg' => time_to_human($valueB),
-                'profile_memory_usage_avg' => bytes_to_human($valueB),
+                'profile_memory_usage_avg' => sprintf(
+                    '%s (%d)',
+                    bytes_to_human($valueB),
+                    $valueB
+                ),
                 default => $valueB,
             };
 

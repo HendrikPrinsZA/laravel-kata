@@ -7,6 +7,7 @@ use App\Challenges\A\Laravel;
 use App\Challenges\A\MySql;
 use App\Challenges\A\Php;
 use App\Challenges\A\Sample;
+use App\Challenges\A\Silly;
 use App\Enums\KataRunMode;
 use App\Enums\KataRunnerIterationMode;
 use App\Exceptions\KataInvalidRunModeException;
@@ -53,6 +54,7 @@ return [
         Laravel::class,
         CleanCode::class,
         CleanCodeDatabase::class,
+        Silly::class,
     ],
 
     // Params
@@ -71,7 +73,7 @@ return [
     'debug-mode' => false,
     'show-hints' => false,
     'show-hints-extended' => false,
-    'show-code-snippets' => false,
+    'show-code-snippets' => true,
     'gains-perc-minimum' => -100, // We don't care about negative gains :)
 
     // Experimental (not stable)

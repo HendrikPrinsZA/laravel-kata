@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 
 class KataChallenge
 {
+    public const SKIP_VIOLATIONS = true;
+
     protected const MEMORY_REAL_USAGE = true;
 
     protected const MAX_INTERATIONS = null;
