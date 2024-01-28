@@ -43,6 +43,9 @@ if [ "${CI_MODE}" == "circleci" ]; then
     mysql -h127.0.0.1 -uroot -p$DB_ROOT_PASSWORD -e "DROP DATABASE IF EXISTS $DB_TEST_DATABASE; CREATE DATABASE $DB_TEST_DATABASE;"
     mysql -h127.0.0.1 -uroot -p$DB_ROOT_PASSWORD -e "GRANT ALL PRIVILEGES ON *.* TO 'sail'@'%'; FLUSH PRIVILEGES;"
 
+    # experimenting
+    nohup php artisan serve &
+
     php artisan migrate:fresh --seed --no-interaction --force
     php artisan migrate:fresh --env=testing --database=$DB_TEST_DATABASE --seed --force --no-interaction
     exit 0
