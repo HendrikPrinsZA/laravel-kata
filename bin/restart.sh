@@ -44,6 +44,7 @@ if [ "${CI_MODE}" == "circleci" ]; then
     mysql -h127.0.0.1 -uroot -p$DB_ROOT_PASSWORD -e "GRANT ALL PRIVILEGES ON *.* TO 'sail'@'%'; FLUSH PRIVILEGES;"
 
     # experimenting
+    echo "Serving Laravel..."
     nohup php artisan serve &
 
     php artisan migrate:fresh --seed --no-interaction --force
