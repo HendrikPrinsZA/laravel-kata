@@ -1,10 +1,13 @@
 <?php
 
+use App\Challenges\A\CleanCode;
+use App\Challenges\A\CleanCodeDatabase;
 use App\Challenges\A\Eloquent;
 use App\Challenges\A\Laravel;
 use App\Challenges\A\MySql;
 use App\Challenges\A\Php;
 use App\Challenges\A\Sample;
+use App\Challenges\A\Silly;
 use App\KataChallenge;
 
 $challengeClasses = [
@@ -13,6 +16,9 @@ $challengeClasses = [
     Eloquent::class,
     MySql::class,
     Laravel::class,
+    CleanCode::class,
+    CleanCodeDatabase::class,
+    Silly::class,
 ];
 
 $challengeMethods = [];
@@ -34,7 +40,6 @@ foreach ($challengeClasses as $challengeClass) {
             $reflectionMethod->name,
         ];
     }
-
 }
 
 dataset('challenge-methods', $challengeMethods);

@@ -28,8 +28,11 @@ source $PATH_TO_REPO/.env
 
 if [ "${CI_MODE}" == "circleci" ]; then
     echo "Running in CircliCI"
-    echo $'\n# CircleCI\n' >> $PATH_TO_REPO/.env
-    cat $PATH_TO_REPO/.env.circleci >> $PATH_TO_REPO/.env
+
+    cat $PATH_TO_REPO/.env > $PATH_TO_REPO/.env.new
+    echo $'\n# CircleCI\n' >> $PATH_TO_REPO/.env.new
+    cat $PATH_TO_REPO/.env.circleci >> $PATH_TO_REPO/.env.new
+    mv $PATH_TO_REPO/.env.new $PATH_TO_REPO/.env
     source $PATH_TO_REPO/.env
 
     composer install
@@ -45,7 +48,7 @@ fi
 echo "Running in local"
 
 # Install dependencies
-composer install
+./vendor/bin/sail composer install
 
 # Launch sail environment
 ./vendor/bin/sail down --rmi local -v
