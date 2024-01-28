@@ -29,9 +29,12 @@ source $PATH_TO_REPO/.env
 if [ "${CI_MODE}" == "circleci" ]; then
     echo "Running in CircliCI"
 
-    cat $PATH_TO_REPO/.env > $PATH_TO_REPO/.env.new
     echo $'\n# CircleCI\n' >> $PATH_TO_REPO/.env.new
     cat $PATH_TO_REPO/.env.circleci >> $PATH_TO_REPO/.env.new
+
+    echo $'\n# Default env\n' >> $PATH_TO_REPO/.env.new
+    cat $PATH_TO_REPO/.env > $PATH_TO_REPO/.env.new
+
     mv $PATH_TO_REPO/.env.new $PATH_TO_REPO/.env
     source $PATH_TO_REPO/.env
 
