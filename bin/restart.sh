@@ -47,7 +47,14 @@ if [ "${CI_MODE}" == "circleci" ]; then
     echo "Serving Laravel..."
     nohup php artisan serve &
 
+    php artisan migrate:fresh
+    echo "Migrate migrate:fresh exit code:"
+    echo $?
+
     php artisan migrate:fresh --seed --no-interaction --force
+    echo "Migrate migrate:fresh --seed exit code:"
+    echo $?
+
     php artisan migrate:fresh --env=testing --database=$DB_TEST_DATABASE --seed --force --no-interaction
     exit 0
 fi
