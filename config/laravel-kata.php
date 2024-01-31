@@ -7,7 +7,6 @@ use App\Challenges\A\Laravel;
 use App\Challenges\A\MySql;
 use App\Challenges\A\Php;
 use App\Challenges\A\Sample;
-use App\Challenges\A\Silly;
 use App\Enums\KataRunMode;
 use App\Enums\KataRunnerIterationMode;
 use App\Exceptions\KataInvalidRunModeException;
@@ -54,7 +53,6 @@ return [
         Laravel::class,
         CleanCode::class,
         CleanCodeDatabase::class,
-        Silly::class,
     ],
 
     // Params
