@@ -7,6 +7,7 @@ use App\Challenges\A\Laravel;
 use App\Challenges\A\MySql;
 use App\Challenges\A\Php;
 use App\Challenges\A\Sample;
+use App\Challenges\A\Silly;
 use App\KataChallenge;
 
 $challengeClasses = [
@@ -17,6 +18,7 @@ $challengeClasses = [
     Laravel::class,
     CleanCode::class,
     CleanCodeDatabase::class,
+    Silly::class,
 ];
 
 $challengeMethods = [];

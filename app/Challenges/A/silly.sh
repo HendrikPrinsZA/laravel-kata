@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-MAX_ITERATIONS=1000000
+MAX_ITERATIONS=100
 FILE_NAME="Silly.php"
 
 # Start of the PHP file

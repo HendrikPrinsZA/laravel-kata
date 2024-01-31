@@ -7,6 +7,7 @@ use App\Challenges\A\Laravel;
 use App\Challenges\A\MySql;
 use App\Challenges\A\Php;
 use App\Challenges\A\Sample;
+use App\Challenges\A\Silly;
 use App\Enums\KataRunMode;
 use App\Enums\KataRunnerIterationMode;
 use App\Exceptions\KataInvalidRunModeException;
@@ -18,10 +19,8 @@ if (is_null($runMode)) {
 
 $defaults = match ($runMode) {
     KataRunMode::DEBUG => [
-        // 'LK_MAX_SECONDS' => 1,
-        // 'LK_MAX_ITERATIONS' => 1,
-        'LK_MAX_SECONDS' => 3,
-        'LK_MAX_ITERATIONS' => 1000,
+        'LK_MAX_SECONDS' => 1,
+        'LK_MAX_ITERATIONS' => 1,
 
         'LK_DD_MAX_USERS' => 1,
         'LK_DD_MAX_USER_BLOGS' => 3,
@@ -37,7 +36,7 @@ $defaults = match ($runMode) {
         'LK_MAX_SECONDS' => 0,
         'LK_MAX_ITERATIONS' => 1,
 
-        'LK_DD_MAX_USERS' => 100,
+        'LK_DD_MAX_USERS' => 10,
         'LK_DD_MAX_USER_BLOGS' => 2,
     ],
 };
@@ -53,6 +52,7 @@ return [
         Laravel::class,
         CleanCode::class,
         CleanCodeDatabase::class,
+        Silly::class,
     ],
 
     // Params

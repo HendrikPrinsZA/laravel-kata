@@ -30,8 +30,6 @@
     <env name="LK_RUN_MODE" value="test"/>
     <env name="LK_DD_MAX_USERS" value="10"/>
     <env name="LK_DD_MAX_USER_BLOGS" value="2"/>
-    <env name="EXCHANGE_RATE_API_HOST" value="http://localhost/mock/exchangerate"/>
-    <env name="EXCHANGE_RATE_API_KEY" value="fake-key"/>
   </php>
   <source>
     <include>
