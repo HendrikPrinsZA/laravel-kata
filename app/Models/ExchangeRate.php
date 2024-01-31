@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ExchangeRate extends Model
 {
-    use HasFactory, HasCollection;
+    use HasCollection, HasFactory;
 
     protected $fillable = [
         'base_currency_id',
