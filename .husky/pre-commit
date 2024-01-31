@@ -3,10 +3,10 @@
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# echo "Linting"
+echo "Linting"
 ./vendor/bin/sail php ./vendor/bin/tlint format  --diff
 
-# echo "Pinting"
+echo "Pinting"
 ./vendor/bin/sail php ./vendor/bin/pint --dirty -v
 
 if [[ $(git diff --stat) != '' ]]; then
