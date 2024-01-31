@@ -105,6 +105,7 @@ jobs:
       - run:
           name: Run tests
           command: |
+            nohup php artisan serve &
             php -d pcov.enabled=1 vendor/bin/pest --parallel --processes=4 \
               --coverage-clover=clover.xml \
               --log-junit ~/phpunit/junit.xml \
