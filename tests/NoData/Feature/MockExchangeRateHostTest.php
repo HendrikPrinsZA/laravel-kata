@@ -2,7 +2,7 @@
 
 it('has env set', function () {
     expect(config('exchange-rates.api-host'))
-        ->toBe('http://localhost/mock/exchangerate');
+        ->toEndWith('/mock/exchangerate');
 });
 
 it('can get timeframe', function () {

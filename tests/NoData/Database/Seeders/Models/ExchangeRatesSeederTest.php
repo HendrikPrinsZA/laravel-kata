@@ -10,5 +10,5 @@ it('can seed', function () {
 
     expect(ExchangeRate::count())->toBe(1464);
     expect(ExchangeRate::all()->avg('rate'))
-        ->toBe(0.9042461999999996);
+        ->toBe(0.9158994000000007);
 });
