@@ -41,7 +41,7 @@ jobs:
           npm i
           npm run client:build
       - name: Upload artifacts
-        uses: actions/upload-pages-artifact@v2
+        uses: actions/upload-pages-artifact@v3
         with:
           path: './client/dist'
       - name: Deploy to GitHub Pages

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Blog extends Model
 {
-    use HasFactory, HasCollection;
+    use HasCollection, HasFactory;
 
     protected $fillable = [
         'user_id',

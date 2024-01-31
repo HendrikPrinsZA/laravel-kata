@@ -1,3 +1,6 @@
 {
-  "preset": "laravel"
+  "preset": "laravel",
+  "notPath": [
+    "app/Challenges/A/Silly.php"
+  ]
 }
