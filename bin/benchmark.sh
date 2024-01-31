@@ -6,6 +6,8 @@ source $PATH_TO_REPO/.env
 
 if [ "${CI_MODE}" == "circleci" ]; then
     echo "LK_RUN_MODE=benchmark" >> "$PATH_TO_REPO/.env"
+    echo "EXCHANGE_RATE_API_HOST=$EXCHANGE_RATE_API_HOST" >> "$PATH_TO_REPO/.env"
+    echo "EXCHANGE_RATE_API_KEY=$EXCHANGE_RATE_API_KEY" >> "$PATH_TO_REPO/.env"
     php -d xdebug.mode=profile artisan kata:run --all
 else
     ./vendor/bin/sail artisan kata:run --all
