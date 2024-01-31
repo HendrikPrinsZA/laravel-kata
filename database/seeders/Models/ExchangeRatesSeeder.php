@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Cache;
 
 class ExchangeRatesSeeder extends ModelSeeder
 {
-    public const SNAPSHOT_DATE = '2023-05-27';
+    public const SNAPSHOT_DATE = '2024-01-31';
 
     public function __construct(
         protected ExchangeRateService $exchangeRateService
