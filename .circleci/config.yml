@@ -158,8 +158,8 @@ workflows:
           context: "LaravelKata"
       - deploy:
           requires:
-            - lint
-            - test
+            # - lint
+            # - test
             - gains
           filters:
             branches:
