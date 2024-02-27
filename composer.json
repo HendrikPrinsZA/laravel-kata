@@ -29,7 +29,8 @@
         "php-coveralls/php-coveralls": "^2.5",
         "phpunit/phpcov": "^9.0",
         "phpunit/phpunit": "^10.0",
-        "spatie/laravel-ignition": "^2.0"
+        "spatie/laravel-ignition": "^2.0",
+        "beyondcode/tinkerwell": "*"
     },
     "autoload": {
         "files": [
@@ -86,5 +87,6 @@
             "pestphp/pest-plugin": true
         }
     },
-    "prefer-stable": true
+    "prefer-stable": true,
+    "minimum-stability": "dev"
 }
