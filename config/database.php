@@ -1,5 +1,7 @@
 <?php
 
+$mysqlHost = str_ends_with($_SERVER['PHP_SELF'] ?? '', 'tinker.phar') ? '127.0.0.1' : env('DB_HOST', '');
+
 return [
 
     /*
@@ -44,7 +46,7 @@ return [
         'mysql' => [
             'driver' => 'mysql',
             'url' => env('DATABASE_URL'),
-            'host' => env('DB_HOST', '127.0.0.1'),
+            'host' => $mysqlHost,
             'port' => env('DB_PORT', '3306'),
             'database' => env('DB_DATABASE', 'laravel'),
             'username' => env('DB_USERNAME', 'sail'),
@@ -63,7 +65,7 @@ return [
 
         'testing' => [
             'driver' => 'mysql',
-            'host' => env('DB_HOST', '127.0.0.1'),
+            'host' => $mysqlHost,
             'port' => env('DB_PORT', '3306'),
             'database' => env('DB_TEST_DATABASE', 'testing'),
             'username' => env('DB_TEST_USERNAME', 'root'),
@@ -83,7 +85,7 @@ return [
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DATABASE_URL'),
-            'host' => env('DB_HOST', '127.0.0.1'),
+            'host' => $mysqlHost,
             'port' => env('DB_PORT', '5432'),
             'database' => env('DB_DATABASE', 'forge'),
             'username' => env('DB_USERNAME', 'forge'),
