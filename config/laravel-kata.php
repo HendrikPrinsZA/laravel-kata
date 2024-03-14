@@ -65,7 +65,7 @@ return [
     // Params
     'max-seconds' => $getValue('LK_MAX_SECONDS'),
     'max-iterations' => $getValue('LK_MAX_ITERATIONS'),
-    'max-iterations-max-seconds' => 60,
+    'max-iterations-max-seconds' => 120,
     'progress-bar-disabled' => env('LK_PROGRESS_BAR_DISABLED', false),
 
     'modes' => [

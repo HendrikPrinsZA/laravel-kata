@@ -585,10 +585,12 @@ class KataRunner
         $this->progressBar?->setProgress(0);
         for ($iteration = 0; $iteration < $iterationCount; $iteration++) {
             $this->progressBar?->setMessage(sprintf(
-                '%s->%s(%d) [interations]',
+                '%s->%s(%d) [interations] (max time: %s/%s)',
                 $className,
                 $methodName,
-                $iteration + 1
+                $iteration + 1,
+                number_format(($executionTimeSum / 1000), 2),
+                number_format($maxIterationsMaxSeconds, 2),
             ));
 
             $executionTimeSum += Benchmark::measure(function () use ($instance, $methodName, $iteration, &$outputs) {

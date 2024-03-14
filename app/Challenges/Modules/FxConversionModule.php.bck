@@ -5,22 +5,12 @@ namespace App\Challenges\Modules;
 use App\Enums\CurrencyCode;
 use App\Models\Currency;
 use App\Models\ExchangeRate;
-use Clockwork\Support\Laravel\Facade;
 use Exception;
 use Illuminate\Support\Carbon;
 
-class FxConversionModule extends Facade
+class FxConversionModule
 {
-    protected static ?FxConversionModule $instance = null;
-
     protected static array $cachedRates = [];
-
-    public static function make(): self
-    {
-        self::$instance ??= new self();
-
-        return self::$instance;
-    }
 
     public static function convert(
         CurrencyCode $baseCurrencyCode,

@@ -30,7 +30,7 @@ class FxConversion extends KataChallenge
 
     protected const TARGET_CURRENCY_CODE = CurrencyCode::USD;
 
-    public function scriptCache(int $iteration): float
+    public function useScriptCache(int $iteration): float
     {
         Config::set('modules.fx-conversion.options.script-caching.enabled', false);
         Config::set('modules.fx-conversion.options.script-caching.strategy', 'monthly');
@@ -39,16 +39,7 @@ class FxConversion extends KataChallenge
         return $this->calculateTotalExchangeRate($iteration);
     }
 
-    public function scriptCacheGlobalCache(int $iteration): float
-    {
-        Config::set('modules.fx-conversion.options.script-caching.enabled', false);
-        Config::set('modules.fx-conversion.options.script-caching.strategy', 'monthly');
-        Config::set('modules.fx-conversion.options.global-caching.enabled', false);
-
-        return $this->calculateTotalExchangeRate($iteration);
-    }
-
-    protected function calculateTotalExchangeRate(int $iteration): float
+    protected function calculateTotalExchangeRate(int $iteration, bool $useSingleton = false): float
     {
         $amount = 420.69;
         $total = 0;
@@ -61,17 +52,23 @@ class FxConversion extends KataChallenge
             $dateTo = $dateToMax;
         }
 
+        $fxConversionModule = $useSingleton ? FxConversionModule::make() : null;
+
         $dates = [];
         $carbonPeriod = CarbonPeriod::create($dateFrom, $dateTo);
         foreach ($carbonPeriod as $date) {
             $dates[] = $date;
-            $total += FxConversionModule::convert(self::BASE_CURRENCY_CODE, self::TARGET_CURRENCY_CODE, $date, $amount);
+            $total += $useSingleton
+                ? $fxConversionModule->convert(self::BASE_CURRENCY_CODE, self::TARGET_CURRENCY_CODE, $date, $amount)
+                : FxConversionModule::convert(self::BASE_CURRENCY_CODE, self::TARGET_CURRENCY_CODE, $date, $amount);
         }
 
         // No do it in reverse
         while (! empty($dates)) {
             $date = array_pop($dates);
-            $total += FxConversionModule::convert(self::BASE_CURRENCY_CODE, self::TARGET_CURRENCY_CODE, $date, $amount);
+            $total += $useSingleton
+                ? $fxConversionModule->convert(self::BASE_CURRENCY_CODE, self::TARGET_CURRENCY_CODE, $date, $amount)
+                : FxConversionModule::convert(self::BASE_CURRENCY_CODE, self::TARGET_CURRENCY_CODE, $date, $amount);
         }
 
         return $total;
