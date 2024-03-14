@@ -3,6 +3,7 @@
 use App\Challenges\A\CleanCode;
 use App\Challenges\A\CleanCodeDatabase;
 use App\Challenges\A\Eloquent;
+use App\Challenges\A\FxConversion;
 use App\Challenges\A\Laravel;
 use App\Challenges\A\MySql;
 use App\Challenges\A\Php;
@@ -10,6 +11,7 @@ use App\Challenges\A\Sample;
 use App\Challenges\A\Silly;
 use App\Enums\KataRunMode;
 use App\Enums\KataRunnerIterationMode;
+use App\Exceptions\KataChallengeScoreOutputsMd5Exception;
 use App\Exceptions\KataInvalidRunModeException;
 
 $runMode = KataRunMode::tryFrom(env('LK_RUN_MODE', KataRunMode::DEBUG->value));
@@ -53,11 +55,17 @@ return [
         CleanCode::class,
         CleanCodeDatabase::class,
         Silly::class,
+        FxConversion::class,
+    ],
+
+    'ignore-exceptions' => [
+        KataChallengeScoreOutputsMd5Exception::class,
     ],
 
     // Params
     'max-seconds' => $getValue('LK_MAX_SECONDS'),
     'max-iterations' => $getValue('LK_MAX_ITERATIONS'),
+    'max-iterations-max-seconds' => 60,
     'progress-bar-disabled' => env('LK_PROGRESS_BAR_DISABLED', false),
 
     'modes' => [
