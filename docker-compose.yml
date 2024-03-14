@@ -4,7 +4,7 @@ services:
     laravel.test:
         container_name: kata-laravel
         build:
-            context: ./docker/8.2
+            context: ./docker/8.3
             dockerfile: Dockerfile
             args:
                 CI_MODE: '${CI_MODE:-local}'
@@ -20,6 +20,7 @@ services:
             LARAVEL_SAIL: 1
             XDEBUG_MODE: '${SAIL_XDEBUG_MODE:-off}'
             XDEBUG_CONFIG: '${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}'
+            SUPERVISOR_PHP_COMMAND: '/usr/bin/php -d variables_order=EGPCS /var/www/html/artisan serve --host=0.0.0.0 --port=80'
         volumes:
             - '.:/var/www/html'
         networks:

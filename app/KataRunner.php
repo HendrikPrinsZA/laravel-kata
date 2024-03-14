@@ -6,6 +6,7 @@ use App\Enums\KataRunnerIterationMode;
 use App\Enums\KataRunnerMode;
 use App\Exceptions\KataChallengeNotFoundException;
 use App\Exceptions\KataChallengeScoreException;
+use App\Exceptions\KataChallengeScoreOutputsMd5Exception;
 use App\Objects\KataChallengeResultObject;
 use App\Traits\HasExitHintsTrait;
 use App\Utilities\Benchmark;
@@ -254,8 +255,8 @@ class KataRunner
 
         // Outputs should always match
         if (! data_get($reportData, 'stats.b.outputs_md5_gains_success')) {
-            throw new KataChallengeScoreException(sprintf(
-                'Outputs does not match (expected: %s, actual: %s)',
+            throw new KataChallengeScoreOutputsMd5Exception(sprintf(
+                'Outputs not matching (expected: %s, actual: %s)',
                 data_get($reportData, 'stats.a.outputs_md5'),
                 data_get($reportData, 'stats.b.outputs_md5'),
             ));
@@ -576,6 +577,7 @@ class KataRunner
         }
 
         $executionTimeSum = 0;
+        $maxIterationsMaxSeconds = config('laravel-kata.max-iterations-max-seconds');
         $startTime = microtime(true);
         $outputs = [];
 
@@ -583,10 +585,12 @@ class KataRunner
         $this->progressBar?->setProgress(0);
         for ($iteration = 0; $iteration < $iterationCount; $iteration++) {
             $this->progressBar?->setMessage(sprintf(
-                '%s->%s(%d) [interations]',
+                '%s->%s(%d) [interations] (max time: %s/%s)',
                 $className,
                 $methodName,
-                $iteration + 1
+                $iteration + 1,
+                number_format(($executionTimeSum / 1000), 2),
+                number_format($maxIterationsMaxSeconds, 2),
             ));
 
             $executionTimeSum += Benchmark::measure(function () use ($instance, $methodName, $iteration, &$outputs) {
@@ -594,6 +598,9 @@ class KataRunner
             });
 
             $this->progressBar?->advance();
+            if (($executionTimeSum / 1000) > $maxIterationsMaxSeconds) {
+                break;
+            }
         }
 
         $instance = null;
@@ -602,9 +609,10 @@ class KataRunner
 
         $outputsMd5 = md5(json_encode($outputs));
         if ($iterationCount > 2) {
+            $lastOutput = $outputs[$iterationCount - 1] ?? 'timed-out';
             $outputs = [
                 $outputs[0],
-                $outputs[$iterationCount - 1],
+                $lastOutput,
             ];
         }
 

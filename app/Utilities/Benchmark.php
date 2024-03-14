@@ -118,8 +118,8 @@ class Benchmark extends SupportBenchmark
         }
 
         // Might want to save the static file for debugging...
-        $tempFilePath = sys_get_temp_dir().'/'.uniqid('xdt-', true);
-        // copy($tempFilePath.'.xt', sprintf('/var/www/html/sample-memory-%s.xt', now()->format('ymd_His')));
+        $tempFilePath = storage_path('logs/xdebug');
+        $tempFilePath = sprintf('%s/%s.xt', $tempFilePath, uniqid('xdt-', true));
 
         try {
             xdebug_start_trace($tempFilePath, XDEBUG_TRACE_COMPUTERIZED | XDEBUG_TRACE_NAKED_FILENAME);

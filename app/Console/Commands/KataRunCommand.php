@@ -65,7 +65,14 @@ class KataRunCommand extends Command
                 throw $exception;
             }
 
-            $this->line(wrap_in_format(sprintf('%s', $exception->getMessage()), false));
+            $warning = sprintf('%s', $exception->getMessage());
+            if (in_array($exception::class, config('laravel-kata.ignore-exceptions'))) {
+                $this->warn($warning);
+
+                return self::SUCCESS;
+            }
+
+            $this->error($warning);
 
             return self::FAILURE;
         }

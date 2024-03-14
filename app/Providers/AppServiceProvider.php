@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Challenges\Modules\FxConversionModule;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
@@ -14,7 +16,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        //
+        $this->app->instance(FxConversionModule::class, FxConversionModule::make());
     }
 
     /**
