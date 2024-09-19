@@ -3,6 +3,7 @@
 use App\Challenges\A\CleanCode;
 use App\Challenges\A\CleanCodeDatabase;
 use App\Challenges\A\Eloquent;
+use App\Challenges\A\ExperimentA;
 use App\Challenges\A\FxConversion;
 use App\Challenges\A\Laravel;
 use App\Challenges\A\MySql;
@@ -56,6 +57,7 @@ return [
         CleanCodeDatabase::class,
         Silly::class,
         FxConversion::class,
+        ExperimentA::class,
     ],
 
     'ignore-exceptions' => [
@@ -68,6 +70,7 @@ return [
     'max-iterations-max-seconds' => 120,
     'progress-bar-disabled' => env('LK_PROGRESS_BAR_DISABLED', false),
 
+    'mode' => $runMode,
     'modes' => [
         KataRunnerIterationMode::MAX_ITERATIONS,
         KataRunnerIterationMode::MAX_SECONDS,

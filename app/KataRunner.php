@@ -16,6 +16,7 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use PDOException;
 use ReflectionClass;
 use ReflectionMethod;
 use Symfony\Component\Console\Helper\ProgressBar;
@@ -94,6 +95,10 @@ class KataRunner
             'Variable',
             'Value',
         ], [
+            [
+                'Mode (LK_RUN_MODE)',
+                config('laravel-kata.mode')->name,
+            ],
             [
                 'Seconds',
                 config('laravel-kata.max-seconds'),
@@ -498,7 +503,7 @@ class KataRunner
         }
 
         /** @var KataChallenge $instance */
-        $instance = new $targetClass();
+        $instance = new $targetClass;
         $maxIterations = $instance->getMaxIterations();
         $maxSeconds = $instance->getMaxSeconds();
         $instance = null;
@@ -542,19 +547,26 @@ class KataRunner
             return Cache::get($cacheKey);
         }
 
-        $response = match ($kataRunnerIterationMode) {
-            KataRunnerIterationMode::MAX_ITERATIONS => $this->runChallengeMethodMaxIterations(
-                $reflectionMethod,
-                $maxIterations
-            ),
-            KataRunnerIterationMode::MAX_SECONDS => $this->runChallengeMethodMaxSeconds(
-                $reflectionMethod,
-                $maxSeconds
-            ),
-            KataRunnerIterationMode::XDEBUG_PROFILE => $this->profile(
-                $reflectionMethod,
-            )
-        };
+        try {
+            $response = match ($kataRunnerIterationMode) {
+                KataRunnerIterationMode::MAX_ITERATIONS => $this->runChallengeMethodMaxIterations(
+                    $reflectionMethod,
+                    $maxIterations
+                ),
+                KataRunnerIterationMode::MAX_SECONDS => $this->runChallengeMethodMaxSeconds(
+                    $reflectionMethod,
+                    $maxSeconds
+                ),
+                KataRunnerIterationMode::XDEBUG_PROFILE => $this->profile(
+                    $reflectionMethod,
+                )
+            };
+        } catch (PDOException $exception) {
+            throw new PDOException(
+                sprintf('[%s] %s: %s', $exception->getCode(), $exception::class, Str::limit($exception->getMessage(), 512)),
+                previous: $exception
+            );
+        }
 
         if (config('laravel-kata.experimental.cache-results')) {
             Cache::set($cacheKey, $response);
