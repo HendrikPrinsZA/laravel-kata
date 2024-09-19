@@ -3,6 +3,7 @@
 use App\Challenges\A\CleanCode;
 use App\Challenges\A\CleanCodeDatabase;
 use App\Challenges\A\Eloquent;
+use App\Challenges\A\ExperimentA;
 use App\Challenges\A\Laravel;
 use App\Challenges\A\MySql;
 use App\Challenges\A\Php;
@@ -19,6 +20,7 @@ $challengeClasses = [
     CleanCode::class,
     CleanCodeDatabase::class,
     Silly::class,
+    ExperimentA::class,
 ];
 
 $challengeMethods = [];
