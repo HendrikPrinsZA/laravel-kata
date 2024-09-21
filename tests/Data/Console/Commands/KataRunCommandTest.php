@@ -12,15 +12,18 @@ use Tests\Data\Console\Commands\FakeChallenges\A\TooSlow;
 use Tests\Data\Console\Commands\FakeChallenges\A\WrongOutput;
 
 beforeEach(function () {
-    Config::set('laravel-kata.gains-perc-minimum', -100);
-    Config::set('laravel-kata.max-seconds', 0);
-    Config::set('laravel-kata.max-iterations', 1);
-    Config::set('laravel-kata.progress-bar-disabled', true);
-    Config::set('laravel-kata.save-results-to-storage', false);
-    Config::set('laravel-kata.dummy-data.max-users', 1);
-    Config::set('laravel-kata.dummy-data.max-user-blogs', 1);
-    Config::set('laravel-kata.show-hints', false);
-    Config::set('laravel-kata.show-hints-extended', false);
+    Config::set([
+        'laravel-kata.challenges' => [],
+        'laravel-kata.gains-perc-minimum' => -100,
+        'laravel-kata.max-seconds' => 0,
+        'laravel-kata.max-iterations' => 1,
+        'laravel-kata.progress-bar-disabled' => true,
+        'laravel-kata.save-results-to-storage' => false,
+        'laravel-kata.dummy-data.max-users' => 1,
+        'laravel-kata.dummy-data.max-user-blogs' => 1,
+        'laravel-kata.show-hints' => false,
+        'laravel-kata.show-hints-extended' => false,
+    ]);
 });
 
 it('can run all', function () {

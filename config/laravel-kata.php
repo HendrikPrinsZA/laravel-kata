@@ -2,6 +2,7 @@
 
 use App\Challenges\A\CleanCode;
 use App\Challenges\A\CleanCodeDatabase;
+use App\Challenges\A\Concurrent;
 use App\Challenges\A\Eloquent;
 use App\Challenges\A\ExperimentA;
 use App\Challenges\A\FxConversion;
@@ -58,6 +59,7 @@ return [
         Silly::class,
         FxConversion::class,
         ExperimentA::class,
+        Concurrent::class,
     ],
 
     'ignore-exceptions' => [
@@ -67,7 +69,7 @@ return [
     // Params
     'max-seconds' => $getValue('LK_MAX_SECONDS'),
     'max-iterations' => $getValue('LK_MAX_ITERATIONS'),
-    'max-iterations-max-seconds' => 120,
+    'max-iterations-max-seconds' => ($getValue('LK_MAX_SECONDS') + 1) * 2,
     'progress-bar-disabled' => env('LK_PROGRESS_BAR_DISABLED', false),
 
     'mode' => $runMode,

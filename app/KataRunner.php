@@ -149,7 +149,7 @@ class KataRunner
                 'execution_time_sum' => time_to_human($valueA),
                 'profile_time_avg' => time_to_human($valueA),
                 'profile_memory_usage_avg' => sprintf(
-                    '%s (%d)',
+                    '%s (%s)',
                     bytes_to_human($valueA),
                     $valueA
                 ),
@@ -161,7 +161,7 @@ class KataRunner
                 'execution_time_sum' => time_to_human($valueB),
                 'profile_time_avg' => time_to_human($valueB),
                 'profile_memory_usage_avg' => sprintf(
-                    '%s (%d)',
+                    '%s (%s)',
                     bytes_to_human($valueB),
                     $valueB
                 ),
@@ -242,30 +242,8 @@ class KataRunner
             ],
         );
 
-        if (! data_get($reportData, 'stats.b.outputs_md5_gains_success')) {
-            $this->report('newLine');
-            $this->report('warn', 'The outputs did not match!');
-            $this->report('newLine');
-            $this->report('info', 'Outputs');
-            $this->report('info', 'A->first()');
-            $this->report('line', sprintf("```\n%s\n```", $resultA->getOutputsJsonFirst()));
-            $this->report('info', 'B->first()');
-            $this->report('line', sprintf("```\n%s\n```", $resultB->getOutputsJsonFirst()));
-
-            $this->report('info', 'A->last()');
-            $this->report('line', sprintf("```\n%s\n```", $resultA->getOutputsJsonLast()));
-            $this->report('info', 'B->last()');
-            $this->report('line', sprintf("```\n%s\n```", $resultB->getOutputsJsonLast()));
-        }
-
-        // Outputs should always match
-        if (! data_get($reportData, 'stats.b.outputs_md5_gains_success')) {
-            throw new KataChallengeScoreOutputsMd5Exception(sprintf(
-                'Outputs not matching (expected: %s, actual: %s)',
-                data_get($reportData, 'stats.a.outputs_md5'),
-                data_get($reportData, 'stats.b.outputs_md5'),
-            ));
-        }
+        $this->validateOutputs($reportData, KataRunnerIterationMode::MAX_ITERATIONS);
+        $this->validateOutputs($reportData, KataRunnerIterationMode::MAX_SECONDS);
 
         // Fail when lower than expected score
         if ($gainsPerc < config('laravel-kata.gains-perc-minimum')) {
@@ -273,6 +251,53 @@ class KataRunner
                 'Score is lower than expected (%s%% < %s%%)',
                 round($gainsPerc, 2),
                 round(config('laravel-kata.gains-perc-minimum'), 2),
+            ));
+        }
+    }
+
+    /**
+     * Validate the outputs from the report data
+     *
+     * Rules:
+     * - Outputs for MAX_ITERATIONS and MAX_SECONDS should match
+     * - Compare equal sets for MAX_SECONDS, i.e. a has 10, b has 11 -> only compare first 10
+     */
+    protected function validateOutputs(array $reportData, KataRunnerIterationMode $kataRunnerIterationMode): void
+    {
+        $outputsA = data_get($reportData, sprintf('stats.a._result.%s.outputs', $kataRunnerIterationMode->value), []);
+        $outputsB = data_get($reportData, sprintf('stats.b._result.%s.outputs', $kataRunnerIterationMode->value), []);
+
+        $countA = count($outputsA);
+        $countB = count($outputsB);
+
+        // Balance when MAX_SECOND
+        if ($kataRunnerIterationMode === KataRunnerIterationMode::MAX_SECONDS) {
+            $minCount = min($countA, $countB);
+
+            $outputsA = array_slice($outputsA, 0, $minCount);
+            $outputsB = array_slice($outputsB, 0, $minCount);
+        }
+
+        if (md5(json_encode($outputsA)) !== md5(json_encode($outputsB))) {
+            $this->report('newLine');
+            $this->report('warn', sprintf('The outputs did not match for %s!', $kataRunnerIterationMode->value));
+            $this->report('newLine');
+            $this->report('info', 'Outputs');
+            $this->report('info', 'A->first()');
+            $this->report('line', sprintf("```\n%s\n```", $outputsA[0]));
+            $this->report('info', 'B->first()');
+            $this->report('line', sprintf("```\n%s\n```", $outputsB[0]));
+
+            $this->report('info', sprintf('A->last() -> at ', $countA));
+            $this->report('line', sprintf("```\n%s\n```", $outputsA[$countA - 1]));
+            $this->report('info', sprintf('B->last() -> at ', $countB));
+            $this->report('line', sprintf("```\n%s\n```", $outputsB[$countB - 1]));
+
+            throw new KataChallengeScoreOutputsMd5Exception(sprintf(
+                'The outputs did not match for %s (A: %s, B: %s)',
+                $kataRunnerIterationMode->value,
+                json_encode($outputsA),
+                json_encode($outputsB),
             ));
         }
     }
@@ -619,18 +644,8 @@ class KataRunner
         $this->progressBar?->finish();
         $this->progressBar?->clear();
 
-        $outputsMd5 = md5(json_encode($outputs));
-        if ($iterationCount > 2) {
-            $lastOutput = $outputs[$iterationCount - 1] ?? 'timed-out';
-            $outputs = [
-                $outputs[0],
-                $lastOutput,
-            ];
-        }
-
         return [
-            'outputs_json' => json_encode($outputs),
-            'outputs_md5' => $outputsMd5,
+            'outputs' => $outputs,
             'iteration_count' => $iterationCount,
             'execution_time' => microtime(true) - $startTime,
             'execution_time_sum' => $executionTimeSum,
@@ -681,17 +696,7 @@ class KataRunner
         $this->progressBar?->finish();
         $this->progressBar?->clear();
 
-        $outputsMd5 = md5(json_encode($outputs));
-        if ($iteration > 2) {
-            $outputs = [
-                $outputs[0],
-                $outputs[$iteration - 1],
-            ];
-        }
-
         return [
-            'outputs_json' => json_encode($outputs),
-            'outputs_md5' => $outputsMd5,
             'outputs' => $outputs,
             'iteration_count' => $iteration,
             'execution_time' => microtime(true) - $startTime,
