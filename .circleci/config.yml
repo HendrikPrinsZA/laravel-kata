@@ -121,12 +121,6 @@ jobs:
               -n "${CIRCLE_BUILD_NUM}" \
               -Z
 
-      - run:
-          name: Upload test results to Codecov
-          uses: codecov/test-results-action@v1
-          with:
-            token: "${CODECOV_TOKEN}"
-
       - store_test_results:
           path: ~/phpunit
 
