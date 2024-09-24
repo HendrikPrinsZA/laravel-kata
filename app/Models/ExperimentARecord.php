@@ -12,6 +12,7 @@ class ExperimentARecord extends Model
     use HasFactory;
 
     protected $fillable = [
+        'position',
         'unique_field_1',
         'unique_field_2',
         'unique_field_3',
@@ -20,9 +21,13 @@ class ExperimentARecord extends Model
         'update_field_3',
     ];
 
-    public static function upsertPrototype(array $values, array $uniqueFields, ?array $updateFields = null): array
+    protected $casts = [
+        'position' => 'integer',
+    ];
+
+    public static function upsertPrototype(array $values, array $uniqueFields, array $updateFields): array
     {
-        $chunkSize = 1000;
+        $chunkSize = 128; // We could determine this dynamically based on the number of fields, based on the MySQL max_allowed_packet
         $chunks = array_chunk($values, $chunkSize);
 
         $results = [

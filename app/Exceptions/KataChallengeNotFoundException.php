@@ -4,6 +4,4 @@ namespace App\Exceptions;
 
 use Exception;
 
-class KataChallengeNotFoundException extends Exception
-{
-}
+class KataChallengeNotFoundException extends Exception {}

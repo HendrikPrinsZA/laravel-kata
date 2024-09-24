@@ -14,6 +14,7 @@
         "laravel/tinker": "^2.7",
         "phpmd/phpmd": "^2.13",
         "predis/predis": "^2.0",
+        "sebastian/diff": "^5.1",
         "spatie/fork": "^1.2",
         "tightenco/tlint": "^9.0"
     },

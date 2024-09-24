@@ -17,6 +17,7 @@ class ExperimentARecordFactory extends Factory
     public function definition(): array
     {
         return [
+            'position' => $this->faker->unique()->numberBetween(1, 1000),
             'unique_field_1' => $this->faker->unique()->word(),
             'unique_field_2' => $this->faker->unique()->word(),
             'unique_field_3' => $this->faker->unique()->word(),

@@ -23,9 +23,9 @@ class MySql extends AMySql
             'limit' => $iteration,
         ];
 
-        $value = $this->select($sql, $params);
+        $rows = $this->select($sql, $params);
 
-        return $value;
+        return array_map(fn ($row) => (array) $row, $rows);
     }
 
     public function orVersusInAggregate(int $iteration): float

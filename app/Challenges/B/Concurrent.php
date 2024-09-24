@@ -4,28 +4,13 @@ namespace App\Challenges\B;
 
 use App\Challenges\A\Concurrent as AConcurrent;
 use App\Models\ExperimentARecord;
+use Doctrine\Common\Cache\Psr6\InvalidArgument;
 use Illuminate\Support\Facades\Concurrency;
 
 class Concurrent extends AConcurrent
 {
-    private function makeFunctions(int $iteration): array
-    {
-        $fns = [];
-        for ($i = 0; $i < $iteration; $i++) {
-            $fns[] = function () use ($iteration, $i) {
-                // usleep(10000); // 10ms
-                usleep($i * $iteration);
-
-                return $iteration * $i;
-            };
-        }
-
-        return $fns;
-    }
-
     public function sequentialVsFork(int $iteration): int
     {
-        $iteration = $iteration > 10 ? 10 : $iteration;
         $results = Concurrency::driver('fork')->run($this->makeFunctions($iteration));
 
         return array_sum($results);
@@ -45,39 +30,57 @@ class Concurrent extends AConcurrent
         return array_sum($results);
     }
 
-    public function sequentialVsForkUpserts(int $iteration): string
+    public function sequentialVsUpsertsProcess(int $iteration): string
     {
+        return $this->sequentialVsForkUpsertsByDriver($iteration, 'process');
+    }
+
+    public function sequentialVsUpsertsFork(int $iteration): string
+    {
+        return $this->sequentialVsForkUpsertsByDriver($iteration, 'fork');
+    }
+
+    public function sequentialVsUpsertsSync(int $iteration): string
+    {
+        return $this->sequentialVsForkUpsertsByDriver($iteration, 'sync');
+    }
+
+    private function sequentialVsForkUpsertsByDriver(int $iteration, string $driver): string
+    {
+        if (! in_array($driver, ['sync', 'fork', 'process'])) {
+            throw new InvalidArgument(sprintf('Invalid driver: %s', $driver));
+        }
+
         ExperimentARecord::truncate();
-        $records = $this->makeRecords($iteration * 10, 'b');
+        $recordsChunked = $this->makeRecordsChunked($iteration, 'b');
 
         $functions = [];
-        collect($records)->chunk(3)->each(function ($chunk) use (&$functions) {
-
+        foreach ($recordsChunked as $index => $chunk) {
             $functions[] = function () use ($chunk) {
-                ExperimentARecord::upsertPrototype($chunk->toArray(), [
+                ExperimentARecord::upsertPrototype($chunk, [
                     'unique_field_1', 'unique_field_2', 'unique_field_3',
                 ], [
-                    'update_field_1', 'update_field_2', 'update_field_3',
+                    'position', 'update_field_1', 'update_field_2', 'update_field_3',
                 ]);
-
-                return true;
             };
-        });
+        }
 
-        // dd($functions);
+        Concurrency::driver($driver)->run($functions);
 
-        Concurrency::driver('process')->run($functions);
-        // Concurrency::driver('fork')->run($functions);
-        // Concurrency::driver('sync')->run($functions);
+        return $this->getExperimentARecordState();
+    }
 
-        $response = ExperimentARecord::query()
-            ->select('update_field_3')
-            ->whereLike('unique_field_1', 'b-%')
-            ->orderBy('update_field_3')
-            ->get()
-            ->map(fn ($record) => md5($record->update_field_3))
-            ->toArray();
+    private function makeFunctions(int $iteration): array
+    {
+        $fns = [];
+        for ($i = 0; $i < $iteration; $i++) {
+            $fns[] = function () use ($iteration, $i) {
+                usleep(1000); // 1ms
 
-        return md5(implode('|', $response));
+                return $iteration * $i;
+            };
+        }
+
+        return $fns;
     }
 }

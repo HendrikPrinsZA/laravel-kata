@@ -13,12 +13,13 @@ class Eloquent extends AEloquent
         return ExchangeRate::where('id', '<=', $iteration)->avg('id');
     }
 
-    public function getCollectionUnique(int $iteration): iterable
+    public function getCollectionUnique(int $iteration): string
     {
         return ExchangeRate::select('id')
             ->distinct()
             ->where('id', '<=', $iteration)
-            ->pluck('id');
+            ->pluck('id')
+            ->join('|');
     }
 
     public function getCollectionCount(int $iteration): int

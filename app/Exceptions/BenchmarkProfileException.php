@@ -4,6 +4,4 @@ namespace App\Exceptions;
 
 use Exception;
 
-class BenchmarkProfileException extends Exception
-{
-}
+class BenchmarkProfileException extends Exception {}

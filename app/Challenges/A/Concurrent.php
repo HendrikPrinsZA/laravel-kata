@@ -7,17 +7,7 @@ use App\Models\ExperimentARecord;
 
 class Concurrent extends KataChallenge
 {
-    private function sequential(int $iteration): int
-    {
-        $sum = 0;
-        for ($i = 0; $i < $iteration; $i++) {
-            usleep($i * $iteration);
-
-            $sum += ($iteration * $i);
-        }
-
-        return $sum;
-    }
+    protected const MAX_RECORDS = 2500;
 
     public function sequentialVsSequential(int $iteration): int
     {
@@ -26,8 +16,6 @@ class Concurrent extends KataChallenge
 
     public function sequentialVsFork(int $iteration): int
     {
-        $iteration = $iteration > 10 ? 10 : $iteration;
-
         return $this->sequential($iteration);
     }
 
@@ -41,50 +29,93 @@ class Concurrent extends KataChallenge
         return $this->sequential($iteration);
     }
 
-    protected function setUp(): void
+    // Needs work: outputs don't align when iterations start growing!
+    public function sequentialVsUpsertsProcess(int $iteration): string
     {
-        ExperimentARecord::truncate([]);
+        $this->sequentialUpserts($iteration);
+
+        return $this->getExperimentARecordState();
     }
 
-    protected function sequentialVsForkUpserts(int $iteration): string
+    // Needs work: outputs don't align when iterations start growing!
+    protected function sequentialVsUpsertsFork(int $iteration): string
+    {
+        $this->sequentialUpserts($iteration);
+
+        return $this->getExperimentARecordState();
+    }
+
+    public function sequentialVsUpsertsSync(int $iteration): string
+    {
+        $this->sequentialUpserts($iteration);
+
+        return $this->getExperimentARecordState();
+    }
+
+    public function sequentialUpserts(int $iteration): string
     {
         ExperimentARecord::truncate();
-        $records = $this->makeRecords($iteration * 10, 'a');
+        $recordsChunked = $this->makeRecordsChunked($iteration, 'a');
 
-        collect($records)->chunk(3)->each(function ($chunk) {
-            $chunk = $chunk->toArray();
+        foreach ($recordsChunked as $chunk) {
             ExperimentARecord::upsert($chunk, [
                 'unique_field_1', 'unique_field_2', 'unique_field_3',
             ], [
-                'update_field_1', 'update_field_2', 'update_field_3',
+                'position', 'update_field_1', 'update_field_2', 'update_field_3',
             ]);
-        });
+        }
 
+        return $this->getExperimentARecordState();
+    }
+
+    protected function getExperimentARecordState(): string
+    {
         $response = ExperimentARecord::query()
-            ->select('update_field_3')
-            ->whereLike('unique_field_1', 'a-%')
-            ->orderBy('update_field_3')
-            ->get()
-            ->map(fn ($record) => md5($record->update_field_3))
+            ->orderBy('position')
+            ->pluck('position')
             ->toArray();
 
         return md5(implode('|', $response));
     }
 
+    protected function makeRecordsChunked(int $iteration, string $prefix = 'source'): array
+    {
+        $count = $iteration * 10;
+        if ($count > self::MAX_RECORDS) {
+            $count = self::MAX_RECORDS;
+        }
+        $records = $this->makeRecords($count, $prefix);
+
+        return array_chunk($records, ceil($count / 3));
+    }
+
     protected function makeRecords(int $iteration, string $prefix = 'source'): array
     {
         $records = [];
-        for ($index = 0; $index < $iteration; $index++) {
+        for ($position = 0; $position < $iteration; $position++) {
             $records[] = [
-                'unique_field_1' => sprintf('%s-unique_field_1-%d-%d', $prefix, $iteration, $index),
-                'unique_field_2' => sprintf('%s-unique_field_2-%d-%d', $prefix, $iteration, $index),
-                'unique_field_3' => sprintf('%s-unique_field_3-%d-%d', $prefix, $iteration, $index),
-                'update_field_1' => sprintf('Original %d %d', $iteration, $index),
-                'update_field_2' => sprintf('Original %d %d', $iteration, $index),
-                'update_field_3' => sprintf('Original %d %d', $iteration, $index),
+                'position' => $position,
+                'unique_field_1' => sprintf('unique_field_1-%s-%d', $prefix, $position),
+                'unique_field_2' => sprintf('unique_field_2-%s-%d', $prefix, $position),
+                'unique_field_3' => sprintf('unique_field_3-%s-%d', $prefix, $position),
+                'update_field_1' => sprintf('Original %d', $position),
+                'update_field_2' => sprintf('Original %d', $position),
+                'update_field_3' => sprintf('Original %d', $position),
             ];
         }
 
         return $records;
+    }
+
+    private function sequential(int $iteration): int
+    {
+        $sum = 0;
+        for ($i = 0; $i < $iteration; $i++) {
+            usleep(1000); // 1ms
+
+            $sum += ($iteration * $i);
+        }
+
+        return $sum;
     }
 }

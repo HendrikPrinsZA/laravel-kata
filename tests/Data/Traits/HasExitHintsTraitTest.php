@@ -18,13 +18,9 @@ beforeEach(function () {
         {
             $this->command = new class
             {
-                public function info(string $message): void
-                {
-                }
+                public function info(string $message): void {}
 
-                public function warn(string $message): void
-                {
-                }
+                public function warn(string $message): void {}
             };
         }
 

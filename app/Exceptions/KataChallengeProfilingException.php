@@ -4,6 +4,4 @@ namespace App\Exceptions;
 
 use Exception;
 
-class KataChallengeProfilingException extends Exception
-{
-}
+class KataChallengeProfilingException extends Exception {}

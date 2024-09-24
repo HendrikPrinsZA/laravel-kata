@@ -60,6 +60,7 @@ return [
             'engine' => 'InnoDB',
             'options' => extension_loaded('pdo_mysql') ? array_filter([
                 PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                PDO::ATTR_EMULATE_PREPARES => true, // This is required for the upsertPrototype method
             ]) : [],
         ],
 

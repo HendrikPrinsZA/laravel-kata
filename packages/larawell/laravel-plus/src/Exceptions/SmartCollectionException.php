@@ -4,6 +4,4 @@ namespace Larawell\LaravelPlus\Exceptions;
 
 use Exception;
 
-class SmartCollectionException extends Exception
-{
-}
+class SmartCollectionException extends Exception {}

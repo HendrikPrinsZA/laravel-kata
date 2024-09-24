@@ -5,7 +5,7 @@ it('has valid return', function (string $challengeA, string $method) {
     $instanceA = app()->make($challengeA);
     $instanceB = app()->make($challengeB);
 
-    $returnA = $instanceA->{$method}(3);
-    $returnB = $instanceB->{$method}(3);
+    $returnA = $instanceA->{$method}(2);
+    $returnB = $instanceB->{$method}(2);
     expect($returnA)->toEqual($returnB);
 })->with('challenge-methods');
