@@ -1,9 +1,3 @@
-<p align="center">
-  <a href="https://www.youtube.com/watch?v=r_8Rw16uscg" target="_blank">
-    <img src="./public/images/laravel-kata-image-min.png" width="100%" alt="Replace with Laravel Kata logo">
-  </a>
-</p>
-
 <p>
   <a href="https://dl.circleci.com/status-badge/redirect/gh/HendrikPrinsZA/laravel-kata/tree/main">
     <img src="https://dl.circleci.com/status-badge/img/gh/HendrikPrinsZA/laravel-kata/tree/main.svg?style=shield">
