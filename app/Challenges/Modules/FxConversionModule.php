@@ -17,7 +17,7 @@ class FxConversionModule extends Facade
 
     public static function make(): self
     {
-        self::$instance ??= new self();
+        self::$instance ??= new self;
 
         return self::$instance;
     }

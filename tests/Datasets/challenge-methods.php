@@ -2,6 +2,7 @@
 
 use App\Challenges\A\CleanCode;
 use App\Challenges\A\CleanCodeDatabase;
+use App\Challenges\A\Concurrent;
 use App\Challenges\A\Eloquent;
 use App\Challenges\A\ExperimentA;
 use App\Challenges\A\Laravel;
@@ -21,6 +22,7 @@ $challengeClasses = [
     CleanCodeDatabase::class,
     Silly::class,
     ExperimentA::class,
+    // Concurrent::class,
 ];
 
 $challengeMethods = [];

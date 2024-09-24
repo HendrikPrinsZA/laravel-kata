@@ -14,7 +14,5 @@ abstract class ModelSeeder extends Seeder
 
     abstract public function seed(): void;
 
-    protected function cleanup(): void
-    {
-    }
+    protected function cleanup(): void {}
 }

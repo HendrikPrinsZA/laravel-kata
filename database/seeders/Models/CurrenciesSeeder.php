@@ -10,8 +10,7 @@ class CurrenciesSeeder extends ModelSeeder
 {
     public function __construct(
         protected ExchangeRateService $exchangeRateService
-    ) {
-    }
+    ) {}
 
     public function seed(): void
     {

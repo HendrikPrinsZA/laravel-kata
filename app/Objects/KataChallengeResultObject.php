@@ -76,7 +76,7 @@ class KataChallengeResultObject extends JsonResource
         ?KataRunnerIterationMode $kataRunnerIterationMode = null
     ): mixed {
         if (! is_null($kataRunnerIterationMode)) {
-            return $this->result[$kataRunnerIterationMode->value][$key];
+            return $this->result[$kataRunnerIterationMode->value][$key] ?? null;
         }
 
         $values = [];

@@ -120,8 +120,10 @@ jobs:
               -t "${CODECOV_TOKEN}" \
               -n "${CIRCLE_BUILD_NUM}" \
               -Z
+
       - store_test_results:
           path: ~/phpunit
+
 
   gains:
     <<: *defaults

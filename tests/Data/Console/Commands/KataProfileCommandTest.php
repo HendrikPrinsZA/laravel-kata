@@ -18,5 +18,14 @@ beforeEach(function () {
 
 it('can run single', function () {
     $this->artisan('kata:profile Sample calculatePi')
+        ->expectsConfirmation('Ready to run App\Challenges\A\Sample->calculatePi(1)?', 'Yes')
+        ->expectsConfirmation('Ready to run App\Challenges\B\Sample->calculatePi(1)?', 'Yes')
+        ->assertExitCode(Command::SUCCESS);
+});
+
+it('can run single (no/s)', function () {
+    $this->artisan('kata:profile Sample calculatePi')
+        ->expectsConfirmation('Ready to run App\Challenges\A\Sample->calculatePi(1)?', 'No')
+        ->expectsConfirmation('Ready to run App\Challenges\B\Sample->calculatePi(1)?', 'No')
         ->assertExitCode(Command::SUCCESS);
 });

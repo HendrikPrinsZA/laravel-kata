@@ -2,6 +2,7 @@
 
 use App\Challenges\A\CleanCode;
 use App\Challenges\A\CleanCodeDatabase;
+use App\Challenges\A\Concurrent;
 use App\Challenges\A\Eloquent;
 use App\Challenges\A\ExperimentA;
 use App\Challenges\A\FxConversion;
@@ -22,11 +23,17 @@ if (is_null($runMode)) {
 
 $defaults = match ($runMode) {
     KataRunMode::DEBUG => [
-        'LK_MAX_SECONDS' => 1,
-        'LK_MAX_ITERATIONS' => 1,
+        'LK_MAX_SECONDS' => 3,
+        'LK_MAX_ITERATIONS' => 1000,
 
-        'LK_DD_MAX_USERS' => 1,
-        'LK_DD_MAX_USER_BLOGS' => 3,
+        'LK_DD_MAX_USERS' => 1000,
+        'LK_DD_MAX_USER_BLOGS' => 10,
+
+        // 'LK_MAX_SECONDS' => 1,
+        // 'LK_MAX_ITERATIONS' => 5,
+
+        // 'LK_DD_MAX_USERS' => 1,
+        // 'LK_DD_MAX_USER_BLOGS' => 3,
     ],
     KataRunMode::BENCHMARK => [
         'LK_MAX_SECONDS' => 3,
@@ -58,6 +65,7 @@ return [
         Silly::class,
         FxConversion::class,
         ExperimentA::class,
+        Concurrent::class,
     ],
 
     'ignore-exceptions' => [
@@ -67,7 +75,7 @@ return [
     // Params
     'max-seconds' => $getValue('LK_MAX_SECONDS'),
     'max-iterations' => $getValue('LK_MAX_ITERATIONS'),
-    'max-iterations-max-seconds' => 120,
+    'max-iterations-max-seconds' => ($getValue('LK_MAX_SECONDS') + 1) * 2,
     'progress-bar-disabled' => env('LK_PROGRESS_BAR_DISABLED', false),
 
     'mode' => $runMode,

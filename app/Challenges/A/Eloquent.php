@@ -22,13 +22,14 @@ class Eloquent extends KataChallenge
             ->average('id');
     }
 
-    public function getCollectionUnique(int $iteration): iterable
+    public function getCollectionUnique(int $iteration): string
     {
         return ExchangeRate::query()
             ->where('id', '<=', $iteration)
             ->get()
             ->pluck('id')
-            ->unique();
+            ->unique()
+            ->join('|');
     }
 
     public function getCollectionCount(int $iteration): int

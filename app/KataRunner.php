@@ -149,7 +149,7 @@ class KataRunner
                 'execution_time_sum' => time_to_human($valueA),
                 'profile_time_avg' => time_to_human($valueA),
                 'profile_memory_usage_avg' => sprintf(
-                    '%s (%d)',
+                    '%s (%s)',
                     bytes_to_human($valueA),
                     $valueA
                 ),
@@ -161,7 +161,7 @@ class KataRunner
                 'execution_time_sum' => time_to_human($valueB),
                 'profile_time_avg' => time_to_human($valueB),
                 'profile_memory_usage_avg' => sprintf(
-                    '%s (%d)',
+                    '%s (%s)',
                     bytes_to_human($valueB),
                     $valueB
                 ),
@@ -242,30 +242,8 @@ class KataRunner
             ],
         );
 
-        if (! data_get($reportData, 'stats.b.outputs_md5_gains_success')) {
-            $this->report('newLine');
-            $this->report('warn', 'The outputs did not match!');
-            $this->report('newLine');
-            $this->report('info', 'Outputs');
-            $this->report('info', 'A->first()');
-            $this->report('line', sprintf("```\n%s\n```", $resultA->getOutputsJsonFirst()));
-            $this->report('info', 'B->first()');
-            $this->report('line', sprintf("```\n%s\n```", $resultB->getOutputsJsonFirst()));
-
-            $this->report('info', 'A->last()');
-            $this->report('line', sprintf("```\n%s\n```", $resultA->getOutputsJsonLast()));
-            $this->report('info', 'B->last()');
-            $this->report('line', sprintf("```\n%s\n```", $resultB->getOutputsJsonLast()));
-        }
-
-        // Outputs should always match
-        if (! data_get($reportData, 'stats.b.outputs_md5_gains_success')) {
-            throw new KataChallengeScoreOutputsMd5Exception(sprintf(
-                'Outputs not matching (expected: %s, actual: %s)',
-                data_get($reportData, 'stats.a.outputs_md5'),
-                data_get($reportData, 'stats.b.outputs_md5'),
-            ));
-        }
+        $this->validateOutputs($reportData, KataRunnerIterationMode::MAX_ITERATIONS);
+        $this->validateOutputs($reportData, KataRunnerIterationMode::MAX_SECONDS);
 
         // Fail when lower than expected score
         if ($gainsPerc < config('laravel-kata.gains-perc-minimum')) {
@@ -275,6 +253,65 @@ class KataRunner
                 round(config('laravel-kata.gains-perc-minimum'), 2),
             ));
         }
+    }
+
+    /**
+     * Validate the outputs from the report data
+     *
+     * This logic can be improved to give a better debugging experience, see tests/NoData/Vendor/SebastianBergmann/Diff/CanUseDiff.php
+     */
+    protected function validateOutputs(array $reportData, KataRunnerIterationMode $kataRunnerIterationMode): void
+    {
+        $outputsA = data_get($reportData, sprintf('stats.a._result.%s.outputs', $kataRunnerIterationMode->value), []);
+        $outputsB = data_get($reportData, sprintf('stats.b._result.%s.outputs', $kataRunnerIterationMode->value), []);
+        if ($outputsA === $outputsB) {
+            return;
+        }
+
+        $countA = count($outputsA);
+        $countB = count($outputsB);
+        if ($countA === $countB) {
+            dump([
+                'A' => $outputsA,
+                'B' => $outputsB,
+            ]);
+            $message = sprintf('Outputs did not match (Mode: %s, A: %d, B: %d)', $kataRunnerIterationMode->value, $countA, $countB);
+            $this->report('error', $message);
+            throw new KataChallengeScoreOutputsMd5Exception($message);
+        }
+
+        // We need to make sure that all the outputs in A exist in B
+        //
+        // Rules
+        // - Use the outputs with the least amount of items as the base
+        // - We don't care about the order/keys
+        // - We don't care about the count
+        //
+        // Exceptions
+        // - Not catering for multiple instances of the same value
+
+        $hasSwitched = false;
+        if ($countB < $countA) {
+            $hasSwitched = true;
+
+            $tmp = $outputsA;
+            $outputsA = $outputsB;
+            $outputsB = $tmp;
+            $tmp = null;
+        }
+
+        foreach ($outputsA as $outputA) {
+            if (! in_array($outputA, $outputsB)) {
+                $message = sprintf('Missing output in %s', $hasSwitched ? 'A' : 'B');
+                $this->report('comment', sprintf('%s: %s', $message, json_encode($outputA)));
+                dump([
+                    'A' => $hasSwitched ? $outputsB : $outputsA,
+                    'B' => $hasSwitched ? $outputsA : $outputsB,
+                ]);
+                throw new KataChallengeScoreOutputsMd5Exception($message);
+            }
+        }
+
     }
 
     protected function report(...$args): void
@@ -619,18 +656,8 @@ class KataRunner
         $this->progressBar?->finish();
         $this->progressBar?->clear();
 
-        $outputsMd5 = md5(json_encode($outputs));
-        if ($iterationCount > 2) {
-            $lastOutput = $outputs[$iterationCount - 1] ?? 'timed-out';
-            $outputs = [
-                $outputs[0],
-                $lastOutput,
-            ];
-        }
-
         return [
-            'outputs_json' => json_encode($outputs),
-            'outputs_md5' => $outputsMd5,
+            'outputs' => $outputs,
             'iteration_count' => $iterationCount,
             'execution_time' => microtime(true) - $startTime,
             'execution_time_sum' => $executionTimeSum,
@@ -681,17 +708,7 @@ class KataRunner
         $this->progressBar?->finish();
         $this->progressBar?->clear();
 
-        $outputsMd5 = md5(json_encode($outputs));
-        if ($iteration > 2) {
-            $outputs = [
-                $outputs[0],
-                $outputs[$iteration - 1],
-            ];
-        }
-
         return [
-            'outputs_json' => json_encode($outputs),
-            'outputs_md5' => $outputsMd5,
             'outputs' => $outputs,
             'iteration_count' => $iteration,
             'execution_time' => microtime(true) - $startTime,

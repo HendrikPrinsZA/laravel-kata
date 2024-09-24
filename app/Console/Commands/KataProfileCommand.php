@@ -5,6 +5,8 @@ namespace App\Console\Commands;
 use App\Challenges\A\Sample;
 use Illuminate\Console\Command;
 
+use function Laravel\Prompts\confirm;
+
 class KataProfileCommand extends Command
 {
     protected $signature = 'kata:profile {challenge} {method} {iteration=1}';
@@ -19,23 +21,27 @@ class KataProfileCommand extends Command
 
         $challengeA = str_replace('Sample', $challenge, Sample::class);
         $challengeB = str_replace('\\A\\', '\\B\\', $challengeA);
+
         $instanceA = app()->make($challengeA);
         $instanceB = app()->make($challengeB);
 
-        $returnsA = $instanceA->{$method}($iteration);
-        $returnsB = $instanceB->{$method}($iteration);
+        if (confirm(sprintf('Ready to run %s->%s(%d)?', $challengeA, $method, $iteration))) {
+            $responseA = $instanceA->{$method}($iteration);
 
-        $rows = [];
-        $rows[] = [
-            'returns',
-            json_encode($returnsA, JSON_PRETTY_PRINT),
-            json_encode($returnsB, JSON_PRETTY_PRINT),
-        ];
+            $this->info('Response of A');
+            $this->comment(json_encode($responseA, JSON_PRETTY_PRINT));
+        } else {
+            $this->error(sprintf('Skipped %s->%s(%d)', $challengeA, $method, $iteration));
+        }
 
-        $this->info(sprintf('Returns', $challengeA));
-        $this->table([
-            '#', 'A', 'B',
-        ], $rows);
+        if (confirm(sprintf('Ready to run %s->%s(%d)?', $challengeB, $method, $iteration))) {
+            $responseB = $instanceB->{$method}($iteration);
+
+            $this->info('Response of B');
+            $this->comment(json_encode($responseB, JSON_PRETTY_PRINT));
+        } else {
+            $this->error(sprintf('Skipped %s->%s(%d)', $challengeB, $method, $iteration));
+        }
 
         return self::SUCCESS;
     }
