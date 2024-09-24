@@ -22,7 +22,7 @@ $challengeClasses = [
     CleanCodeDatabase::class,
     Silly::class,
     ExperimentA::class,
-    Concurrent::class,
+    // Concurrent::class,
 ];
 
 $challengeMethods = [];
