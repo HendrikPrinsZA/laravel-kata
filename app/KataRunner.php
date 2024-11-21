@@ -271,10 +271,6 @@ class KataRunner
         $countA = count($outputsA);
         $countB = count($outputsB);
         if ($countA === $countB) {
-            dump([
-                'A' => $outputsA,
-                'B' => $outputsB,
-            ]);
             $message = sprintf('Outputs did not match (Mode: %s, A: %d, B: %d)', $kataRunnerIterationMode->value, $countA, $countB);
             $this->report('error', $message);
             throw new KataChallengeScoreOutputsMd5Exception($message);
@@ -304,10 +300,6 @@ class KataRunner
             if (! in_array($outputA, $outputsB)) {
                 $message = sprintf('Missing output in %s', $hasSwitched ? 'A' : 'B');
                 $this->report('comment', sprintf('%s: %s', $message, json_encode($outputA)));
-                dump([
-                    'A' => $hasSwitched ? $outputsB : $outputsA,
-                    'B' => $hasSwitched ? $outputsA : $outputsB,
-                ]);
                 throw new KataChallengeScoreOutputsMd5Exception($message);
             }
         }
