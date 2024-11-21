@@ -6,31 +6,13 @@
         "bump": "./bin/bump.sh",
         "test": "./bin/test.sh",
         "restart": "./bin/restart.sh",
-        "benchmark": "./bin/benchmark.sh",
-        "client:dev": "astro dev",
-        "client:start": "astro dev",
-        "client:build": "astro build",
-        "client:preview": "astro preview",
-        "client:astro": "astro"
+        "benchmark": "./bin/benchmark.sh"
     },
     "lint-staged": {
         "**/*.php": "./vendor/bin/pint --preset laravel"
     },
     "devDependencies": {
-        "autoprefixer": "^10.4.14",
-        "husky": "^9.0.11",
-        "laravel-vite-plugin": "^1.0.1",
-        "lint-staged": "^15.2.2",
-        "tailwindcss": "^3.3.2",
-        "vite": "^5.2.10"
+        "husky": "^9.0.11"
     },
-    "dependencies": {
-        "@astrojs/svelte": "^3.0.0",
-        "@astrojs/tailwind": "^4.0.0",
-        "@astrojs/vue": "^2.1.1",
-        "astro": "^2.4.5",
-        "dotenv": "^16.0.3",
-        "svelte": "^4.0.5",
-        "vue": "^3.3.1"
-    }
+    "dependencies": {}
 }

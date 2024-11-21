@@ -30,6 +30,18 @@ services:
     mysql:
         container_name: kata-mysql
         image: 'mysql/mysql-server:latest'
+        command:
+            --sql_mode="NO_ENGINE_SUBSTITUTION"
+            --max_connections=1000
+            --bind-address=0.0.0.0
+            --log_output=FILE
+            --slow_query_log=ON
+            --long_query_time=0
+            --slow_query_log_file=/var/log/mysql/mysql-slow.log
+            --log_slow_admin_statements=ON
+            --log_slow_slave_statements=ON
+            --performance_schema=ON
+            --innodb_monitor_enable=all
         ports:
             - '${FORWARD_DB_PORT:-3306}:3306'
         environment:
@@ -60,6 +72,18 @@ services:
             test: ["CMD", "redis-cli", "ping"]
             retries: 3
             timeout: 5s
+    percona-pmm:
+        container_name: kata-percona-pmm
+        image: percona/pmm-server:2
+        platform: linux/amd64
+        ports:
+            - ${PMM_PORT_HTTP:-81}:80
+            - ${PMM_PORT_HTTPS:-444}:443
+        networks:
+            - sail
+        volumes:
+            - percona-pmm-data:/srv
+        restart: always
 networks:
     sail:
         driver: bridge
@@ -67,4 +91,6 @@ volumes:
     laravel-kata-mysql:
         driver: local
     laravel-kata-redis:
+        driver: local
+    percona-pmm-data:
         driver: local
