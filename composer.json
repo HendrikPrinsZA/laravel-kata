@@ -31,7 +31,7 @@
         "php-coveralls/php-coveralls": "^2.5",
         "phpunit/phpcov": "^9.0",
         "phpunit/phpunit": "^10.0",
-        "spatie/laravel-ignition": "^2.0",
+        "spatie/laravel-ignition": "^2.9",
         "beyondcode/tinkerwell": "*"
     },
     "autoload": {
