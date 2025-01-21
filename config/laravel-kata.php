@@ -23,17 +23,15 @@ if (is_null($runMode)) {
 
 $defaults = match ($runMode) {
     KataRunMode::DEBUG => [
+        // Local development (quick)
+        // 'LK_MAX_SECONDS' => 1,
+        // 'LK_MAX_ITERATIONS' => 100,
+
         'LK_MAX_SECONDS' => 3,
         'LK_MAX_ITERATIONS' => 1000,
 
         'LK_DD_MAX_USERS' => 1000,
         'LK_DD_MAX_USER_BLOGS' => 10,
-
-        // 'LK_MAX_SECONDS' => 1,
-        // 'LK_MAX_ITERATIONS' => 5,
-
-        // 'LK_DD_MAX_USERS' => 1,
-        // 'LK_DD_MAX_USER_BLOGS' => 3,
     ],
     KataRunMode::BENCHMARK => [
         'LK_MAX_SECONDS' => 3,

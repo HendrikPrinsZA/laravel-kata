@@ -11,7 +11,7 @@ class KataRunCommand extends Command
 {
     use SmartChoice;
 
-    protected $signature = 'kata:run {--all} {--challenge=*} {--method=*}';
+    protected $signature = 'kata:run {--all} {--challenge=*} {--method=*} {--report-name=}';
 
     protected $description = 'Kata command POC';
 
@@ -19,8 +19,10 @@ class KataRunCommand extends Command
 
     public function handle(): int
     {
+        $reportName = $this->option('report-name') ?? 'Untitled';
+
         if ($this->option('all')) {
-            return $this->handleRun();
+            return $this->handleRun(reportName: $reportName);
         }
 
         $challenges = $this->option('challenge');
@@ -29,7 +31,7 @@ class KataRunCommand extends Command
                 fn (string $challenge) => sprintf('App\\Challenges\\A\\%s', $challenge)
             )->toArray();
 
-            return $this->handleRun($challenges);
+            return $this->handleRun(reportName: $reportName, challenges: $challenges);
         }
 
         $classNames = collect(config('laravel-kata.challenges'))->map(
@@ -42,10 +44,10 @@ class KataRunCommand extends Command
             fn ($className) => sprintf('App\\Challenges\\A\\%s', $className)
         )->toArray();
 
-        return $this->handleRun($challenges);
+        return $this->handleRun(reportName: $reportName, challenges: $challenges);
     }
 
-    protected function handleRun(array $challenges = []): int
+    protected function handleRun(string $reportName, array $challenges = []): int
     {
         $configChallenges = config('laravel-kata.challenges');
 
@@ -53,6 +55,7 @@ class KataRunCommand extends Command
         $methods = $this->option('method');
 
         $this->kataRunner = app()->makeWith(KataRunner::class, [
+            'reportName' => $reportName,
             'command' => $this,
             'challenges' => $challenges,
             'methods' => $methods,

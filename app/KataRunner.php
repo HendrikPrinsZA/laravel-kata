@@ -3,10 +3,11 @@
 namespace App;
 
 use App\Enums\KataRunnerIterationMode;
-use App\Enums\KataRunnerMode;
+use App\Enums\KataRunnerPhase;
 use App\Exceptions\KataChallengeNotFoundException;
 use App\Exceptions\KataChallengeScoreException;
 use App\Exceptions\KataChallengeScoreOutputsMd5Exception;
+use App\Models\KataReport;
 use App\Objects\KataChallengeResultObject;
 use App\Traits\HasExitHintsTrait;
 use App\Utilities\Benchmark;
@@ -26,8 +27,8 @@ class KataRunner
     use HasExitHintsTrait;
 
     protected const DEFAULT_MODES = [
-        KataRunnerMode::A,
-        KataRunnerMode::B,
+        KataRunnerPhase::A,
+        KataRunnerPhase::B,
     ];
 
     protected array $modes;
@@ -43,6 +44,7 @@ class KataRunner
     protected array $report = [];
 
     public function __construct(
+        protected string $reportName,
         protected ?Command $command = null,
         protected array $challenges = [],
         protected array $methods = []
@@ -445,6 +447,49 @@ class KataRunner
             ],
         ];
 
+        $baseValues = [
+            'name' => $this->reportName,
+            'php_version' => phpversion(),
+            'laravel_version' => app()->version(),
+            'mode' => config('laravel-kata.mode'),
+            'max_duration' => config('laravel-kata.max-seconds'),
+            'max_iterations' => config('laravel-kata.max-iterations'),
+            'class' => $className,
+            'method' => $methodName,
+        ];
+
+        $records[] = array_merge($baseValues, [
+            'phase' => KataRunnerPhase::A,
+
+            // Stats
+            'max_duration_iterations' => $statsA['_result'][KataRunnerIterationMode::MAX_SECONDS->value]['iteration_count'],
+            'max_iterations_duration' => $statsA['_result'][KataRunnerIterationMode::MAX_ITERATIONS->value]['execution_time_sum'],
+        ]);
+
+        $records[] = array_merge($baseValues, [
+            'phase' => KataRunnerPhase::B,
+
+            // Stats
+            'max_duration_iterations' => $statsB['_result'][KataRunnerIterationMode::MAX_SECONDS->value]['iteration_count'],
+            'max_iterations_duration' => $statsB['_result'][KataRunnerIterationMode::MAX_ITERATIONS->value]['execution_time_sum'],
+        ]);
+
+        KataReport::upsert($records, [
+            'name',
+            'php_version',
+            'laravel_version',
+            'mode',
+            'max_duration',
+            'max_iterations',
+            'max_duration',
+            'class',
+            'method',
+            'phase',
+        ], [
+            'max_duration_iterations',
+            'max_iterations_duration',
+        ]);
+
         if (config('laravel-kata.save-results-to-storage')) {
             $filePath = sprintf(
                 'laravel-kata/%s/result-%s.json',
@@ -486,8 +531,8 @@ class KataRunner
 
             if (! is_null($result)) {
                 $this->printReport(
-                    $result[KataRunnerMode::A->value],
-                    $result[KataRunnerMode::B->value]
+                    $result[KataRunnerPhase::A->value],
+                    $result[KataRunnerPhase::B->value]
                 );
             }
         }
@@ -513,10 +558,10 @@ class KataRunner
 
     protected function runChallengeMethod(
         ReflectionMethod $reflectionMethod,
-        KataRunnerMode $mode = KataRunnerMode::A
+        KataRunnerPhase $mode = KataRunnerPhase::A
     ): KataChallengeResultObject {
         $targetClass = $reflectionMethod->class;
-        if ($mode === KataRunnerMode::B) {
+        if ($mode === KataRunnerPhase::B) {
             $targetClass = str_replace('\\A\\', '\\B\\', $reflectionMethod->class);
 
             if (! class_exists($targetClass)) {

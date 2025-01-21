@@ -1,9 +1,9 @@
 # For more information: https://laravel.com/docs/sail
 services:
     laravel.test:
-        container_name: kata-laravel
+        container_name: kata-laravel-${DOCKER_PHP_VERSION:-8.4}
         build:
-            context: ./docker/8.3
+            context: ./docker/${DOCKER_PHP_VERSION:-8.4}
             dockerfile: Dockerfile
             args:
                 CI_MODE: '${CI_MODE:-local}'
