@@ -9,12 +9,12 @@
         "doctrine/dbal": "^3.0",
         "guzzlehttp/guzzle": "^7.2",
         "jfcherng/php-diff": "^6.12",
-        "laravel/framework": "^11.32",
+        "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.20",
         "laravel/tinker": "^2.7",
         "phpmd/phpmd": "^2.13",
         "predis/predis": "^2.0",
-        "sebastian/diff": "^5.1",
+        "sebastian/diff": "^6.0",
         "spatie/fork": "^1.2",
         "tightenco/tlint": "^9.0"
     },
@@ -26,13 +26,12 @@
         "laravel/pint": "^1.2",
         "laravel/sail": "^1.38",
         "mockery/mockery": "^1.4.4",
-        "nunomaduro/collision": "^8.5",
-        "pestphp/pest": "^2.6",
         "php-coveralls/php-coveralls": "^2.5",
-        "phpunit/phpcov": "^9.0",
-        "phpunit/phpunit": "^10.0",
         "spatie/laravel-ignition": "^2.0",
-        "beyondcode/tinkerwell": "*"
+        "phpunit/phpunit": "^11.0",
+        "pestphp/pest": "^3.0",
+        "nunomaduro/collision": "^8.0",
+        "pestphp/pest-plugin-laravel": "^3.0"
     },
     "autoload": {
         "files": [
