@@ -75,7 +75,7 @@ class KataRunner
         $this->modes = self::DEFAULT_MODES;
 
         $this->iterationModes = config('laravel-kata.modes');
-        if (app()->runningUnitTests()) {
+        if (app()->runningUnitTests() || ! extension_loaded('xdebug')) {
             $this->iterationModes = collect(config('laravel-kata.modes'))
                 ->reject(fn (KataRunnerIterationMode $mode) => $mode === KataRunnerIterationMode::XDEBUG_PROFILE)
                 ->values()
